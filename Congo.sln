@@ -3,7 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Core", "Congo.Core\Congo.Core.csproj", "{FC66BC2E-577E-487C-8C24-D201C895ADDD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Core.MSTest", "Congo.Core.MSTest\Congo.Core.MSTest.csproj", "{E3801072-678B-4428-B065-81899058FFBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.CLI", "Congo.CLI\Congo.CLI.csproj", "{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC66BC2E-577E-487C-8C24-D201C895ADDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC66BC2E-577E-487C-8C24-D201C895ADDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC66BC2E-577E-487C-8C24-D201C895ADDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC66BC2E-577E-487C-8C24-D201C895ADDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3801072-678B-4428-B065-81899058FFBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3801072-678B-4428-B065-81899058FFBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3801072-678B-4428-B065-81899058FFBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3801072-678B-4428-B065-81899058FFBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
