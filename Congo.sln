@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Core.MSTest", "Congo.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.CLI", "Congo.CLI\Congo.CLI.csproj", "{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.AI", "Congo.AI\Congo.AI.csproj", "{9340CD06-E6A7-431E-B4E1-144C68E10EFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.CLI.MSTest", "Congo.CLI.MSTest\Congo.CLI.MSTest.csproj", "{DB48BED5-AC82-4D70-B3E5-8B07365F312F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B77B299A-02CA-43E3-8D09-82E3EA63C3CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9340CD06-E6A7-431E-B4E1-144C68E10EFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9340CD06-E6A7-431E-B4E1-144C68E10EFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9340CD06-E6A7-431E-B4E1-144C68E10EFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9340CD06-E6A7-431E-B4E1-144C68E10EFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB48BED5-AC82-4D70-B3E5-8B07365F312F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB48BED5-AC82-4D70-B3E5-8B07365F312F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB48BED5-AC82-4D70-B3E5-8B07365F312F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB48BED5-AC82-4D70-B3E5-8B07365F312F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
