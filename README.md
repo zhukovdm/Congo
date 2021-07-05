@@ -1,6 +1,8 @@
+Please, note that the project is currently under construction.
+
 # Congo
 
-This project is a .NET implementation of the Congo board game.
+This project is a .NET implementation of the board game `Congo`.
 
 ## System requirements
 
@@ -22,3 +24,12 @@ on the target system:
 
 Check out the [User's manual](./docs/um.pdf) to learn more about rules and
 game control.
+
+## References
+
+- [Mindsports - Interesting game - Congo](https://www.mindsports.nl/index.php/side-dishes/interesting-games?start=2)
+- [Wikipedia - Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess)
+- [Wikipedia - Congo (chess variant)](https://en.wikipedia.org/wiki/Congo_(chess_variant))
+- [Chess variants - Congo](https://www.chessvariants.com/ms.dir/congo.html)
+- [Chess Programming Wiki](https://www.chessprogramming.org/)
+- [Computer Chess Programming Theory](http://www.frayn.net/beowulf/theory.html)
