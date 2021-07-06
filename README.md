@@ -18,11 +18,13 @@ on the target system:
 - Click on `Clone a repository` in the upper right corner.
 - Insert `https://github.com/zhukovdm/Congo` into `Repository location` field.
 - Click on `Clone` in the bottom right corner.
+- `Open` the solution.
+  ![open](./resources/pics/install.png)
 - Press `Ctrl + F5`.
 
 ## Gameplay
 
-Check out the [User's manual](./docs/um.pdf) to learn more about rules and
+Check out the [User's manual](./resources/docs/um.pdf) to learn more about rules and
 game control.
 
 ## References

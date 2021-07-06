@@ -4,6 +4,7 @@ bin/
 obj/
 publish/
 *.user
+TestResults/
 
 # NuGet packages
 packages/
