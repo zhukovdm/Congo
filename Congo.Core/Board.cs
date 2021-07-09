@@ -1,140 +1,88 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
+
+using Congo.Def;
 
 namespace Congo.Core {
 
-	struct Move {
-		readonly int from, to;
-		public Move(int from, int to, Board board) {
-			this.from = from; this.to = to;
-		}
+	public class CongoBoard : IBoard {
 
-	}
+		private static readonly ImmutableArray<CongoPiece> map =
+			ImmutableArray.Create(new CongoPiece[] {
+				new Empty(), new Lion(), new Zebra(), new Elephant(),
+				new Giraffe(), new Crocodile(), new Pawn(), new Superpawn(),
+				new Monkey(), new Captured()
+			});
 
-	public class Board {
-
-		private static Type[] numToPiece;
-		private static Dictionary<Type, uint> pieceToNum;
+		private static readonly CongoBoard empty =
+			new CongoBoard(ImmutableArray.Create(new ulong[2]),
+						   ImmutableArray.Create(new uint[7]));
 		
-		static Board() {
+		public static CongoBoard Empty => empty;
 
-			numToPiece = new Type[8] {
-				typeof(Lion), typeof(Zebra), typeof(Elephant), typeof(Giraffe),
-				typeof(Crocodile), typeof(Pawn), typeof(Superpawn), typeof(Monkey)
-			};
+		private readonly ImmutableArray<ulong> occupied;
+		private readonly ulong bothOccupied;
+		private readonly ImmutableArray<uint> pieces;
 
-			pieceToNum = new Dictionary<Type, uint>() {
-				{ typeof(Lion), 0 }, { typeof(Zebra), 1 },
-				{ typeof(Elephant), 2 }, { typeof(Giraffe), 3 },
-				{ typeof(Crocodile), 4 }, { typeof(Pawn), 5 },
-				{ typeof(Superpawn), 6 }, { typeof(Monkey), 7 },
-				{ typeof(Empty), 8 }
-			};
+		private bool getBit(ulong current, int rank, int file)
+			=> ((current >> (rank * Size + file)) & 0x1UL) == 0x1UL;
 
+		private ulong setBitToValue(ulong current, int rank, int file, bool value) {
+			var position = rank * Size + file;
+			return value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 		}
 
-		private static ulong setBitToVal(ulong cur, int pos, int val) {
-			return (val == 0) ? cur & ~(0x1UL << pos) : cur | (0x1UL << pos);
+		private CongoBoard(ImmutableArray<ulong> occupied, ImmutableArray<uint> pieces) {
+			this.occupied = occupied;
+			bothOccupied = occupied[0] | occupied[1];
+			this.pieces = pieces;
 		}
 
-		private static ulong getBit(ulong cur, int pos) {
-			return (cur >> pos) & 0x1UL;
+		public int Size => 7;
+
+		public bool IsSquareOccupied(int rank, int file) =>
+			getBit(bothOccupied, rank, file);
+
+		public bool IsPieceWhite(int rank, int file) =>
+			getBit(occupied[(int)ColorCode.White], rank, file);
+
+		public bool IsFirstMovePiece(int rank, int file) =>
+			IsPieceWhite(rank, file);
+
+		public bool IsPieceFriendly(ColorCode color, int rank, int file) =>
+			getBit(occupied[(int)color], rank, file);
+
+		public bool IsOpponentPiece(ColorCode color, int rank, int file) =>
+			getBit(occupied[1 - (int)color], rank, file);
+
+		public PieceCode GetPieceCode(int rank, int file) {
+			return (PieceCode)((pieces[rank] >> (file * 4)) & 0xFU);
 		}
 
-		struct BoardRepr {
+		public CongoPiece GetPiece(int rank, int file) {
+			return !IsSquareOccupied(rank, file) ? map[(int)PieceCode.Empty] :
+				map[(int)GetPieceCode(rank, file)];
+		}
 
-			readonly ImmutableArray<uint> pieceBank;
+		public CongoBoard With(ColorCode color, PieceCode pieceCode, int rank, int file) {
+			var occupy = setBitToValue(occupied[(int)color], rank, file, true);
+			var shift = file * 4;
+			var line = pieces[rank];
+			var mask = ~(0xFU << shift);
+			var value = (uint)pieceCode << shift;
+			return new CongoBoard(
+				occupied.SetItem((int)color, occupy),
+				pieces.SetItem(rank, (line & mask) | value)
+			);
+		}
 
-			public BoardRepr (ImmutableArray<uint> pieceBank) {
-				this.pieceBank = pieceBank;
-			}
-
-			public BoardRepr With(int position, Type pieceType) {
-				var shift = position % 7 * 4;
-				var rank = pieceBank[position / 7];
-				var mask = ~(0xFU << shift);
-				var val = pieceToNum[pieceType] << shift;
-				return new BoardRepr(
-					pieceBank.SetItem(position / 7,(rank & mask) | val)
+		public CongoBoard Without(int rank, int file) {
+			var newOccupied = occupied;
+			for (int i = 0; i < 2; i++) {
+				newOccupied = newOccupied.SetItem(
+					i, setBitToValue(occupied[i], rank, file, false)
 				);
 			}
-
-			public Type GetPieceType(int position) {
-				uint num = (pieceBank[position / 7] >> (position % 7 * 4)) & 0xFU;
-				return numToPiece[num];
-			}
-
-		}
-
-		private static BoardRepr initRank(BoardRepr br, int rank) {
-			int offset = rank * 7;
-			return br.With(0 + offset, typeof(Giraffe))
-				     .With(1 + offset, typeof(Monkey))
-					 .With(2 + offset, typeof(Elephant))
-					 .With(3 + offset, typeof(Lion))
-					 .With(4 + offset, typeof(Elephant))
-					 .With(5 + offset, typeof(Crocodile))
-					 .With(6 + offset, typeof(Zebra));
-		}
-
-		public static Board CreateStandard() {
-			ulong bo = 0; for (int i =   0; i < 2*7; i++) { bo = setBitToVal(bo, i, 1); }
-			ulong wo = 0; for (int i = 5*7; i < 7*7; i++) { wo = setBitToVal(wo, i, 1); }
-			var br = new BoardRepr(ImmutableArray.Create(new uint[7]));
-			br = initRank(br, 0);
-			for (int i = 1*7; i < 2*7; i++) { br = br.With(i, typeof(Pawn)); }
-			for (int i = 5*7; i < 6*7; i++) { br = br.With(i, typeof(Pawn)); }
-			br = initRank(br, 6);
-			return new Board(bo, wo, br);
-		}
-
-		public static Board CreateFromFEN(string fen) => throw new Exception();
-
-		readonly int activePlayer = 0;
-		readonly ImmutableArray<Player> players;
-		readonly ulong blackBits;
-		readonly ulong whiteBits;
-		readonly ulong bothBits;
-		readonly BoardRepr boardRepr;
-
-		private Board(ulong blackBits, ulong whiteBits, BoardRepr boardRepr) {
-			this.activePlayer = 0; // white
-			this.players = ImmutableArray.Create<Player>();
-			this.blackBits = blackBits;
-			this.whiteBits = whiteBits;
-			this.bothBits  = blackBits | whiteBits;
-			this.boardRepr = boardRepr;
-		}
-
-		private bool IsOccupied(int position) => getBit(bothBits, position) == 1U;
-
-		private bool IsPieceOpposite(int position) =>
-			activePlayer == 0 ? IsPieceBlack(position)
-			                  : IsPieceWhite(position);
-
-		public bool IsPieceWhite(int position) => getBit(whiteBits, position) == 1U;
-
-		public bool IsPieceBlack(int position) => getBit(blackBits, position) == 1U;
-
-		public Type GetPieceType(int position) =>
-			IsOccupied(position) ? boardRepr.GetPieceType(position)
-								 : typeof(Empty);
-
-		public bool IsOpponentPiece(int position) => throw new Exception();
-
-		public Board Clone(Board board) => throw new Exception();
-
-		private ImmutableArray<Move> generateMoves() => throw new Exception();
-
-		public bool IsFinal() {
-			return true;
-			/*
-			generateAllMoves();
-			return PassivePlayer.InCheck()    ||
-				   ActivePlayer.InCheckmate() ||
-				   IsUnsolvable();
-			*/
+			return new CongoBoard(newOccupied, pieces);
 		}
 
 	}
