@@ -1,23 +1,72 @@
-﻿namespace Congo.Core {
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 
-	public abstract class Piece { }
+using Congo.Def;
 
-	public sealed class Lion : Piece { }
+namespace Congo.Core {
 
-	public sealed class Zebra : Piece { }
+	public abstract class CongoPiece {
+		public abstract List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file);
+	}
 
-	public sealed class Elephant : Piece { }
+	public sealed class Empty : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
-	public sealed class Giraffe : Piece { }
+	public sealed class Lion : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
-	public sealed class Crocodile : Piece { }
+	public sealed class Zebra : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
-	public sealed class Pawn : Piece { }
+	public sealed class Elephant : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
-	public sealed class Superpawn : Piece { }
+	public sealed class Giraffe : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
-	public sealed class Monkey : Piece { }
+	public sealed class Crocodile : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
-	public sealed class Empty : Piece { }
+	public sealed class Pawn : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
+
+	public sealed class Superpawn : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
+
+	public sealed class Monkey : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
+
+	public sealed class Captured : CongoPiece {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int rank, int file) {
+			return new List<CongoMove>();
+		}
+	}
 
 }
