@@ -1,19 +1,20 @@
 # Visual Studio files
 .vs/
+.vscode/
 bin/
 obj/
 publish/
-*.user
 TestResults/
+*.user
 
 # NuGet packages
 packages/
 
 # LaTeX files
-docs/*.aux
-docs/*.fdb_latexmk
-docs/*.fls
-docs/*.log
-docs/*.out
-docs/*.synctex.gz
-docs/*.toc
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc

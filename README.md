@@ -6,7 +6,7 @@ This project is a .NET implementation of the board game `Congo`.
 
 ## System requirements
 
-Before installation ensure that the following technologies are available
+Before installation, ensure that the following technologies are available
 on the target system:
 - `Windows 10`,
 - `.NET Framework 4.8`,
@@ -19,13 +19,14 @@ on the target system:
 - Insert `https://github.com/zhukovdm/Congo` into `Repository location` field.
 - Click on `Clone` in the bottom right corner.
 - `Open` the solution.
-  ![open](./resources/pics/install.png)
+
+![open](./assets/img/install.png)
 - Press `Ctrl + F5`.
 
 ## Gameplay
 
-Check out the [User's manual](./resources/docs/um.pdf) to learn more about rules and
-game control.
+Check out the [User's manual](./assets/doc/um.pdf) to learn more about rules
+and game control.
 
 ## References
 
