@@ -58,13 +58,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Board.cs" />
+    <Compile Include="Game.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Congo.AI\Congo.AI.csproj">
+      <Project>{9340cd06-e6a7-431e-b4e1-144c68e10efc}</Project>
+      <Name>Congo.AI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Congo.Def\Congo.Def.csproj">
+      <Project>{773b4243-e4c3-45d3-a7ce-417eb91a4508}</Project>
+      <Name>Congo.Def</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Congo.UI\Congo.UI.csproj">
+      <Project>{4e4a1f14-e611-4557-ac21-1f78a9ad4710}</Project>
+      <Name>Congo.UI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
