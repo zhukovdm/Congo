@@ -1,0 +1,12 @@
+NAME
+    [a]dvice
+DESCRIPTION
+    advice next move based on a chosen heuristic
+SEMANTICS
+    a heuristic_type
+USAGE
+    a [123]
+OPTIONS
+    1: minimax
+    2: negamax
+    3: iterative deepening

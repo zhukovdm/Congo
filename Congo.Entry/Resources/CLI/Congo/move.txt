@@ -1,0 +1,8 @@
+NAME
+    [m]ove
+DESCRIPTION
+    moves a certain piece from a position to a position
+SEMANTICS
+    m from to
+USAGE
+    m [a-g][1-7] [a-g][1-7]
