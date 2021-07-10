@@ -18,3 +18,8 @@ packages/
 *.out
 *.synctex.gz
 *.toc
+
+# Documentation files
+assets/doc/*
+!assets/doc/um.pdf
+!assets/doc/um.tex
