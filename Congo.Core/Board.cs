@@ -69,21 +69,16 @@ namespace Congo.Core {
 		public CongoBoard With(ColorCode color, PieceCode pieceCode, int rank, int file) {
 			var occupy = setBitToValue(occupied[(int)color], rank, file, true);
 			var shift = file * 4;
-			var line = pieces[rank];
-			var mask = ~(0xFU << shift);
-			var value = (uint)pieceCode << shift;
 			return new CongoBoard(
 				occupied.SetItem((int)color, occupy),
-				pieces.SetItem(rank, (line & mask) | value)
+				pieces.SetItem(rank, (pieces[rank] & ~(0xFU << shift)) | ((uint)pieceCode << shift))
 			);
 		}
 
 		public CongoBoard Without(int rank, int file) {
 			var newOccupied = occupied;
 			for (int i = 0; i < 2; i++) {
-				newOccupied = newOccupied.SetItem(
-					i, setBitToValue(occupied[i], rank, file, false)
-				);
+				newOccupied = newOccupied.SetItem(i, setBitToValue(occupied[i], rank, file, false));
 			}
 			return new CongoBoard(newOccupied, pieces);
 		}
