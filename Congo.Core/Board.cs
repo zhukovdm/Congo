@@ -39,6 +39,9 @@ namespace Congo.Core {
 
 		public int Size => 7;
 
+		public ulong GetOccupiedSquares(ColorCode color) =>
+			occupied[(int)color];
+
 		public bool IsSquareOccupied(int rank, int file) =>
 			getBit(bothOccupied, rank, file);
 
