@@ -31,14 +31,13 @@ namespace Congo.CLI {
 		public void Greet() { writer.WriteLine(config.GreetView); }
 
 		public void ShowBoard(IBoard board) {
-			for (int rank = 0; rank < board.Size; rank++) {
-				writer.Write($" {board.Size - rank} ");
-				for (int file = 0; file < board.Size; file++) {
-					var pv = config.PieceView[board.GetPieceCode(rank, file)];
-					if (board.IsFirstMovePiece(rank, file)) pv = pv.ToUpper();
-					writer.Write(pv);
-				}
-				writer.WriteLine();
+			var upperBound = board.Size * board.Size;
+			for (int position = 0; position < upperBound; position++) {
+				if (position % board.Size == 0) writer.Write($" {board.Size - position / board.Size} ");
+				var pv = config.PieceView[board.GetPieceCode(position)];
+				if (board.IsFirstMovePiece(position)) pv = pv.ToUpper();
+				writer.Write(pv);
+				if (position % board.Size == board.Size - 1) writer.WriteLine();
 			}
 			writer.WriteLine();
 			writer.Write(" / ");
