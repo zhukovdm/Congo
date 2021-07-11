@@ -5,7 +5,6 @@ namespace Congo.Entry {
 	class Program {
 		static void Main(string[] args) {
 			IGame game = CongoGame.GetStandard(UICode.CommandLineInterface);
-
 			/*/
 			bool last;
 			do {
