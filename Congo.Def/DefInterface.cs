@@ -17,8 +17,17 @@ namespace Congo.Def {
 
 	public interface IBoard {
 		int Size { get; }
-		PieceCode GetPieceCode(int rank, int file);
-		bool IsFirstMovePiece(int rank, int file);
+		PieceCode GetPieceCode(int position);
+		bool IsFirstMovePiece(int position);
+	}
+
+	public interface IParametrizedEnumerator<T> {
+		T Current { get; }
+		bool MoveNext();
+	}
+
+	public interface IParametrizedEnumerable<T, U> {
+		IParametrizedEnumerator<U> GetEnumerator(T param);
 	}
 
 	public interface ICommandLineConfiguration {
