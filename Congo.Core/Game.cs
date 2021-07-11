@@ -9,19 +9,19 @@ namespace Congo.Core {
 	public class CongoGame : IGame {
 
 		private static CongoBoard setMixedRank(CongoBoard board, ColorCode color, int rank) {
-			board = board.With(color, PieceCode.Giraffe, rank, 0)
-						 .With(color, PieceCode.Monkey, rank, 1)
-						 .With(color, PieceCode.Elephant, rank, 2)
-						 .With(color, PieceCode.Lion, rank, 3)
-						 .With(color, PieceCode.Elephant, rank, 4)
-						 .With(color, PieceCode.Crocodile, rank, 5)
-						 .With(color, PieceCode.Zebra, rank, 6);
+			board = board.With(color, PieceCode.Giraffe, rank * board.Size + 0)
+						 .With(color, PieceCode.Monkey, rank * board.Size + 1)
+						 .With(color, PieceCode.Elephant, rank * board.Size + 2)
+						 .With(color, PieceCode.Lion, rank * board.Size + 3)
+						 .With(color, PieceCode.Elephant, rank * board.Size + 4)
+						 .With(color, PieceCode.Crocodile, rank * board.Size + 5)
+						 .With(color, PieceCode.Zebra, rank * board.Size + 6);
 			return board;
 		}
 
 		private static CongoBoard setPawnRank(CongoBoard board, ColorCode color, int rank) {
 			for (int file = 0; file < board.Size; file++) {
-				board = board.With(color, PieceCode.Pawn, rank, file);
+				board = board.With(color, PieceCode.Pawn, rank * board.Size + file);
 			}
 			return board;
 		}
