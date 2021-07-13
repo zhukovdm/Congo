@@ -24,7 +24,14 @@ namespace Congo.Core {
 			}
 		}
 
-		private static ImmutableArray<int> kingLeapsGenerator(int rank, int file) {
+		private static bool IsPositionAllowed(int position, int[] allowed) {
+			for (int i = 0; i < allowed.Length; i++) {
+				if (position == allowed[i]) return true;
+			}
+			return false;
+		}
+
+		private static ImmutableArray<int> kingLeapGenerator(int rank, int file) {
 			var leaps = new List<int>();
 			for (int i = -1; i < 2; i++) {
 				for (int j = -1; j < 2; j++) {
@@ -36,7 +43,7 @@ namespace Congo.Core {
 			return leaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<int> knightLeapsGenerator(int rank, int file) {
+		private static ImmutableArray<int> knightLeapGenerator(int rank, int file) {
 			var leaps = new List<int>();
 			for (int i = -2; i < 3; i++) {
 				for (int j = -2; j < 3; j++) {
@@ -48,7 +55,7 @@ namespace Congo.Core {
 			return leaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<int> elephantLeapsGenerator(int rank, int file) {
+		private static ImmutableArray<int> elephantLeapGenerator(int rank, int file) {
 			var leaps = new List<int>();
 			for (int i = -2; i < 3; i++) {
 				for (int j = -2; j < 3; j++) {
@@ -61,7 +68,7 @@ namespace Congo.Core {
 			return leaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<int> capturingGiraffeLeapsGenerator(int rank, int file) {
+		private static ImmutableArray<int> capturingGiraffeLeapGenerator(int rank, int file) {
 			var leaps = new List<int>();
 			for (int i = -2; i < 3; i++) {
 				for (int j = -2; j < 3; j++) {
@@ -72,6 +79,30 @@ namespace Congo.Core {
 				}
 			}
 			return leaps.ToImmutableArray();
+		}
+
+		private static ImmutableArray<ImmutableArray<int>> lionLeapGenerator(ColorCode color) {
+
+			var allLeaps = new ImmutableArray<int>[size * size];
+
+			var whiteAllowed = new int[] { 30, 31, 32, 37, 38, 39, 44, 45, 46 };
+			var blackAllowed = new int[] {  2,  3,  4,  9, 10, 11, 16, 17, 18 };
+			var allowed = color.IsWhite() ? whiteAllowed : blackAllowed;
+			
+			for (int rank = 0; rank < size; rank++) {
+				for (int file = 0; file < size; file++) {
+					var leaps = new List<int>();
+					if (IsPositionAllowed(rank * size + file, allowed)) {
+						var possibleLeaps = kingLeapGenerator(rank, file);
+						foreach (var leap in possibleLeaps) {
+							if (IsPositionAllowed(leap, allowed)) leaps.Add(leap);
+						}
+					}
+					allLeaps[rank * size + file] = leaps.ToImmutableArray();
+				}
+			}
+
+			return allLeaps.ToImmutableArray();
 		}
 
 		private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(LeapGenerator gen) {
@@ -99,15 +130,23 @@ namespace Congo.Core {
 			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 
 		private static readonly ImmutableArray<ImmutableArray<int>> kingLeaps,
-			knightLeaps, elephantLeaps, capturingGiraffeLeaps;
+			knightLeaps, elephantLeaps, capturingGiraffeLeaps, whiteLionLeaps,
+			blackLionLeaps;
 
 		public static CongoBoard Empty => empty;
 		
 		static CongoBoard() {
-			kingLeaps = precalculateLeaps(kingLeapsGenerator);
-			knightLeaps = precalculateLeaps(knightLeapsGenerator);
-			elephantLeaps = precalculateLeaps(elephantLeapsGenerator);
-			capturingGiraffeLeaps = precalculateLeaps(capturingGiraffeLeapsGenerator);
+			kingLeaps = precalculateLeaps(kingLeapGenerator);
+			knightLeaps = precalculateLeaps(knightLeapGenerator);
+			elephantLeaps = precalculateLeaps(elephantLeapGenerator);
+			capturingGiraffeLeaps = precalculateLeaps(capturingGiraffeLeapGenerator);
+			crocodileLeaps = crocodileLeapGenerator();
+			whiteLionLeaps = lionLeapGenerator(ColorCode.White);
+			blackLionLeaps = lionLeapGenerator(ColorCode.Black);
+			whitePawnLeaps = pawnLeapGenerator(ColorCode.White);
+			blackPawnLeaps = pawnLeapGenerator(ColorCode.Black);
+			whiteSuperpawnLeaps = superpawnLeapGenerator(ColorCode.White);
+			blackSuperpawnLeaps = superpawnLeapGenerator(ColorCode.Black);
 		}
 
 		private readonly ImmutableArray<ulong> occupied;
@@ -172,7 +211,8 @@ namespace Congo.Core {
 		public ImmutableArray<int> LeapsAsCapturingGiraffe(int position)
 			=> capturingGiraffeLeaps[position];
 
-
+		public ImmutableArray<int> LeapsAsLion(ColorCode color, int position)
+			=> color.IsWhite() ? whiteLionLeaps[position] : blackLionLeaps[position];
 
 		public IParametrizedEnumerator<int> GetEnumerator(ColorCode color)
 			=> new CongoBoardEnumerator(occupied[(int)color]);

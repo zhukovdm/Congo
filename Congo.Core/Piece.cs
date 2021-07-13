@@ -7,11 +7,8 @@ namespace Congo.Core {
 
 	public abstract class CongoPiece {
 
-		protected delegate ImmutableArray<int> LeapGetter(int position);
-
-		protected List<CongoMove> getCapturingLeaps(List<CongoMove> moves,
-			LeapGetter getter, ColorCode color, CongoBoard board, int position) {
-			var capturingLeaps = getter.Invoke(position);
+		protected List<CongoMove> getValidCapturingLeaps(List<CongoMove> moves,
+			ImmutableArray<int> capturingLeaps, ColorCode color, CongoBoard board, int position) {
 			foreach (var leap in capturingLeaps) {
 				if (!board.IsSquareOccupied(leap) || board.IsOpponentPiece(color, leap)) {
 					moves.Add(new CongoMove(position, leap));
@@ -20,9 +17,8 @@ namespace Congo.Core {
 			return moves;
 		}
 
-		protected List<CongoMove> getNonCapturingLeaps(List<CongoMove> moves,
-			LeapGetter getter, CongoBoard board, int position) {
-				var nonCapturingLeaps = getter.Invoke(position);
+		protected List<CongoMove> getValidNonCapturingLeaps(List<CongoMove> moves,
+			ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int position) {
 				foreach (var leap in nonCapturingLeaps) {
 					if (!board.IsSquareOccupied(leap)) {
 						moves.Add(new CongoMove(position, leap));
@@ -43,32 +39,42 @@ namespace Congo.Core {
 
 	public sealed class Lion : CongoPiece {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
-			return new List<CongoMove>();
+			var moves = new List<CongoMove>();
+
+			var leaps = board.LeapsAsLion(color, position);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
+
+			// TODO jump to the opponent's lion
+
+			return moves;
 		}
 	}
 
 	public sealed class Zebra : CongoPiece {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
-			var moves = new List<CongoMove>();
-			moves = getCapturingLeaps(moves, board.LeapsAsKnight, color, board, position);
-			return moves;
+			return getValidCapturingLeaps(new List<CongoMove>(),
+				board.LeapsAsKnight(position), color, board, position);
 		}
 
 	}
 
 	public sealed class Elephant : CongoPiece {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
-			var moves = new List<CongoMove>();
-			moves = getCapturingLeaps(moves, board.LeapsAsElephant, color, board, position);
-			return moves;
+			return getValidCapturingLeaps(new List<CongoMove>(),
+				board.LeapsAsElephant(position), color, board, position);
 		}
 	}
 
 	public sealed class Giraffe : CongoPiece {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			var moves = new List<CongoMove>();
-			moves = getCapturingLeaps(moves, board.LeapsAsCapturingGiraffe, color, board, position);
-			moves = getNonCapturingLeaps(moves, board.LeapsAsKing, board, position);
+			
+			moves = getValidCapturingLeaps(
+				moves, board.LeapsAsCapturingGiraffe(position), color, board, position);
+
+			moves = getValidNonCapturingLeaps(
+				moves, board.LeapsAsKing(position), board, position);
+
 			return moves;
 		}
 	}
