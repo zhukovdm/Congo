@@ -23,7 +23,7 @@ namespace Congo.Core {
 	public sealed class Zebra : CongoPiece {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			var moves = new List<CongoMove>();
-			var leaps = CongoBoard.KnightMoves[position];
+			var leaps = CongoBoard.KnightLeaps[position];
 			foreach (var m in leaps) {
 				if (!board.IsSquareOccupied(m) || board.IsOpponentPiece(color, m)) {
 					moves.Add(new CongoMove(position, m));

@@ -9,62 +9,61 @@ namespace Congo.Core {
 	public class CongoBoard : IBoard, IParametrizedEnumerable<ColorCode, int> {
 
 		private static int size = 7;
-		public static readonly ImmutableArray<ImmutableArray<int>> KingMoves;
-		public static readonly ImmutableArray<ImmutableArray<int>> KnightMoves;
-
+		
 		private static bool withinBoard(int rank, int file)
 			=> rank >= 0 && rank < size && file >= 0 && file < size;
 
-		private static ImmutableArray<int> precalculateKingMoves(int rank, int file) {
-			var moves = new List<int>();
+		private delegate ImmutableArray<int> LeapsGen(int rank, int file);
+
+		private static void TryAddLeap(List<int> leaps, int rank, int file) {
+			if (withinBoard(rank, file)) { leaps.Add(rank * size + file); }
+		}
+
+		private static ImmutableArray<int> kingLeapsGenerator(int rank, int file) {
+			var leaps = new List<int>();
 			for (int i = -1; i < 2; i++) {
 				for (int j = -1; j < 2; j++) {
-					if (!(i == 0 && j == 0)) {
-						var newRank = rank + i;
-						var newFile = file + j;
-						if (withinBoard(newRank, newFile)) {
-							moves.Add(newRank * size + newFile);
-						}
+					if (i != 0 || j != 0) {
+						TryAddLeap(leaps, rank, file);
 					}
 				}
 			}
-			return moves.ToImmutableArray();
+			return leaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<ImmutableArray<int>> precalculateKingMoves() {
-			var allPositions = new ImmutableArray<int>[size * size];
-			for (int rank = 0; rank < size; rank++) {
-				for (int file = 0; file < size; file++) {
-					allPositions[rank * size + file] = precalculateKingMoves(rank, file);
-				}
-			}
-			return allPositions.ToImmutableArray();
-		}
-
-		private static ImmutableArray<int> precalculateKnightMoves(int rank, int file) {
-			var moves = new List<int>();
+		private static ImmutableArray<int> knightLeapsGenerator(int rank, int file) {
+			var leaps = new List<int>();
 			for (int i = -2; i < 3; i++) {
 				for (int j = -2; j < 3; j++) {
 					if (Math.Abs(i) + Math.Abs(j) == 3) {
-						var newRank = rank + i;
-						var newFile = file + j;
-						if (withinBoard(newRank, newFile)) {
-							moves.Add(newRank * size + newFile);
-						}
+						TryAddLeap(leaps, rank + i, file + j);
 					}
 				}
 			}
-			return moves.ToImmutableArray();
+			return leaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<ImmutableArray<int>> precalculateKnightMoves() {
-			var allPositions = new ImmutableArray<int>[size * size];
-			for (int rank = 0; rank < size; rank++) {
-				for (int file = 0; file < size; file++) {
-					allPositions[rank * size + file] = precalculateKnightMoves(rank, file);
+		private static ImmutableArray<int> elephantLeapsGenerator(int rank, int file) {
+			var leaps = new List<int>();
+			for (int i = -2; i < 3; i++) {
+				for (int j = -2; j < 3; j++) {
+					if ((Math.Abs(i) == 1 && j == 0) || (i == 0 && Math.Abs(j) == 1) ||
+						(Math.Abs(i) == 2 && j == 0) || (i == 0 && Math.Abs(j) == 2)) {
+						TryAddLeap(leaps, rank + i, file + j);
+					}
 				}
 			}
-			return allPositions.ToImmutableArray();
+			return leaps.ToImmutableArray();
+		}
+
+		private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(LeapsGen gen) {
+			var allLeaps = new ImmutableArray<int>[size * size];
+			for (int rank = 0; rank < size; rank++) {
+				for (int file = 0; file < size; file++) {
+					allLeaps[rank * size + file] = gen.Invoke(rank, file);
+				}
+			}
+			return allLeaps.ToImmutableArray();
 		}
 
 		private static readonly ImmutableArray<CongoPiece> map = new CongoPiece[] {
@@ -82,10 +81,13 @@ namespace Congo.Core {
 			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 
 		public static CongoBoard Empty => empty;
+		public static readonly ImmutableArray<ImmutableArray<int>> KingLeaps,
+			KnightLeaps, ElephantLeaps;
 
 		static CongoBoard() {
-			KingMoves = precalculateKingMoves();
-			KnightMoves = precalculateKnightMoves();
+			KingLeaps = precalculateLeaps(kingLeapsGenerator);
+			KnightLeaps = precalculateLeaps(knightLeapsGenerator);
+			ElephantLeaps = precalculateLeaps(elephantLeapsGenerator);
 		}
 
 		private readonly ImmutableArray<ulong> occupied;
