@@ -8,15 +8,20 @@ namespace Congo.Core {
 
 	public class CongoBoard : IBoard, IParametrizedEnumerable<ColorCode, int> {
 
+		private delegate ImmutableArray<int> LeapGenerator(int rank, int file);
+
 		private static int size = 7;
 		
 		private static bool withinBoard(int rank, int file)
 			=> rank >= 0 && rank < size && file >= 0 && file < size;
 
-		private delegate ImmutableArray<int> LeapsGen(int rank, int file);
-
-		private static void TryAddLeap(List<int> leaps, int rank, int file) {
-			if (withinBoard(rank, file)) { leaps.Add(rank * size + file); }
+		private static bool tryAddLeap(List<int> leaps, int rank, int file) {
+			if (withinBoard(rank, file)) {
+				leaps.Add(rank * size + file);
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		private static ImmutableArray<int> kingLeapsGenerator(int rank, int file) {
@@ -24,7 +29,7 @@ namespace Congo.Core {
 			for (int i = -1; i < 2; i++) {
 				for (int j = -1; j < 2; j++) {
 					if (i != 0 || j != 0) {
-						TryAddLeap(leaps, rank, file);
+						_ = tryAddLeap(leaps, rank, file);
 					}
 				}
 			}
@@ -36,7 +41,7 @@ namespace Congo.Core {
 			for (int i = -2; i < 3; i++) {
 				for (int j = -2; j < 3; j++) {
 					if (Math.Abs(i) + Math.Abs(j) == 3) {
-						TryAddLeap(leaps, rank + i, file + j);
+						_ = tryAddLeap(leaps, rank + i, file + j);
 					}
 				}
 			}
@@ -49,14 +54,27 @@ namespace Congo.Core {
 				for (int j = -2; j < 3; j++) {
 					if ((Math.Abs(i) == 1 && j == 0) || (i == 0 && Math.Abs(j) == 1) ||
 						(Math.Abs(i) == 2 && j == 0) || (i == 0 && Math.Abs(j) == 2)) {
-						TryAddLeap(leaps, rank + i, file + j);
+						_ = tryAddLeap(leaps, rank + i, file + j);
 					}
 				}
 			}
 			return leaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(LeapsGen gen) {
+		private static ImmutableArray<int> capturingGiraffeLeapsGenerator(int rank, int file) {
+			var leaps = new List<int>();
+			for (int i = -2; i < 3; i++) {
+				for (int j = -2; j < 3; j++) {
+					if ((Math.Abs(i) == 2 && (j == 0 || Math.Abs(j) == 2)) ||
+						(Math.Abs(j) == 2 && (i == 0 || Math.Abs(i) == 2))) {
+						_ = tryAddLeap(leaps, rank + i, file + j);
+					}
+				}
+			}
+			return leaps.ToImmutableArray();
+		}
+
+		private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(LeapGenerator gen) {
 			var allLeaps = new ImmutableArray<int>[size * size];
 			for (int rank = 0; rank < size; rank++) {
 				for (int file = 0; file < size; file++) {
@@ -80,14 +98,16 @@ namespace Congo.Core {
 		private static ulong setBitToValue(ulong current, int position, bool value)
 			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 
-		public static CongoBoard Empty => empty;
-		public static readonly ImmutableArray<ImmutableArray<int>> KingLeaps,
-			KnightLeaps, ElephantLeaps;
+		private static readonly ImmutableArray<ImmutableArray<int>> kingLeaps,
+			knightLeaps, elephantLeaps, capturingGiraffeLeaps;
 
+		public static CongoBoard Empty => empty;
+		
 		static CongoBoard() {
-			KingLeaps = precalculateLeaps(kingLeapsGenerator);
-			KnightLeaps = precalculateLeaps(knightLeapsGenerator);
-			ElephantLeaps = precalculateLeaps(elephantLeapsGenerator);
+			kingLeaps = precalculateLeaps(kingLeapsGenerator);
+			knightLeaps = precalculateLeaps(knightLeapsGenerator);
+			elephantLeaps = precalculateLeaps(elephantLeapsGenerator);
+			capturingGiraffeLeaps = precalculateLeaps(capturingGiraffeLeapsGenerator);
 		}
 
 		private readonly ImmutableArray<ulong> occupied;
@@ -139,6 +159,20 @@ namespace Congo.Core {
 			}
 			return new CongoBoard(newOccupied, pieces);
 		}
+
+		public ImmutableArray<int> LeapsAsKing(int position)
+			=> kingLeaps[position];
+
+		public ImmutableArray<int> LeapsAsKnight(int position)
+			=> knightLeaps[position];
+
+		public ImmutableArray<int> LeapsAsElephant(int position)
+			=> elephantLeaps[position];
+
+		public ImmutableArray<int> LeapsAsCapturingGiraffe(int position)
+			=> capturingGiraffeLeaps[position];
+
+
 
 		public IParametrizedEnumerator<int> GetEnumerator(ColorCode color)
 			=> new CongoBoardEnumerator(occupied[(int)color]);
