@@ -72,7 +72,7 @@ namespace Congo.Core {
 
 			Func<int, int, bool> ad = isSquareWater(rank * size + file)
 				? ad = (int i, int j) => i != 0
-				: ad = (int i, int j) => !((i == 0 && j == 0) || (i == direction && j == 0));
+				: ad = (int i, int j) => (i != 0 || j != 0) && (i != direction || j != 0);
 
 			return circleLeapGenerator(ad, rank, file, 1);
 		}
@@ -106,7 +106,7 @@ namespace Congo.Core {
 		private static ImmutableArray<int> pawnLeapGenerator(ColorCode color, int rank, int file) {
 			var direction = color.IsBlack() ? 1 : -1;
 			return circleLeapGenerator(
-				(int i, int j) => j == direction,
+				(int i, int j) => i == direction,
 				rank, file, 1
 			);
 		}
@@ -114,7 +114,7 @@ namespace Congo.Core {
 		private static ImmutableArray<int> superpawnLeapGenerator(ColorCode color, int rank, int file) {
 			var direction = color.IsBlack() ? 1 : -1;
 			return circleLeapGenerator(
-				(int i, int j) => (j == direction) || (j == 0 && i != 0),
+				(int i, int j) => (i == direction) || (i == 0 && j != 0),
 				rank, file, 1
 			);
 		}
@@ -179,10 +179,10 @@ namespace Congo.Core {
 			// color-dependent leaps
 			whiteLionLeaps = precalculateLeaps(lionLeapGenerator, ColorCode.White);
 			blackLionLeaps = precalculateLeaps(lionLeapGenerator, ColorCode.Black);
-			//whitePawnLeaps = pawnLeapGenerator(ColorCode.White);
-			//blackPawnLeaps = pawnLeapGenerator(ColorCode.Black);
-			//whiteSuperpawnLeaps = superpawnLeapGenerator(ColorCode.White);
-			//blackSuperpawnLeaps = superpawnLeapGenerator(ColorCode.Black);
+			whitePawnLeaps = precalculateLeaps(pawnLeapGenerator, ColorCode.White);
+			blackPawnLeaps = precalculateLeaps(pawnLeapGenerator, ColorCode.Black);
+			whiteSuperpawnLeaps = precalculateLeaps(superpawnLeapGenerator, ColorCode.White);
+			blackSuperpawnLeaps = precalculateLeaps(superpawnLeapGenerator, ColorCode.Black);
 		}
 
 		private readonly ImmutableArray<ulong> occupied;
