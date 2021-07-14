@@ -5,11 +5,6 @@ using Congo.Def;
 
 namespace Congo.Core {
 
-	public struct CongoMove {
-		public readonly int Fr, To;
-		public CongoMove(int fr, int to) { Fr = fr; To = to; }
-	}
-
 	public abstract class CongoPlayer {
 
 		private readonly ImmutableArray<CongoMove> moves;
