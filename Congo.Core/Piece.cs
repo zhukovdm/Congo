@@ -32,25 +32,32 @@ namespace Congo.Core {
 	}
 
 	public sealed class Empty : CongoPiece {
+
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position)
 			=> new List<CongoMove>();
+
 	}
 
 	public sealed class Elephant : CongoPiece {
+
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			return getValidCapturingLeaps(new List<CongoMove>(),
 				board.LeapsAsElephant(position), color, board, position);
 		}
+
 	}
 
 	public sealed class Zebra : CongoPiece {
+
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			return getValidCapturingLeaps(new List<CongoMove>(),
 				board.LeapsAsKnight(position), color, board, position);
 		}
+
 	}
 
 	public sealed class Giraffe : CongoPiece {
+
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			var moves = new List<CongoMove>();
 
@@ -62,6 +69,7 @@ namespace Congo.Core {
 
 			return moves;
 		}
+
 	}
 
 	public sealed class Crocodile : CongoPiece {
@@ -108,9 +116,11 @@ namespace Congo.Core {
 
 			return moves;
 		}
+
 	}
 
 	public sealed class Lion : CongoPiece {
+
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			var moves = new List<CongoMove>();
 
@@ -121,26 +131,68 @@ namespace Congo.Core {
 
 			return moves;
 		}
+
 	}
 
-	public sealed class Pawn : CongoPiece {
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
-			var moves = new List<CongoMove>();
+	public class Pawn : CongoPiece {
 
-			// TODO sliding backwards
+		protected List<CongoMove> nonCapturingVerticalSlide(List<CongoMove> moves,
+			ColorCode color, CongoBoard board, int position, bool s) {
+			var slide = color.IsWhite() ? board.IsUpperPart(position) : board.IsLowerPart(position);
+
+			if (slide || s) {
+				var direct = color.IsWhite() ? 1 : -1;
+				var steps = 1;
+				while (steps < 3) {
+					var newPosition = position + direct * steps * board.Size;
+					if (!board.IsSquareOccupied(newPosition) && board.WithinBoard(newPosition)) {
+						moves.Add(new CongoMove(position, newPosition));
+					}
+					else {
+						break;
+					}
+					steps++;
+				}
+
+			}
 
 			return moves;
 		}
-	}
 
-	public sealed class Superpawn : CongoPiece {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			var moves = new List<CongoMove>();
 
-			// TODO sliding backwards
+			var leaps = board.LeapsAsPawn(color, position);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
+
+			moves = nonCapturingVerticalSlide(moves, color, board, position, false);
 
 			return moves;
 		}
+
+	}
+
+	public sealed class Superpawn : Pawn {
+
+		private List<CongoMove> nonCapturingDiagonalSlides(List<CongoMove> moves) {
+
+			// TODO
+
+			return moves;
+		}
+
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+			var moves = new List<CongoMove>();
+
+			var leaps = board.LeapsAsSuperpawn(color, position);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
+
+			moves = nonCapturingVerticalSlide(moves, color, board, position, true);
+			moves = nonCapturingDiagonalSlides(moves);
+
+			return moves;
+		}
+
 	}
 
 	public sealed class Monkey : CongoPiece {
