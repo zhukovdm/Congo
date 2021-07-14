@@ -1,10 +1,14 @@
-﻿using Congo.Core;
+﻿using System.Collections.Immutable;
+
+using Congo.Core;
 using Congo.Def;
 
 namespace Congo.Entry {
 	class Program {
 		static void Main(string[] args) {
 			IGame game = CongoGame.GetStandard(UICode.CommandLineInterface);
+			var board = CongoBoard.Empty;
+			var leaps = board.LeapsAsCrocodile((int)SquareCode.D4);
 			/*/
 			bool last;
 			do {
