@@ -68,6 +68,8 @@
     <Compile Include="BoardTest.cs" />
     <Compile Include="DecoderTest.cs" />
     <Compile Include="GameTest.cs" />
+    <Compile Include="MoveTest.cs" />
+    <Compile Include="PieceTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
