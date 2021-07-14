@@ -197,6 +197,9 @@ namespace Congo.Core {
 
 		public int Size => size;
 
+		public bool IsUpperPart(int position)
+			=> isUpperPart(position);
+
 		public bool IsSquareOccupied(int position)
 			=> getBit(occupied[0] | occupied[1], position);
 

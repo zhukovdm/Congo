@@ -65,13 +65,46 @@ namespace Congo.Core {
 	}
 
 	public sealed class Crocodile : CongoPiece {
+
+		private List<CongoMove> capturingWaterSlide(List<CongoMove> moves,
+			ColorCode color, CongoBoard board, int position, int direction) {
+			var temp = position + direction;
+			while (board.IsSquareWater(temp) && !board.IsSquareOccupied(temp)) {
+				moves.Add(new CongoMove(position, temp));
+				temp += direction;
+			}
+			if (board.IsSquareWater(temp) && board.IsOpponentPiece(color, temp)) {
+				moves.Add(new CongoMove(position, temp));
+			}
+			return moves;
+		}
+
+		private List<CongoMove> capturingGroundSlide(List<CongoMove> moves,
+			ColorCode color, CongoBoard board, int position) {
+			var direction = board.IsUpperPart(position) ? 1 : -1;
+			var temp = position + direction * board.Size;
+			while (!board.IsSquareWater(temp) && !board.IsSquareOccupied(temp)) {
+				moves.Add(new CongoMove(position, temp));
+				temp += direction * board.Size;
+			}
+			if (board.IsOpponentPiece(color, temp)) {
+				moves.Add(new CongoMove(position, temp));
+			}
+			return moves;
+		}
+
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
 			var moves = new List<CongoMove>();
 
 			moves = getValidCapturingLeaps(
 				moves, board.LeapsAsCrocodile(position), color, board, position);
 
-			// TODO sliding towards the river
+			if (board.IsSquareWater(position)) {
+				moves = capturingWaterSlide(moves, color, board, position, -1);
+				moves = capturingWaterSlide(moves, color, board, position,  1);
+			} else {
+				moves = capturingGroundSlide(moves, color, board, position);
+			}
 
 			return moves;
 		}
