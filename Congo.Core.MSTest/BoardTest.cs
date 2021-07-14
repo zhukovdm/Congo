@@ -275,7 +275,7 @@ namespace Congo.Core.MSTest {
 	}
 
 	[TestClass]
-	public class Board_ELephantLeapGeneration_Test {
+	public class Board_ElephantLeapGeneration_Test {
 
 		[TestMethod]
 		public void UpperBorderLineLeftCorner() {
@@ -682,7 +682,7 @@ namespace Congo.Core.MSTest {
 		[TestMethod]
 		public void OutsideCastleUpperPart() {
 			var board = CongoBoard.Empty;
-			var actual = board.LeapsAsLion(ColorCode.White, (int)SquareCode.A1).Sort();
+			var actual = board.LeapsAsLion(ColorCode.White, (int)SquareCode.D6).Sort();
 			var expected = new int[] { /* no leaps */
 			}.ToImmutableArray().Sort();
 			CollectionAssert.AreEqual(actual, expected);
@@ -772,7 +772,101 @@ namespace Congo.Core.MSTest {
 
 	}
 
+	[TestClass]
+	public class Board_BlackLionLeapGeneration_Test {
 
+		[TestMethod]
+		public void OutsideCastleUpperPart() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.A1).Sort();
+			var expected = new int[] { /* no leaps */
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void OutsideCastleRiver() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.D4).Sort();
+			var expected = new int[] { /* no leaps */
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void OutsideCastleLowerPart() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.D2).Sort();
+			var expected = new int[] { /* no leaps */
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderLeftCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.C7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C6, (int)SquareCode.D6, (int)SquareCode.D7
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.D7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C7, (int)SquareCode.C6, (int)SquareCode.D6,
+				(int)SquareCode.E6, (int)SquareCode.E7
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.E7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.D7, (int)SquareCode.D6, (int)SquareCode.E6
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.C6).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C7, (int)SquareCode.D7, (int)SquareCode.D6,
+				(int)SquareCode.D5, (int)SquareCode.C5
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.D6).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C7, (int)SquareCode.D7, (int)SquareCode.E7,
+				(int)SquareCode.C6, (int)SquareCode.E6, (int)SquareCode.C5,
+				(int)SquareCode.D5, (int)SquareCode.E5
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsLion(ColorCode.Black, (int)SquareCode.E5).Sort();
+			var expected = new int[] {
+				(int)SquareCode.D5, (int)SquareCode.D6, (int)SquareCode.E6
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+	}
 
 	[TestClass]
 	public class Board_WhitePawnLeapGeneration_Test {
@@ -781,7 +875,8 @@ namespace Congo.Core.MSTest {
 		public void UpperBorderLeftCorner() {
 			var board = CongoBoard.Empty;
 			var actual = board.LeapsAsPawn(ColorCode.White, (int)SquareCode.A7).Sort();
-			var expected = new int[] { /* no leaps */
+			var expected = new int[] {
+				/* no leaps */
 			}.ToImmutableArray().Sort();
 			CollectionAssert.AreEqual(actual, expected);
 		}
@@ -790,7 +885,8 @@ namespace Congo.Core.MSTest {
 		public void UpperBorderCenter() {
 			var board = CongoBoard.Empty;
 			var actual = board.LeapsAsPawn(ColorCode.White, (int)SquareCode.D7).Sort();
-			var expected = new int[] { /* no leaps */
+			var expected = new int[] {
+				/* no leaps */
 			}.ToImmutableArray().Sort();
 			CollectionAssert.AreEqual(actual, expected);
 		}
@@ -799,7 +895,8 @@ namespace Congo.Core.MSTest {
 		public void UpperBorderRightCorner() {
 			var board = CongoBoard.Empty;
 			var actual = board.LeapsAsPawn(ColorCode.White, (int)SquareCode.G7).Sort();
-			var expected = new int[] { /* no leaps */
+			var expected = new int[] {
+				/* no leaps */
 			}.ToImmutableArray().Sort();
 			CollectionAssert.AreEqual(actual, expected);
 		}
@@ -866,7 +963,100 @@ namespace Congo.Core.MSTest {
 
 	}
 
+	[TestClass]
+	public class Board_BlackPawnLeapGeneration_Test {
 
+		[TestMethod]
+		public void UpperBorderLeftCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.A7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.A6, (int)SquareCode.B6
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.D7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C6, (int)SquareCode.D6, (int)SquareCode.E6
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.G7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.F6, (int)SquareCode.G6
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleLeftBorder() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.A4).Sort();
+			var expected = new int[] {
+				(int)SquareCode.A3, (int)SquareCode.B3
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.D4).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C3, (int)SquareCode.D3, (int)SquareCode.E3
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleRightBorder() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.G4).Sort();
+			var expected = new int[] {
+				(int)SquareCode.F3, (int)SquareCode.G3
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderLeftCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.A1).Sort();
+			var expected = new int[] {
+				/* no leaps */
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.D1).Sort();
+			var expected = new int[] {
+				/* no leaps */
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsPawn(ColorCode.Black, (int)SquareCode.G1).Sort();
+			var expected = new int[] {
+				/* no leaps */
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+	}
 
 	[TestClass]
 	public class Board_WhiteSuperpawnLeapGeneration_Test {
@@ -965,6 +1155,101 @@ namespace Congo.Core.MSTest {
 
 	}
 
+	[TestClass]
+	public class Board_BlackSuperpawnLeapGeneration_Test {
 
+		[TestMethod]
+		public void UpperBorderLeftCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.A7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.A6, (int)SquareCode.B6, (int)SquareCode.B7
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.D7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C7, (int)SquareCode.C6, (int)SquareCode.D6,
+				(int)SquareCode.E6, (int)SquareCode.E7
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void UpperBorderRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.G7).Sort();
+			var expected = new int[] {
+				(int)SquareCode.F7, (int)SquareCode.F6, (int)SquareCode.G6
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleLeftBorder() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.A4).Sort();
+			var expected = new int[] {
+				(int)SquareCode.A3, (int)SquareCode.B3, (int)SquareCode.B4
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.D4).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C4, (int)SquareCode.C3, (int)SquareCode.D3,
+				(int)SquareCode.E3, (int)SquareCode.E4
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void MiddleRightBorder() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.G4).Sort();
+			var expected = new int[] {
+				(int)SquareCode.F4, (int)SquareCode.F3, (int)SquareCode.G3
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderLeftCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.A1).Sort();
+			var expected = new int[] {
+				(int)SquareCode.B1
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderCenter() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.D1).Sort();
+			var expected = new int[] {
+				(int)SquareCode.C1, (int)SquareCode.E1
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+		[TestMethod]
+		public void LowerBorderRightCorner() {
+			var board = CongoBoard.Empty;
+			var actual = board.LeapsAsSuperpawn(ColorCode.Black, (int)SquareCode.G1).Sort();
+			var expected = new int[] {
+				(int)SquareCode.F1
+			}.ToImmutableArray().Sort();
+			CollectionAssert.AreEqual(actual, expected);
+		}
+
+	}
 
 }
