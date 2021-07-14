@@ -22,7 +22,6 @@ namespace Congo.Core {
 		public CongoMove(int fr, int to) { Fr = fr; To = to; }
 	}
 
-	
 	public class CongoMoveComparer : IComparer {
 
 		// Not type safe due to MSTest framework limitations

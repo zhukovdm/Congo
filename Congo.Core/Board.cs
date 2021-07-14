@@ -232,7 +232,7 @@ namespace Congo.Core {
 
 		public CongoBoard Without(int position) {
 			var newOccupied = occupied;
-
+			
 			for (int i = 0; i < 2; i++) {
 				newOccupied = newOccupied.SetItem(i, setBitToValue(occupied[i], position, false));
 			}
