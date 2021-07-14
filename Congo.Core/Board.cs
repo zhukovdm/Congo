@@ -16,6 +16,9 @@ namespace Congo.Core {
 		private static bool withinBoard(int rank, int file)
 			=> rank >= 0 && rank < size && file >= 0 && file < size;
 
+		private static bool withinBoard(int position)
+			=> position >= 0 && position < size * size;
+
 		private static void addLeap(List<int> leaps, int rank, int file) {
 			if (withinBoard(rank, file)) leaps.Add(rank * size + file);
 		}
@@ -197,14 +200,20 @@ namespace Congo.Core {
 
 		public int Size => size;
 
+		public bool WithinBoard(int position)
+			=> withinBoard(position);
+
 		public bool IsUpperPart(int position)
 			=> isUpperPart(position);
 
-		public bool IsSquareOccupied(int position)
-			=> getBit(occupied[0] | occupied[1], position);
-
 		public bool IsSquareWater(int position)
 			=> isSquareWater(position);
+
+		public bool IsLowerPart(int position)
+			=> isLowerPart(position);
+
+		public bool IsSquareOccupied(int position)
+			=> getBit(occupied[0] | occupied[1], position);
 
 		public bool IsFirstMovePiece(int position)
 			=> IsPieceWhite(position);
