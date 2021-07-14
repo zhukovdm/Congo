@@ -1,6 +1,6 @@
 ﻿namespace Congo.Def {
     
-	public enum PositionCode : int {
+	public enum SquareCode : int {
 		A7, B7, C7, D7, E7, F7, G7,
 		A6, B6, C6, D6, E6, F6, G6,
 		A5, B5, C5, D5, E5, F5, G5,
