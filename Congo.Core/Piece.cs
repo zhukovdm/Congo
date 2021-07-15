@@ -119,21 +119,6 @@ namespace Congo.Core {
 
 	}
 
-	public sealed class Lion : CongoPiece {
-
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
-			var moves = new List<CongoMove>();
-
-			var leaps = board.LeapsAsLion(color, square);
-			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
-
-			// TODO jump to the opponent's lion if seen
-
-			return moves;
-		}
-
-	}
-
 	public class Pawn : CongoPiece {
 
 		protected List<CongoMove> nonCapturingVerticalSlide(List<CongoMove> moves,
@@ -203,6 +188,47 @@ namespace Congo.Core {
 			int rdir = color.IsWhite() ? 1 : -1;
 			moves = nonCapturingDiagonalSlide(moves, board, square, rdir,  1);
 			moves = nonCapturingDiagonalSlide(moves, board, square, rdir, -1);
+
+			return moves;
+		}
+
+	}
+
+	public sealed class Lion : CongoPiece {
+
+		public List<CongoMove> verticalJump(List<CongoMove> moves,
+			ColorCode color, CongoBoard board, int square) {
+			if (board.InsideCastle(color, square)) {
+				var direction = color.IsBlack() ? 1 : -1;
+				var newSquare = square;
+				do {
+					newSquare += direction * board.Size;
+				} while (board.WithinBoard(newSquare) && !board.IsOccupied(newSquare));
+
+				if (board.WithinBoard(newSquare) && !board.IsRiver(newSquare) &&
+					(board.IsAboveRiver(square) != board.IsAboveRiver(newSquare)) && // different castles
+					board.GetPiece(newSquare) is Lion) {
+					moves.Add(new CongoMove(square, newSquare));
+				}
+			}
+			return moves;
+		}
+
+		public List<CongoMove> diagonalJump(List<CongoMove> moves,
+			ColorCode color, CongoBoard board, int square) {
+			if (board.TryDiagonalJump(color, square, out int target)) {
+				moves.Add(new CongoMove(square, target));
+			}
+			return moves;
+		}
+
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
+			var moves = new List<CongoMove>();
+
+			var leaps = board.LeapsAsLion(color, square);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
+			moves = verticalJump(moves, color, board, square);
+			moves = diagonalJump(moves, color, board, square);
 
 			return moves;
 		}
