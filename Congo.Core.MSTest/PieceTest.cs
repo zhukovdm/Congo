@@ -632,4 +632,83 @@ namespace Congo.Core.MSTest {
 
 	}
 
+	[TestClass]
+	public class Piece_MonkeyMoves_Test {
+
+		[TestMethod]
+		public void SkipFriendlyPieces() {
+			var comparer = new CongoMoveComparerGeneric();
+			var board = CongoBoard.Empty
+				.With(ColorCode.White, PieceCode.Monkey, (int)SquareCode.D3)
+				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.C3)
+				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D4)
+				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.E4)
+				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.E2);
+			var piece = board.GetPiece((int)SquareCode.D3);
+			var actual = piece.GetMoves(ColorCode.White, board, (int)SquareCode.D3);
+			actual.Sort(comparer);
+			var expected = new List<CongoMove>() {
+				new CongoMove((int)SquareCode.D3, (int)SquareCode.C4),
+				new CongoMove((int)SquareCode.D3, (int)SquareCode.E3),
+				new CongoMove((int)SquareCode.D3, (int)SquareCode.C2),
+				new CongoMove((int)SquareCode.D3, (int)SquareCode.D2)
+			};
+			expected.Sort(comparer);
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+		}
+
+		[TestMethod]
+		public void JumpOverOpponentPieces() {
+			var comparer = new CongoMoveComparerGeneric();
+			var board = CongoBoard.Empty
+				.With(ColorCode.White, PieceCode.Monkey, (int)SquareCode.D4)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.C3)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.C4)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.D5)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.E3);
+			var piece = board.GetPiece((int)SquareCode.D4);
+			var actual = piece.GetMoves(ColorCode.White, board, (int)SquareCode.D4);
+			actual.Sort(comparer);
+			var expected = new List<CongoMove>() {
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.B2),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.B4),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.C5),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.D6),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.E5),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.E4),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.F2),
+				new CongoMove((int)SquareCode.D4, (int)SquareCode.D3)
+			};
+			expected.Sort(comparer);
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+		}
+
+		[TestMethod]
+		public void BoundaryJumpOverOpponentPieces() {
+			var comparer = new CongoMoveComparerGeneric();
+			var board = CongoBoard.Empty
+				.With(ColorCode.White, PieceCode.Monkey, (int)SquareCode.F2)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.E1)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.E2)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.E3)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.F3)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.G3)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.G2)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.G1)
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.F1)
+				;
+			var piece = board.GetPiece((int)SquareCode.F2);
+			var actual = piece.GetMoves(ColorCode.White, board, (int)SquareCode.F2);
+			actual.Sort(comparer);
+			var expected = new List<CongoMove>() {
+				new CongoMove((int)SquareCode.F2, (int)SquareCode.D2),
+				new CongoMove((int)SquareCode.F2, (int)SquareCode.D4),
+				new CongoMove((int)SquareCode.F2, (int)SquareCode.F4)
+			};
+			expected.Sort(comparer);
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+		}
+
+	}
+
 }
