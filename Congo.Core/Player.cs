@@ -7,9 +7,15 @@ namespace Congo.Core {
 
 	public abstract class CongoPlayer {
 
-		private readonly ImmutableArray<CongoMove> moves;
+		protected readonly CongoBoard board;
+		protected readonly IUserInterface ui;
+		protected readonly ImmutableArray<CongoMove> moves;
+		
+		public ImmutableArray<CongoMove> Moves => moves;
 
-		public CongoPlayer(ColorCode color, CongoBoard board) {
+		public CongoPlayer(ColorCode color, CongoBoard board, IUserInterface ui) {
+			this.board = board;
+			this.ui = ui;
 			moves = GenerateMoves(color, board);
 		}
 
@@ -22,14 +28,42 @@ namespace Congo.Core {
 			}
 			return allMoves.ToImmutableArray();
 		}
+
+		public abstract CongoMove DecideMove();
+
 	}
 
 	sealed class CongoAIPlayer : CongoPlayer {
-		public CongoAIPlayer(ColorCode color, CongoBoard board) : base(color, board) { }
+		
+		public CongoAIPlayer(ColorCode color, CongoBoard board, IUserInterface ui)
+			: base(color, board, ui) { }
+
+		public override CongoMove DecideMove() {
+			return moves.Length > 0 ? moves[0] : new CongoMove(-1, -1);
+		}
+
 	}
 
 	sealed class CongoHIPlayer : CongoPlayer {
-		public CongoHIPlayer(ColorCode color, CongoBoard board) : base(color, board) { }
+		
+		public CongoHIPlayer(ColorCode color, CongoBoard board, IUserInterface ui)
+			: base(color, board, ui) { }
+
+		public override CongoMove DecideMove() {
+			IUserCommand command;
+
+			do {
+				command = ui.GetUserCommand();
+				if (command is AdviseUserCommand) {
+					var cmd1 = (AdviseUserCommand) command;
+					ui.Report($" Heuristic #{cmd1.Heuristic}...");
+				}
+			} while (!(command is MoveUserCommand));
+
+			var cmd2 = (MoveUserCommand) command;
+			return new CongoMove(cmd2.Fr, cmd2.To);
+		}
+
 	}
 
 }

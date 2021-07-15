@@ -2,9 +2,13 @@
 
 namespace Congo.Def {
 
+	public interface IUserCommand { }
+
 	public interface IUserInterface {
 		void Greet();
 		void ShowBoard(IBoard board);
+		IUserCommand GetUserCommand();
+		void Report(string message);
 	}
 
 	public interface IGame {
@@ -21,8 +25,8 @@ namespace Congo.Def {
 		bool IsFirstMovePiece(int square);
 	}
 
-	public interface IParametrizedEnumerator<T> {
-		T Current { get; }
+	public interface IParametrizedEnumerator<U> {
+		U Current { get; }
 		bool MoveNext();
 	}
 
@@ -31,8 +35,14 @@ namespace Congo.Def {
 	}
 
 	public interface ICommandLineConfiguration {
+		
 		string GreetView { get; }
 		ImmutableDictionary<PieceCode, string> PieceView { get; }
+		IUserCommand TryPlayCommand(string[] input, IUserInterface ui);
+		IUserCommand TryHelpCommand(string[] input, IUserInterface ui);
+		IUserCommand TryAdviseCommand(string[] input, IUserInterface ui);
+		IUserCommand TryMoveCommand(string[] input, IUserInterface ui);
+
 	}
 
 }

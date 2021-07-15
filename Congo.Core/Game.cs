@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 
 using Congo.Def;
 using Congo.UI;
@@ -35,47 +36,65 @@ namespace Congo.Core {
 			bo = setPawnRank (bo, ColorCode.White, 5);
 			bo = setMixedRank(bo, ColorCode.White, 6);
 			ui.ShowBoard(bo);
-			var wp = new CongoHIPlayer(ColorCode.White, bo);
-			var bp = new CongoHIPlayer(ColorCode.Black, bo);
-			var pa = ImmutableArray.Create(new CongoPlayer[] { wp, bp });
-			return new CongoGame(bo, pa, wp, ui);
+			var wp = new CongoHIPlayer(ColorCode.White, bo, ui);
+			var bp = new CongoHIPlayer(ColorCode.Black, bo, ui);
+			var pa = new CongoPlayer[] { wp, bp }.ToImmutableArray();
+			return new CongoGame(bo, pa, ColorCode.White, ui);
 		}
 
 		public static IGame GetFromFEN(string fen) => throw new Exception();
 
 		private readonly CongoBoard board;
 		private readonly ImmutableArray<CongoPlayer> players;
-		private readonly CongoPlayer currentPlayer;
+		private readonly ColorCode player;
 		private readonly IUserInterface userInterface;
+		private ColorCode opponent => player.Opponent();
+
+		private bool isValid(CongoMove move) {
+			var comparer = new CongoMoveComparerGeneric();
+			
+			var query = from m in players[(int)player].Moves
+						where comparer.Compare(m, move) == 0
+						select m;
+			foreach (var result in query) { return true; }
+
+			return false;
+		}
 
 		private CongoGame(CongoBoard board, ImmutableArray<CongoPlayer> players,
-			CongoPlayer currentPlayer, IUserInterface userInterface) {
+			ColorCode player, IUserInterface userInterface) {
 			this.board = board;
 			this.players = players;
-			this.currentPlayer = currentPlayer;
+			this.player = player;
 			this.userInterface = userInterface;
 		}
 
 		public void Show() => userInterface.ShowBoard(board);
 
 		public bool InProgress() {
-			// TODO
-			throw new Exception();
+			return true;
 		}
 
 		public IGame MakeProgress() {
-			// TODO
-			throw new Exception();
+			CongoMove move;
+
+			do {
+				move = players[(int)player].DecideMove();
+			} while (!isValid(move));
+
+			return new CongoGame(
+				board.With(player, board.GetPieceCode(move.Fr), move.To).Without(move.Fr),
+				players, opponent, userInterface);
 		}
 
 		public void ReportResult() {
 			// TODO
-			throw new Exception();
+			userInterface.Report("The end!");
 		}
 
 		public bool Repeat() {
 			// TODO
-			throw new Exception();
+			return false;
 		}
 
 	}

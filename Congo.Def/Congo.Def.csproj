@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefClass.cs" />
     <Compile Include="DefEnum.cs" />
     <Compile Include="DefInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
