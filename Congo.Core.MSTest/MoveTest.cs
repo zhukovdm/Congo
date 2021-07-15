@@ -52,5 +52,13 @@ namespace Congo.Core.MSTest {
 			Assert.IsTrue(expected == actual);
 		}
 
+		[TestMethod]
+		public void ToStringOverride() {
+			var m = new CongoMove((int)SquareCode.B5, (int)SquareCode.G1);
+			var actual = m.ToString();
+			var expected = "B5, G1";
+			Assert.AreEqual(expected, actual);
+		}
+
 	}
 }

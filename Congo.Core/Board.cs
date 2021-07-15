@@ -205,6 +205,8 @@ namespace Congo.Core {
 
 		public int Size => size;
 
+		public bool WithinBoard(int rank, int file) => withinBoard(rank, file);
+
 		public bool WithinBoard(int square) => withinBoard(square);
 
 		public bool IsAboveRiver(int square) => isAboveRiver(square);

@@ -142,16 +142,13 @@ namespace Congo.Core {
 
 			if (slide || s) {
 				var direct = color.IsWhite() ? 1 : -1;
-				var steps = 1;
-				while (steps < 3) {
-					var newPosition = square + direct * steps * board.Size;
-					if (!board.IsOccupied(newPosition) && board.WithinBoard(newPosition)) {
-						moves.Add(new CongoMove(square, newPosition));
-					}
-					else {
+				for (int steps = 1; steps < 3; steps++) {
+					var newSquare = square + direct * steps * board.Size;
+					if (!board.IsOccupied(newSquare) && board.WithinBoard(newSquare)) {
+						moves.Add(new CongoMove(square, newSquare));
+					} else {
 						break;
 					}
-					steps++;
 				}
 			}
 
@@ -173,9 +170,24 @@ namespace Congo.Core {
 
 	public sealed class Superpawn : Pawn {
 
-		private List<CongoMove> nonCapturingDiagonalSlide(List<CongoMove> moves) {
+		private List<CongoMove> nonCapturingDiagonalSlide(List<CongoMove> moves,
+			CongoBoard board, int square, int rdir, int fdir) {
+			
+			/* cumbersome, looking for a better solution */
 
-			// TODO
+			var rank = square / board.Size;
+			var file = square % board.Size;
+
+			for (int steps = 1; steps < 3; steps++) {
+				var newRank = rank + steps * rdir;
+				var newFile = file + steps * fdir;
+				var newSquare = newRank * board.Size + newFile;
+				if (board.WithinBoard(newRank, newFile) && !board.IsOccupied(newSquare)) {
+					moves.Add(new CongoMove(square, newSquare));
+				} else {
+					break;
+				}
+			}
 
 			return moves;
 		}
@@ -187,7 +199,10 @@ namespace Congo.Core {
 			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
 
 			moves = nonCapturingVerticalSlide(moves, color, board, square, true);
-			moves = nonCapturingDiagonalSlide(moves);
+
+			int rdir = color.IsWhite() ? 1 : -1;
+			moves = nonCapturingDiagonalSlide(moves, board, square, rdir,  1);
+			moves = nonCapturingDiagonalSlide(moves, board, square, rdir, -1);
 
 			return moves;
 		}
