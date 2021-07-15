@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+using Congo.Def;
+
 namespace Congo.Core {
 
 	public struct CongoMove {
@@ -21,10 +23,8 @@ namespace Congo.Core {
 		public readonly int Fr, To;
 		public CongoMove(int fr, int to) { Fr = fr; To = to; }
 
-		public override string ToString() {
-			return "{ (" + (Fr / 7).ToString() + ", " + (Fr % 7).ToString() + "), " +
-					 "(" + (To / 7).ToString() + ", " + (To % 7).ToString() + ") }";
-		}
+		public override string ToString()
+			=> ((SquareCode)Fr).ToString() + ", " + ((SquareCode)To).ToString();
 			
 	}
 
