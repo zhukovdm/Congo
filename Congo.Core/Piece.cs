@@ -10,7 +10,7 @@ namespace Congo.Core {
 		protected List<CongoMove> getValidCapturingLeaps(List<CongoMove> moves,
 			ImmutableArray<int> capturingLeaps, ColorCode color, CongoBoard board, int position) {
 			foreach (var leap in capturingLeaps) {
-				if (!board.IsSquareOccupied(leap) || board.IsOpponentPiece(color, leap)) {
+				if (!board.IsOccupied(leap) || board.IsOpponentPiece(color, leap)) {
 					moves.Add(new CongoMove(position, leap));
 				}
 			}
@@ -20,7 +20,7 @@ namespace Congo.Core {
 		protected List<CongoMove> getValidNonCapturingLeaps(List<CongoMove> moves,
 			ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int position) {
 				foreach (var leap in nonCapturingLeaps) {
-					if (!board.IsSquareOccupied(leap)) {
+					if (!board.IsOccupied(leap)) {
 						moves.Add(new CongoMove(position, leap));
 					}
 				}
@@ -77,11 +77,11 @@ namespace Congo.Core {
 		private List<CongoMove> capturingWaterSlide(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int position, int direction) {
 			var temp = position + direction;
-			while (board.IsSquareWater(temp) && !board.IsSquareOccupied(temp)) {
+			while (board.IsRiver(temp) && !board.IsOccupied(temp)) {
 				moves.Add(new CongoMove(position, temp));
 				temp += direction;
 			}
-			if (board.IsSquareWater(temp) && board.IsOpponentPiece(color, temp)) {
+			if (board.IsRiver(temp) && board.IsOpponentPiece(color, temp)) {
 				moves.Add(new CongoMove(position, temp));
 			}
 			return moves;
@@ -89,9 +89,9 @@ namespace Congo.Core {
 
 		private List<CongoMove> capturingGroundSlide(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int position) {
-			var direction = board.IsUpperPart(position) ? 1 : -1;
+			var direction = board.IsAboveRiver(position) ? 1 : -1;
 			var temp = position + direction * board.Size;
-			while (!board.IsSquareWater(temp) && !board.IsSquareOccupied(temp)) {
+			while (!board.IsRiver(temp) && !board.IsOccupied(temp)) {
 				moves.Add(new CongoMove(position, temp));
 				temp += direction * board.Size;
 			}
@@ -107,7 +107,7 @@ namespace Congo.Core {
 			moves = getValidCapturingLeaps(
 				moves, board.LeapsAsCrocodile(position), color, board, position);
 
-			if (board.IsSquareWater(position)) {
+			if (board.IsRiver(position)) {
 				moves = capturingWaterSlide(moves, color, board, position, -1);
 				moves = capturingWaterSlide(moves, color, board, position,  1);
 			} else {
@@ -138,14 +138,14 @@ namespace Congo.Core {
 
 		protected List<CongoMove> nonCapturingVerticalSlide(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int position, bool s) {
-			var slide = color.IsWhite() ? board.IsUpperPart(position) : board.IsLowerPart(position);
+			var slide = color.IsWhite() ? board.IsAboveRiver(position) : board.IsBelowRiver(position);
 
 			if (slide || s) {
 				var direct = color.IsWhite() ? 1 : -1;
 				var steps = 1;
 				while (steps < 3) {
 					var newPosition = position + direct * steps * board.Size;
-					if (!board.IsSquareOccupied(newPosition) && board.WithinBoard(newPosition)) {
+					if (!board.IsOccupied(newPosition) && board.WithinBoard(newPosition)) {
 						moves.Add(new CongoMove(position, newPosition));
 					}
 					else {
@@ -153,7 +153,6 @@ namespace Congo.Core {
 					}
 					steps++;
 				}
-
 			}
 
 			return moves;
@@ -174,7 +173,7 @@ namespace Congo.Core {
 
 	public sealed class Superpawn : Pawn {
 
-		private List<CongoMove> nonCapturingDiagonalSlides(List<CongoMove> moves) {
+		private List<CongoMove> nonCapturingDiagonalSlide(List<CongoMove> moves) {
 
 			// TODO
 
@@ -188,7 +187,7 @@ namespace Congo.Core {
 			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
 
 			moves = nonCapturingVerticalSlide(moves, color, board, position, true);
-			moves = nonCapturingDiagonalSlides(moves);
+			moves = nonCapturingDiagonalSlide(moves);
 
 			return moves;
 		}

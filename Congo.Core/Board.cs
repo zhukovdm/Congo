@@ -11,21 +11,21 @@ namespace Congo.Core {
 		private delegate ImmutableArray<int> LeapGenerator(int rank, int file);
 		private delegate ImmutableArray<int> ColoredLeapGenerator(ColorCode color, int rank, int file);
 
-		private static int size = 7;
-		
+		private static readonly int size = 7;
+
 		private static bool withinBoard(int rank, int file)
 			=> rank >= 0 && rank < size && file >= 0 && file < size;
 
-		private static bool withinBoard(int position)
-			=> position >= 0 && position < size * size;
+		private static bool withinBoard(int square)
+			=> square >= 0 && square < size * size;
 
 		private static void addLeap(List<int> leaps, int rank, int file) {
 			if (withinBoard(rank, file)) leaps.Add(rank * size + file);
 		}
 
-		private static bool isPositionAllowed(int position, int[] allowed) {
+		private static bool isAllowed(int square, int[] allowed) {
 			for (int i = 0; i < allowed.Length; i++) {
-				if (position == allowed[i]) return true;
+				if (square == allowed[i]) return true;
 			}
 			return false;
 		}
@@ -70,10 +70,10 @@ namespace Congo.Core {
 			);
 
 		private static ImmutableArray<int> crocodileLeapGenerator(int rank, int file) {
-			var position = rank * size + file;
-			var direction = isUpperPart(position) ? 1 : -1;
+			var square = rank * size + file;
+			var direction = isAboveRiver(square) ? 1 : -1;
 
-			Func<int, int, bool> ad = isSquareWater(rank * size + file)
+			Func<int, int, bool> ad = isRiver(rank * size + file)
 				? ad = (int i, int j) => i != 0
 				: ad = (int i, int j) => (i != 0 || j != 0) && (i != direction || j != 0);
 
@@ -96,10 +96,10 @@ namespace Congo.Core {
 			var leaps = new List<int>();
 			var allowedLeaps = color.IsWhite() ? whiteLionAllowedLeaps : blackLionAllowedLeaps;
 
-			if (isPositionAllowed(rank * size + file, allowedLeaps)) {
+			if (isAllowed(rank * size + file, allowedLeaps)) {
 				var possibleLeaps = kingLeapGenerator(rank, file);
 				foreach (var leap in possibleLeaps) {
-					if (isPositionAllowed(leap, allowedLeaps)) leaps.Add(leap);
+					if (isAllowed(leap, allowedLeaps)) leaps.Add(leap);
 				}
 			}
 
@@ -134,7 +134,8 @@ namespace Congo.Core {
 			return allLeaps.ToImmutableArray();
 		}
 
-		private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(ColoredLeapGenerator gen, ColorCode color) {
+		private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(
+			ColoredLeapGenerator gen, ColorCode color) {
 			var allLeaps = new ImmutableArray<int>[size * size];
 
 			for (int rank = 0; rank < size; rank++) {
@@ -160,9 +161,9 @@ namespace Congo.Core {
 		private static ulong setBitToValue(ulong current, int position, bool value)
 			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 
-		private static bool isUpperPart(int position) => position / size < size / 2;
-		private static bool isSquareWater(int position) => position / size == size / 2;
-		private static bool isLowerPart(int position) => position / size > size / 2;
+		private static bool isAboveRiver(int square) => square / size < size / 2;
+		private static bool isRiver(int square) => square / size == size / 2;
+		private static bool isBelowRiver(int square) => square / size > size / 2;
 
 		private static readonly ImmutableArray<ImmutableArray<int>> kingLeaps,
 			knightLeaps, elephantLeaps, capturingGiraffeLeaps, crocodileLeaps,
@@ -172,7 +173,6 @@ namespace Congo.Core {
 		public static CongoBoard Empty => empty;
 		
 		static CongoBoard() {
-			
 			kingLeaps = precalculateLeaps(kingLeapGenerator);
 			knightLeaps = precalculateLeaps(knightLeapGenerator);
 			elephantLeaps = precalculateLeaps(elephantLeapGenerator);
@@ -191,8 +191,8 @@ namespace Congo.Core {
 		private readonly ImmutableArray<ulong> occupied;
 		private readonly ImmutableArray<uint> pieces;
 
-		private bool IsPieceWhite(int position)
-			=> getBit(occupied[(int)ColorCode.White], position);
+		private bool IsPieceWhite(int square)
+			=> getBit(occupied[(int)ColorCode.White], square);
 
 		private CongoBoard(ImmutableArray<ulong> occupied, ImmutableArray<uint> pieces) {
 			this.occupied = occupied; this.pieces = pieces;
@@ -200,81 +200,68 @@ namespace Congo.Core {
 
 		public int Size => size;
 
-		public bool WithinBoard(int position)
-			=> withinBoard(position);
+		public bool WithinBoard(int square) => withinBoard(square);
 
-		public bool IsUpperPart(int position)
-			=> isUpperPart(position);
+		public bool IsAboveRiver(int square) => isAboveRiver(square);
 
-		public bool IsSquareWater(int position)
-			=> isSquareWater(position);
+		public bool IsRiver(int square) => isRiver(square);
 
-		public bool IsLowerPart(int position)
-			=> isLowerPart(position);
+		public bool IsBelowRiver(int square) => isBelowRiver(square);
 
-		public bool IsSquareOccupied(int position)
-			=> getBit(occupied[0] | occupied[1], position);
+		public bool IsOccupied(int square) => getBit(occupied[0] | occupied[1], square);
 
-		public bool IsFirstMovePiece(int position)
-			=> IsPieceWhite(position);
+		public bool IsFirstMovePiece(int square) => IsPieceWhite(square);
 
-		public bool IsPieceFriendly(ColorCode color, int position)
-			=> getBit(occupied[(int)color], position);
+		public bool IsPieceFriendly(ColorCode color, int square)
+			=> getBit(occupied[(int)color], square);
 
-		public bool IsOpponentPiece(ColorCode color, int position)
-			=> getBit(occupied[1 - (int)color], position);
+		public bool IsOpponentPiece(ColorCode color, int square)
+			=> getBit(occupied[1 - (int)color], square);
 
-		public PieceCode GetPieceCode(int position)
-			=> (PieceCode)((pieces[position / Size] >> (position % Size * 4)) & 0xFU);
+		public PieceCode GetPieceCode(int square)
+			=> (PieceCode)((pieces[square / Size] >> (square % Size * 4)) & 0xFU);
 
-		public CongoPiece GetPiece(int position) {
-			return !IsSquareOccupied(position) ? map[(int)PieceCode.Empty] :
-				map[(int)GetPieceCode(position)];
-		}
+		public CongoPiece GetPiece(int square)
+			=> !IsOccupied(square) ? map[(int)PieceCode.Empty] : map[(int)GetPieceCode(square)];
 
-		public CongoBoard With(ColorCode color, PieceCode pieceCode, int position) {
-			var occupy = setBitToValue(occupied[(int)color], position, true);
-			var rank   = position / 7;
-			var shift  = position % 7 * 4;
+		public CongoBoard With(ColorCode color, PieceCode pieceCode, int square) {
+			var occupy = setBitToValue(occupied[(int)color], square, true);
+			var rank   = square / 7;
+			var shift  = square % 7 * 4;
 			return new CongoBoard(
 				occupied.SetItem((int)color, occupy),
 				pieces.SetItem(rank, (pieces[rank] & ~(0xFU << shift)) | ((uint)pieceCode << shift))
 			);
 		}
 
-		public CongoBoard Without(int position) {
+		public CongoBoard Without(int square) {
 			var newOccupied = occupied;
 			
 			for (int i = 0; i < 2; i++) {
-				newOccupied = newOccupied.SetItem(i, setBitToValue(occupied[i], position, false));
+				newOccupied = newOccupied.SetItem(i, setBitToValue(occupied[i], square, false));
 			}
 
 			return new CongoBoard(newOccupied, pieces);
 		}
 
-		public ImmutableArray<int> LeapsAsKing(int position)
-			=> kingLeaps[position];
+		public ImmutableArray<int> LeapsAsKing(int square) => kingLeaps[square];
 
-		public ImmutableArray<int> LeapsAsKnight(int position)
-			=> knightLeaps[position];
+		public ImmutableArray<int> LeapsAsKnight(int square) => knightLeaps[square];
 
-		public ImmutableArray<int> LeapsAsElephant(int position)
-			=> elephantLeaps[position];
+		public ImmutableArray<int> LeapsAsElephant(int square) => elephantLeaps[square];
 
-		public ImmutableArray<int> LeapsAsCapturingGiraffe(int position)
-			=> capturingGiraffeLeaps[position];
+		public ImmutableArray<int> LeapsAsCapturingGiraffe(int square) => capturingGiraffeLeaps[square];
 
-		public ImmutableArray<int> LeapsAsCrocodile(int position)
-			=> crocodileLeaps[position];
+		public ImmutableArray<int> LeapsAsCrocodile(int square) => crocodileLeaps[square];
 
-		public ImmutableArray<int> LeapsAsLion(ColorCode color, int position)
-			=> color.IsWhite() ? whiteLionLeaps[position] : blackLionLeaps[position];
+		public ImmutableArray<int> LeapsAsLion(ColorCode color, int square)
+			=> color.IsWhite() ? whiteLionLeaps[square] : blackLionLeaps[square];
 
-		public ImmutableArray<int> LeapsAsPawn(ColorCode color, int position)
-			=> color.IsWhite() ? whitePawnLeaps[position] : blackPawnLeaps[position];
+		public ImmutableArray<int> LeapsAsPawn(ColorCode color, int square)
+			=> color.IsWhite() ? whitePawnLeaps[square] : blackPawnLeaps[square];
 
-		public ImmutableArray<int> LeapsAsSuperpawn(ColorCode color, int position)
-			=> color.IsWhite() ? whiteSuperpawnLeaps[position] : blackSuperpawnLeaps[position];
+		public ImmutableArray<int> LeapsAsSuperpawn(ColorCode color, int square)
+			=> color.IsWhite() ? whiteSuperpawnLeaps[square] : blackSuperpawnLeaps[square];
 
 		public IParametrizedEnumerator<int> GetEnumerator(ColorCode color)
 			=> new CongoBoardEnumerator(occupied[(int)color]);
