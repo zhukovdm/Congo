@@ -8,64 +8,64 @@ namespace Congo.Core {
 	public abstract class CongoPiece {
 
 		protected List<CongoMove> getValidCapturingLeaps(List<CongoMove> moves,
-			ImmutableArray<int> capturingLeaps, ColorCode color, CongoBoard board, int position) {
+			ImmutableArray<int> capturingLeaps, ColorCode color, CongoBoard board, int square) {
 			foreach (var leap in capturingLeaps) {
 				if (!board.IsOccupied(leap) || board.IsOpponentPiece(color, leap)) {
-					moves.Add(new CongoMove(position, leap));
+					moves.Add(new CongoMove(square, leap));
 				}
 			}
 			return moves;
 		}
 
 		protected List<CongoMove> getValidNonCapturingLeaps(List<CongoMove> moves,
-			ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int position) {
+			ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int square) {
 				foreach (var leap in nonCapturingLeaps) {
 					if (!board.IsOccupied(leap)) {
-						moves.Add(new CongoMove(position, leap));
+						moves.Add(new CongoMove(square, leap));
 					}
 				}
 				return moves;
 			}
 
-		public abstract List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position);
+		public abstract List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square);
 
 	}
 
 	public sealed class Empty : CongoPiece {
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position)
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square)
 			=> new List<CongoMove>();
 
 	}
 
 	public sealed class Elephant : CongoPiece {
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			return getValidCapturingLeaps(new List<CongoMove>(),
-				board.LeapsAsElephant(position), color, board, position);
+				board.LeapsAsElephant(square), color, board, square);
 		}
 
 	}
 
 	public sealed class Zebra : CongoPiece {
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			return getValidCapturingLeaps(new List<CongoMove>(),
-				board.LeapsAsKnight(position), color, board, position);
+				board.LeapsAsKnight(square), color, board, square);
 		}
 
 	}
 
 	public sealed class Giraffe : CongoPiece {
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
 			moves = getValidCapturingLeaps(
-				moves, board.LeapsAsCapturingGiraffe(position), color, board, position);
+				moves, board.LeapsAsCapturingGiraffe(square), color, board, square);
 
 			moves = getValidNonCapturingLeaps(
-				moves, board.LeapsAsKing(position), board, position);
+				moves, board.LeapsAsKing(square), board, square);
 
 			return moves;
 		}
@@ -75,43 +75,43 @@ namespace Congo.Core {
 	public sealed class Crocodile : CongoPiece {
 
 		private List<CongoMove> capturingWaterSlide(List<CongoMove> moves,
-			ColorCode color, CongoBoard board, int position, int direction) {
-			var temp = position + direction;
+			ColorCode color, CongoBoard board, int square, int direction) {
+			var temp = square + direction;
 			while (board.IsRiver(temp) && !board.IsOccupied(temp)) {
-				moves.Add(new CongoMove(position, temp));
+				moves.Add(new CongoMove(square, temp));
 				temp += direction;
 			}
 			if (board.IsRiver(temp) && board.IsOpponentPiece(color, temp)) {
-				moves.Add(new CongoMove(position, temp));
+				moves.Add(new CongoMove(square, temp));
 			}
 			return moves;
 		}
 
 		private List<CongoMove> capturingGroundSlide(List<CongoMove> moves,
-			ColorCode color, CongoBoard board, int position) {
-			var direction = board.IsAboveRiver(position) ? 1 : -1;
-			var temp = position + direction * board.Size;
+			ColorCode color, CongoBoard board, int square) {
+			var direction = board.IsAboveRiver(square) ? 1 : -1;
+			var temp = square + direction * board.Size;
 			while (!board.IsRiver(temp) && !board.IsOccupied(temp)) {
-				moves.Add(new CongoMove(position, temp));
+				moves.Add(new CongoMove(square, temp));
 				temp += direction * board.Size;
 			}
 			if (board.IsOpponentPiece(color, temp)) {
-				moves.Add(new CongoMove(position, temp));
+				moves.Add(new CongoMove(square, temp));
 			}
 			return moves;
 		}
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
 			moves = getValidCapturingLeaps(
-				moves, board.LeapsAsCrocodile(position), color, board, position);
+				moves, board.LeapsAsCrocodile(square), color, board, square);
 
-			if (board.IsRiver(position)) {
-				moves = capturingWaterSlide(moves, color, board, position, -1);
-				moves = capturingWaterSlide(moves, color, board, position,  1);
+			if (board.IsRiver(square)) {
+				moves = capturingWaterSlide(moves, color, board, square, -1);
+				moves = capturingWaterSlide(moves, color, board, square,  1);
 			} else {
-				moves = capturingGroundSlide(moves, color, board, position);
+				moves = capturingGroundSlide(moves, color, board, square);
 			}
 
 			return moves;
@@ -121,11 +121,11 @@ namespace Congo.Core {
 
 	public sealed class Lion : CongoPiece {
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
-			var leaps = board.LeapsAsLion(color, position);
-			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
+			var leaps = board.LeapsAsLion(color, square);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
 
 			// TODO jump to the opponent's lion if seen
 
@@ -137,16 +137,16 @@ namespace Congo.Core {
 	public class Pawn : CongoPiece {
 
 		protected List<CongoMove> nonCapturingVerticalSlide(List<CongoMove> moves,
-			ColorCode color, CongoBoard board, int position, bool s) {
-			var slide = color.IsWhite() ? board.IsAboveRiver(position) : board.IsBelowRiver(position);
+			ColorCode color, CongoBoard board, int square, bool s) {
+			var slide = color.IsWhite() ? board.IsAboveRiver(square) : board.IsBelowRiver(square);
 
 			if (slide || s) {
 				var direct = color.IsWhite() ? 1 : -1;
 				var steps = 1;
 				while (steps < 3) {
-					var newPosition = position + direct * steps * board.Size;
+					var newPosition = square + direct * steps * board.Size;
 					if (!board.IsOccupied(newPosition) && board.WithinBoard(newPosition)) {
-						moves.Add(new CongoMove(position, newPosition));
+						moves.Add(new CongoMove(square, newPosition));
 					}
 					else {
 						break;
@@ -158,13 +158,13 @@ namespace Congo.Core {
 			return moves;
 		}
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
-			var leaps = board.LeapsAsPawn(color, position);
-			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
+			var leaps = board.LeapsAsPawn(color, square);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
 
-			moves = nonCapturingVerticalSlide(moves, color, board, position, false);
+			moves = nonCapturingVerticalSlide(moves, color, board, square, false);
 
 			return moves;
 		}
@@ -180,13 +180,13 @@ namespace Congo.Core {
 			return moves;
 		}
 
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
-			var leaps = board.LeapsAsSuperpawn(color, position);
-			moves = getValidCapturingLeaps(moves, leaps, color, board, position);
+			var leaps = board.LeapsAsSuperpawn(color, square);
+			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
 
-			moves = nonCapturingVerticalSlide(moves, color, board, position, true);
+			moves = nonCapturingVerticalSlide(moves, color, board, square, true);
 			moves = nonCapturingDiagonalSlide(moves);
 
 			return moves;
@@ -195,7 +195,7 @@ namespace Congo.Core {
 	}
 
 	public sealed class Monkey : CongoPiece {
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position) {
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
 			// TODO jumps
@@ -205,7 +205,7 @@ namespace Congo.Core {
 	}
 
 	public sealed class Captured : CongoPiece {
-		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int position)
+		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square)
 			=> new List<CongoMove>();
 	}
 
