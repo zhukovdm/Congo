@@ -17,8 +17,8 @@ namespace Congo.Def {
 
 	public interface IBoard {
 		int Size { get; }
-		PieceCode GetPieceCode(int position);
-		bool IsFirstMovePiece(int position);
+		PieceCode GetPieceCode(int square);
+		bool IsFirstMovePiece(int square);
 	}
 
 	public interface IParametrizedEnumerator<T> {

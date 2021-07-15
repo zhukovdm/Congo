@@ -32,12 +32,12 @@ namespace Congo.CLI {
 
 		public void ShowBoard(IBoard board) {
 			var upperBound = board.Size * board.Size;
-			for (int position = 0; position < upperBound; position++) {
-				if (position % board.Size == 0) writer.Write($" {board.Size - position / board.Size} ");
-				var pv = config.PieceView[board.GetPieceCode(position)];
-				if (board.IsFirstMovePiece(position)) pv = pv.ToUpper();
+			for (int square = 0; square < upperBound; square++) {
+				if (square % board.Size == 0) writer.Write($" {board.Size - square / board.Size} ");
+				var pv = config.PieceView[board.GetPieceCode(square)];
+				if (board.IsFirstMovePiece(square)) pv = pv.ToUpper();
 				writer.Write(pv);
-				if (position % board.Size == board.Size - 1) writer.WriteLine();
+				if (square % board.Size == board.Size - 1) writer.WriteLine();
 			}
 			writer.WriteLine();
 			writer.Write(" / ");

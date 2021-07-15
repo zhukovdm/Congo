@@ -1,7 +1,7 @@
 NAME
     [m]ove
 DESCRIPTION
-    moves a certain piece from a position to a position
+    moves a certain piece from a square to a square
 SEMANTICS
     m from to
 USAGE
