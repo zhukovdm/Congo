@@ -161,6 +161,11 @@ namespace Congo.Core {
 		private static ulong setBitToValue(ulong current, int position, bool value)
 			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 
+		private uint setPieceCode(uint current, PieceCode code, int file) {
+			var shift = file * 4;
+			return (current & ~(0xFU << shift)) | (uint)code << shift;
+		}
+
 		private static bool isAboveRiver(int square) => square / size < size / 2;
 		private static bool isRiver(int square) => square / size == size / 2;
 		private static bool isBelowRiver(int square) => square / size > size / 2;
@@ -228,6 +233,7 @@ namespace Congo.Core {
 			var occupy = setBitToValue(occupied[(int)color], square, true);
 			var rank   = square / 7;
 			var shift  = square % 7 * 4;
+
 			return new CongoBoard(
 				occupied.SetItem((int)color, occupy),
 				pieces.SetItem(rank, (pieces[rank] & ~(0xFU << shift)) | ((uint)pieceCode << shift))
@@ -241,7 +247,10 @@ namespace Congo.Core {
 				newOccupied = newOccupied.SetItem(i, setBitToValue(occupied[i], square, false));
 			}
 
-			return new CongoBoard(newOccupied, pieces);
+			var rank = square / size;
+			var newPieces = pieces.SetItem(rank, setPieceCode(pieces[rank], PieceCode.Empty, square % size));
+
+			return new CongoBoard(newOccupied, newPieces);
 		}
 
 		public ImmutableArray<int> LeapsAsKing(int square) => kingLeaps[square];
