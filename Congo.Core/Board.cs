@@ -23,13 +23,6 @@ namespace Congo.Core {
 			if (withinBoard(rank, file)) leaps.Add(rank * size + file);
 		}
 
-		private static bool isAllowed(int square, int[] allowed) {
-			for (int i = 0; i < allowed.Length; i++) {
-				if (square == allowed[i]) return true;
-			}
-			return false;
-		}
-
 		private static ImmutableArray<int> circleLeapGenerator(
 			Func<int, int, bool> condition, int rank, int file, int radius) {
 			var leaps = new List<int>();
@@ -80,13 +73,13 @@ namespace Congo.Core {
 			return circleLeapGenerator(ad, rank, file, 1);
 		}
 
-		private static int[] whiteLionAllowedLeaps = new int[] {
+		private static HashSet<int> whiteLionCastle = new HashSet<int> {
 			(int)SquareCode.C3, (int)SquareCode.D3, (int)SquareCode.E3,
 			(int)SquareCode.C2, (int)SquareCode.D2, (int)SquareCode.E2,
 			(int)SquareCode.C1, (int)SquareCode.D1, (int)SquareCode.E1
 		};
 
-		private static int[] blackLionAllowedLeaps = new int[] {
+		private static HashSet<int> blackLionCastle = new HashSet<int> {
 			(int)SquareCode.C7, (int)SquareCode.D7, (int)SquareCode.E7,
 			(int)SquareCode.C6, (int)SquareCode.D6, (int)SquareCode.E6,
 			(int)SquareCode.C5, (int)SquareCode.D5, (int)SquareCode.E5
@@ -94,12 +87,12 @@ namespace Congo.Core {
 
 		private static ImmutableArray<int> lionLeapGenerator(ColorCode color, int rank, int file) {
 			var leaps = new List<int>();
-			var allowedLeaps = color.IsWhite() ? whiteLionAllowedLeaps : blackLionAllowedLeaps;
+			var castle = color.IsWhite() ? whiteLionCastle : blackLionCastle;
 
-			if (isAllowed(rank * size + file, allowedLeaps)) {
+			if (castle.Contains(rank * size + file)) {
 				var possibleLeaps = kingLeapGenerator(rank, file);
 				foreach (var leap in possibleLeaps) {
-					if (isAllowed(leap, allowedLeaps)) leaps.Add(leap);
+					if (castle.Contains(leap)) leaps.Add(leap);
 				}
 			}
 
@@ -273,6 +266,35 @@ namespace Congo.Core {
 
 		public ImmutableArray<int> LeapsAsSuperpawn(ColorCode color, int square)
 			=> color.IsWhite() ? whiteSuperpawnLeaps[square] : blackSuperpawnLeaps[square];
+
+		public bool TryDiagonalJump(ColorCode color, int square, out int target) {
+			var freePath = !IsOccupied((int)SquareCode.D4);
+			if (GetPiece(square) is Lion) {
+				switch (square) {
+					case (int)SquareCode.C3:
+						target = (int)SquareCode.E5;
+						return color.IsWhite() && freePath && GetPiece(target) is Lion;
+					case (int)SquareCode.E3:
+						target = (int)SquareCode.C5;
+						return color.IsWhite() && freePath && GetPiece(target) is Lion;
+					case (int)SquareCode.C5:
+						target = (int)SquareCode.E3;
+						return color.IsBlack() && freePath && GetPiece(target) is Lion;
+					case (int)SquareCode.E5:
+						target = (int)SquareCode.C3;
+						return color.IsBlack() && freePath && GetPiece(target) is Lion;
+					default:
+						break;
+				}
+			}
+			target = -1;
+			return false;
+		}
+
+		public bool InsideCastle(ColorCode color, int square) {
+			var castle = color.IsWhite() ? whiteLionCastle : blackLionCastle;
+			return GetPiece(square) is Lion && castle.Contains(square);
+		}
 
 		public IParametrizedEnumerator<int> GetEnumerator(ColorCode color)
 			=> new CongoBoardEnumerator(occupied[(int)color]);
