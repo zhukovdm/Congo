@@ -9,23 +9,27 @@ namespace Congo.Core {
 
 		protected List<CongoMove> getValidCapturingLeaps(List<CongoMove> moves,
 			ImmutableArray<int> capturingLeaps, ColorCode color, CongoBoard board, int square) {
+
 			foreach (var leap in capturingLeaps) {
 				if (!board.IsOccupied(leap) || board.IsOpponentPiece(color, leap)) {
 					moves.Add(new CongoMove(square, leap));
 				}
 			}
+
 			return moves;
 		}
 
 		protected List<CongoMove> getValidNonCapturingLeaps(List<CongoMove> moves,
 			ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int square) {
-				foreach (var leap in nonCapturingLeaps) {
-					if (!board.IsOccupied(leap)) {
-						moves.Add(new CongoMove(square, leap));
-					}
+
+			foreach (var leap in nonCapturingLeaps) {
+				if (!board.IsOccupied(leap)) {
+					moves.Add(new CongoMove(square, leap));
 				}
-				return moves;
 			}
+
+			return moves;
+		}
 
 		public abstract List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square);
 
@@ -41,6 +45,7 @@ namespace Congo.Core {
 	public sealed class Elephant : CongoPiece {
 
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
+
 			return getValidCapturingLeaps(new List<CongoMove>(),
 				board.LeapsAsElephant(square), color, board, square);
 		}
@@ -50,6 +55,7 @@ namespace Congo.Core {
 	public sealed class Zebra : CongoPiece {
 
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
+
 			return getValidCapturingLeaps(new List<CongoMove>(),
 				board.LeapsAsKnight(square), color, board, square);
 		}
@@ -77,27 +83,34 @@ namespace Congo.Core {
 		private List<CongoMove> capturingWaterSlide(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int square, int direction) {
 			var temp = square + direction;
+
 			while (board.IsRiver(temp) && !board.IsOccupied(temp)) {
 				moves.Add(new CongoMove(square, temp));
 				temp += direction;
 			}
+
 			if (board.IsRiver(temp) && board.IsOpponentPiece(color, temp)) {
 				moves.Add(new CongoMove(square, temp));
 			}
+
 			return moves;
 		}
 
 		private List<CongoMove> capturingGroundSlide(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int square) {
+
 			var direction = board.IsAboveRiver(square) ? 1 : -1;
 			var temp = square + direction * board.Size;
+
 			while (!board.IsRiver(temp) && !board.IsOccupied(temp)) {
 				moves.Add(new CongoMove(square, temp));
 				temp += direction * board.Size;
 			}
+
 			if (board.IsOpponentPiece(color, temp)) {
 				moves.Add(new CongoMove(square, temp));
 			}
+
 			return moves;
 		}
 
@@ -198,6 +211,7 @@ namespace Congo.Core {
 
 		public List<CongoMove> verticalJump(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int square) {
+
 			if (board.InsideCastle(color, square)) {
 				var direction = color.IsBlack() ? 1 : -1;
 				var newSquare = square;
@@ -211,14 +225,17 @@ namespace Congo.Core {
 					moves.Add(new CongoMove(square, newSquare));
 				}
 			}
+
 			return moves;
 		}
 
 		public List<CongoMove> diagonalJump(List<CongoMove> moves,
 			ColorCode color, CongoBoard board, int square) {
+
 			if (board.TryDiagonalJump(color, square, out int target)) {
 				moves.Add(new CongoMove(square, target));
 			}
+
 			return moves;
 		}
 
@@ -227,7 +244,9 @@ namespace Congo.Core {
 
 			var leaps = board.LeapsAsLion(color, square);
 			moves = getValidCapturingLeaps(moves, leaps, color, board, square);
+
 			moves = verticalJump(moves, color, board, square);
+
 			moves = diagonalJump(moves, color, board, square);
 
 			return moves;
@@ -239,7 +258,20 @@ namespace Congo.Core {
 		public override List<CongoMove> GetMoves(ColorCode color, CongoBoard board, int square) {
 			var moves = new List<CongoMove>();
 
-			// TODO jumps
+			/* cumbersome, looking for a better solution */
+
+			var leaps = board.LeapsAsKing(square);
+			foreach (var leap in leaps) {
+				if (!board.IsOccupied(leap)) moves.Add(new CongoMove(square, leap));
+				else if (board.IsOpponentPiece(color, leap)) {
+					var newRank = 2 * (leap / board.Size) - square / board.Size;
+					var newFile = 2 * (leap % board.Size) - square % board.Size;
+					var newSquare = newRank * board.Size + newFile;
+					if (board.WithinBoard(newRank, newFile) && !board.IsOccupied(newSquare)) {
+						moves.Add(new CongoMove(square, newSquare));
+					}
+				}
+			}
 
 			return moves;
 		}
