@@ -29,10 +29,10 @@ namespace Congo.Core.MSTest {
 		public void Board_EmptySquaresAreNotOccupied() {
 			var board = CongoBoard.Empty;
 			Assert.IsFalse(
-				board.IsSquareOccupied((int)SquareCode.A1) ||
-				board.IsSquareOccupied((int)SquareCode.B3) ||
-				board.IsSquareOccupied((int)SquareCode.G3) ||
-				board.IsSquareOccupied((int)SquareCode.G1)
+				board.IsOccupied((int)SquareCode.A1) ||
+				board.IsOccupied((int)SquareCode.B3) ||
+				board.IsOccupied((int)SquareCode.G3) ||
+				board.IsOccupied((int)SquareCode.G1)
 			);
 		}
 
@@ -58,14 +58,14 @@ namespace Congo.Core.MSTest {
 			var board = CongoBoard.Empty;
 			var isWater = true;
 			for (int i = 0; i < board.Size * 3; i++) {
-				isWater &= !board.IsSquareWater(i);
+				isWater &= !board.IsRiver(i);
 			}
 			for (int i = board.Size * 4; i < board.Size * board.Size; i++) {
-				isWater &= !board.IsSquareWater(i);
+				isWater &= !board.IsRiver(i);
 			}
 			var isNotWater = true;
 			for (int i = board.Size * 3; i < board.Size * 4; i++) {
-				isNotWater &= board.IsSquareWater(i);
+				isNotWater &= board.IsRiver(i);
 			}
 			Assert.IsTrue(isWater & isNotWater);
 		}
