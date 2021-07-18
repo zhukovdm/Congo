@@ -83,15 +83,15 @@ namespace Congo.Core
 		}
 
 		private static HashSet<int> whiteLionCastle = new HashSet<int> {
-			(int)SquareCode.C3, (int)SquareCode.D3, (int)SquareCode.E3,
-			(int)SquareCode.C2, (int)SquareCode.D2, (int)SquareCode.E2,
-			(int)SquareCode.C1, (int)SquareCode.D1, (int)SquareCode.E1
+			(int)SquareCode.c3, (int)SquareCode.d3, (int)SquareCode.e3,
+			(int)SquareCode.c2, (int)SquareCode.d2, (int)SquareCode.e2,
+			(int)SquareCode.c1, (int)SquareCode.d1, (int)SquareCode.e1
 		};
 
 		private static HashSet<int> blackLionCastle = new HashSet<int> {
-			(int)SquareCode.C7, (int)SquareCode.D7, (int)SquareCode.E7,
-			(int)SquareCode.C6, (int)SquareCode.D6, (int)SquareCode.E6,
-			(int)SquareCode.C5, (int)SquareCode.D5, (int)SquareCode.E5
+			(int)SquareCode.c7, (int)SquareCode.d7, (int)SquareCode.e7,
+			(int)SquareCode.c6, (int)SquareCode.d6, (int)SquareCode.e6,
+			(int)SquareCode.c5, (int)SquareCode.d5, (int)SquareCode.e5
 		};
 
 		private static ImmutableArray<int> lionLeapGenerator(ColorCode color, int rank, int file)
@@ -296,21 +296,21 @@ namespace Congo.Core
 			=> color.IsWhite() ? whiteSuperpawnLeaps[square] : blackSuperpawnLeaps[square];
 
 		public bool TryDiagonalJump(ColorCode color, int square, out int target) {
-			var freePath = !IsOccupied((int)SquareCode.D4);
+			var freePath = !IsOccupied((int)SquareCode.d4);
 
 			if (GetPieceCode(square).IsLion()) {
 				switch (square) {
-					case (int)SquareCode.C3:
-						target = (int)SquareCode.E5;
+					case (int)SquareCode.c3:
+						target = (int)SquareCode.e5;
 						return color.IsWhite() && freePath && GetPieceCode(target).IsLion();
-					case (int)SquareCode.E3:
-						target = (int)SquareCode.C5;
+					case (int)SquareCode.e3:
+						target = (int)SquareCode.c5;
 						return color.IsWhite() && freePath && GetPieceCode(target).IsLion();
-					case (int)SquareCode.C5:
-						target = (int)SquareCode.E3;
+					case (int)SquareCode.c5:
+						target = (int)SquareCode.e3;
 						return color.IsBlack() && freePath && GetPieceCode(target).IsLion();
-					case (int)SquareCode.E5:
-						target = (int)SquareCode.C3;
+					case (int)SquareCode.e5:
+						target = (int)SquareCode.c3;
 						return color.IsBlack() && freePath && GetPieceCode(target).IsLion();
 					default:
 						break;
