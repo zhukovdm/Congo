@@ -1,31 +1,35 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Congo.Def;
-
-namespace Congo.Core.MSTest {
+namespace Congo.Core.MSTest
+{
 
 	[TestClass]
-	public class Piece_ElephantMoves_Test {
-
+	public class Piece_ElephantMoves_Test
+	{
 		[TestMethod]
-		public void SkipFriendlyPieces() {
+		public void SkipFriendlyPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Elephant, (int)SquareCode.A7)
 				.With(ColorCode.White, PieceCode.Elephant, (int)SquareCode.B7);
 			var piece = board.GetPiece((int)SquareCode.A7);
 			var actual = piece.GetMoves(ColorCode.White, board, (int)SquareCode.A7);
+			actual.Sort(comparer);
 			var expected = new List<CongoMove>() {
 				new CongoMove((int)SquareCode.A7, (int)SquareCode.C7),
 				new CongoMove((int)SquareCode.A7, (int)SquareCode.A6),
 				new CongoMove((int)SquareCode.A7, (int)SquareCode.A5)
 			};
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			expected.Sort(comparer);
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void CaptureOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void CaptureOpponentPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Elephant, (int)SquareCode.A7)
 				.With(ColorCode.Black, PieceCode.Elephant, (int)SquareCode.B7)
@@ -40,17 +44,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.A7, (int)SquareCode.A5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_ZebraMoves_Test {
-
+	public class Piece_ZebraMoves_Test
+	{
 		[TestMethod]
-		public void SkipFriendlyPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void SkipFriendlyPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Zebra, (int)SquareCode.D4)
 				.With(ColorCode.White, PieceCode.Zebra, (int)SquareCode.E6)
@@ -67,12 +71,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.B5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void CaptureOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void CaptureOpponentPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Zebra, (int)SquareCode.D7)
 				.With(ColorCode.Black, PieceCode.Zebra, (int)SquareCode.C5)
@@ -89,17 +94,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D7, (int)SquareCode.F6)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_GiraffeMoves_Test {
-
+	public class Piece_GiraffeMoves_Test
+	{
 		[TestMethod]
-		public void SkipFriendlyPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void SkipFriendlyPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Giraffe, (int)SquareCode.A7)
 				.With(ColorCode.White, PieceCode.Giraffe, (int)SquareCode.A6)
@@ -114,12 +119,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.A7, (int)SquareCode.C7)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void CaptureAndSkipOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void CaptureAndSkipOpponentPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Giraffe, (int)SquareCode.A7)
 				.With(ColorCode.Black, PieceCode.Giraffe, (int)SquareCode.A6)
@@ -137,17 +143,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.A7, (int)SquareCode.C7)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_CrocodileMoves_Test {
-
+	public class Piece_CrocodileMoves_Test
+	{
 		[TestMethod]
-		public void SkipFriendlyPiecesWater() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void SkipFriendlyPiecesWater()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Crocodile, (int)SquareCode.D4)
 				.With(ColorCode.White, PieceCode.Crocodile, (int)SquareCode.C4)
@@ -166,12 +172,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.C3)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void CaptureOpponentPiecesWater() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void CaptureOpponentPiecesWater()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Crocodile, (int)SquareCode.D4)
 				.With(ColorCode.Black, PieceCode.Crocodile, (int)SquareCode.C4)
@@ -194,12 +201,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.C3)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void SkipFriendlyPiecesGround() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void SkipFriendlyPiecesGround()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Crocodile, (int)SquareCode.D7)
 				.With(ColorCode.White, PieceCode.Crocodile, (int)SquareCode.C7)
@@ -215,12 +223,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D7, (int)SquareCode.D5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void CaptureOpponentPiecesGround() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void CaptureOpponentPiecesGround()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Crocodile, (int)SquareCode.D7)
 				.With(ColorCode.Black, PieceCode.Crocodile, (int)SquareCode.C7)
@@ -240,17 +249,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D7, (int)SquareCode.D4)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_WhitePawnMoves_Test {
-
+	public class Piece_WhitePawnMoves_Test
+	{
 		[TestMethod]
-		public void BelowRiverNoBackwardSlide() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BelowRiverNoBackwardSlide()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.G3);
 			var piece = board.GetPiece((int)SquareCode.G3);
@@ -261,12 +270,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.G3, (int)SquareCode.G4)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void RiverNoBackwardSlide() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void RiverNoBackwardSlide()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D4);
 			var piece = board.GetPiece((int)SquareCode.D4);
@@ -278,12 +288,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.E5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void AboveRiverBackwardSlide() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void AboveRiverBackwardSlide()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.B5);
 			var piece = board.GetPiece((int)SquareCode.B5);
@@ -297,12 +308,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.B5, (int)SquareCode.B3)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BackwardSlideSkipFriendlyPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BackwardSlideSkipFriendlyPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D5)
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D3);
@@ -316,12 +328,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D5, (int)SquareCode.D4)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BackwardSlideSkipOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BackwardSlideSkipOpponentPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D5)
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.D4);
@@ -334,17 +347,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D5, (int)SquareCode.E6)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_WhiteSuperpawnMoves_Test {
-
+	public class Piece_WhiteSuperpawnMoves_Test
+	{
 		[TestMethod]
-		public void BelowRiverBackwardSlide() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BelowRiverBackwardSlide()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Superpawn, (int)SquareCode.D2);
 			var piece = board.GetPiece((int)SquareCode.D2);
@@ -361,12 +374,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D2, (int)SquareCode.C1)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void RiverBackwardSlide() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void RiverBackwardSlide()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Superpawn, (int)SquareCode.A4);
 			var piece = board.GetPiece((int)SquareCode.A4);
@@ -382,12 +396,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.A4, (int)SquareCode.C2)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void AboveRiverBackwardSlide() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void AboveRiverBackwardSlide()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Superpawn, (int)SquareCode.F7);
 			var piece = board.GetPiece((int)SquareCode.F7);
@@ -403,12 +418,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.F7, (int)SquareCode.F5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BackwardSlideSkipFriendlyPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BackwardSlideSkipFriendlyPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Superpawn, (int)SquareCode.D4)
 				.With(ColorCode.White, PieceCode.Superpawn, (int)SquareCode.B2)
@@ -427,12 +443,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.C3)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BackwardSlideSkipOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BackwardSlideSkipOpponentPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Superpawn, (int)SquareCode.D4)
 				.With(ColorCode.Black, PieceCode.Superpawn, (int)SquareCode.B2)
@@ -451,17 +468,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.C3)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_WhiteLionMoves_Test {
-
+	public class Piece_WhiteLionMoves_Test
+	{
 		[TestMethod]
-		public void VerticalJump() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void VerticalJump()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.D1)
 				.With(ColorCode.Black, PieceCode.Lion, (int)SquareCode.D6);
@@ -477,12 +494,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D1, (int)SquareCode.D6)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BlockedVerticalJumpByFriendlyPiece() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BlockedVerticalJumpByFriendlyPiece()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.D1)
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D5)
@@ -498,12 +516,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D1, (int)SquareCode.E1)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BlockedVerticalJumpByOpponentPiece() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BlockedVerticalJumpByOpponentPiece()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.D1)
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.D4)
@@ -519,12 +538,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D1, (int)SquareCode.E1)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BlockedVerticalJumpOutsideCastle() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BlockedVerticalJumpOutsideCastle()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.B3)
 				.With(ColorCode.Black, PieceCode.Lion, (int)SquareCode.B5);
@@ -535,12 +555,13 @@ namespace Congo.Core.MSTest {
 				/* no moves */
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BlockedVerticalJumpWrongRiverSideInsideCastle() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BlockedVerticalJumpWrongRiverSideInsideCastle()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.D5)
 				.With(ColorCode.Black, PieceCode.Lion, (int)SquareCode.D3);
@@ -551,12 +572,13 @@ namespace Congo.Core.MSTest {
 				/* no moves */
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void DiagonalJump_C3_E5() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void DiagonalJump_C3_E5()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.C3)
 				.With(ColorCode.Black, PieceCode.Lion, (int)SquareCode.E5);
@@ -570,12 +592,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.C3, (int)SquareCode.E5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void DiagonalJump_E3_C5() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void DiagonalJump_E3_C5()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.E3)
 				.With(ColorCode.Black, PieceCode.Lion, (int)SquareCode.C5);
@@ -589,12 +612,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.E3, (int)SquareCode.C5)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BlockedDiagonalJumpByFriendlyPiece() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BlockedDiagonalJumpByFriendlyPiece()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.C3)
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D4)
@@ -608,12 +632,13 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.C3, (int)SquareCode.C2)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
-		public void BlockedDiagonalJumpByOpponentPiece() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void BlockedDiagonalJumpByOpponentPiece()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Lion, (int)SquareCode.E3)
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.D4)
@@ -627,17 +652,17 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.E3, (int)SquareCode.E2)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
 
 	[TestClass]
-	public class Piece_MonkeyMoves_Test {
-
+	public class Piece_MonkeyMoves_Test
+	{
 		[TestMethod]
-		public void SkipFriendlyPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+		public void SkipFriendlyPieces()
+		{
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Monkey, (int)SquareCode.D3)
 				.With(ColorCode.White, PieceCode.Pawn, (int)SquareCode.C3)
@@ -654,12 +679,12 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D3, (int)SquareCode.D2)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
 		public void JumpOverOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Monkey, (int)SquareCode.D4)
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.C3)
@@ -680,12 +705,12 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.D4, (int)SquareCode.D3)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
 
 		[TestMethod]
 		public void BoundaryJumpOverOpponentPieces() {
-			var comparer = new CongoMoveComparerGeneric();
+			var comparer = new CongoMoveGenComparer();
 			var board = CongoBoard.Empty
 				.With(ColorCode.White, PieceCode.Monkey, (int)SquareCode.F2)
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.E1)
@@ -695,8 +720,7 @@ namespace Congo.Core.MSTest {
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.G3)
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.G2)
 				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.G1)
-				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.F1)
-				;
+				.With(ColorCode.Black, PieceCode.Pawn, (int)SquareCode.F1);
 			var piece = board.GetPiece((int)SquareCode.F2);
 			var actual = piece.GetMoves(ColorCode.White, board, (int)SquareCode.F2);
 			actual.Sort(comparer);
@@ -706,9 +730,7 @@ namespace Congo.Core.MSTest {
 				new CongoMove((int)SquareCode.F2, (int)SquareCode.F4)
 			};
 			expected.Sort(comparer);
-			CollectionAssert.AreEqual(expected, actual, new CongoMoveComparer());
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
-
 	}
-
 }

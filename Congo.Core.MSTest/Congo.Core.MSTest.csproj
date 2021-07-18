@@ -81,10 +81,6 @@
       <Project>{fc66bc2e-577e-487c-8c24-d201c895addd}</Project>
       <Name>Congo.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Congo.Def\Congo.Def.csproj">
-      <Project>{773b4243-e4c3-45d3-a7ce-417eb91a4508}</Project>
-      <Name>Congo.Def</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

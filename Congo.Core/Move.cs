@@ -1,46 +1,41 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-using Congo.Def;
-
-namespace Congo.Core {
-
-	public struct CongoMove {
-
-		// lexicographic order
-		public static int Comparer(CongoMove x, CongoMove y) {
+namespace Congo.Core
+{
+	public class CongoMove
+	{
+		public static int Compare(CongoMove x, CongoMove y)
+		{
+			/* lexicographic order */
 			if ((x.Fr < y.Fr) || (x.Fr == y.Fr && x.To < y.To)) {
 				return -1;
-			}
-			else if (x.Fr == y.Fr && x.To == y.To) {
+			} else if (x.Fr == y.Fr && x.To == y.To) {
 				return 0;
-			}
-			else {
+			} else {
 				return 1;
 			}
 		}
+
+		public static bool AreEqual(CongoMove m1, CongoMove m2)
+			=> Compare(m1, m2) == 0;
 
 		public readonly int Fr, To;
 		public CongoMove(int fr, int to) { Fr = fr; To = to; }
 
 		public override string ToString()
 			=> ((SquareCode)Fr).ToString() + ", " + ((SquareCode)To).ToString();
-			
 	}
 
-	public class CongoMoveComparer : IComparer {
-
-		// Not type safe due to MSTest framework limitations
-		public int Compare(object x, object y) 
-			=> CongoMove.Comparer((CongoMove)x, (CongoMove)y);
-
+	public class CongoMoveObjComparer : IComparer
+	{
+		public int Compare(object x, object y) /* not typesafe */
+			=> CongoMove.Compare((CongoMove)x, (CongoMove)y);
 	}
 
-	public class CongoMoveComparerGeneric : IComparer<CongoMove> {
-
+	public class CongoMoveGenComparer : IComparer<CongoMove>
+	{
 		public int Compare(CongoMove x, CongoMove y)
-			=> CongoMove.Comparer(x, y);
-
+			=> CongoMove.Compare(x, y);
 	}
-
 }

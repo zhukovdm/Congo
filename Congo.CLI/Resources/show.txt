@@ -1,0 +1,8 @@
+NAME
+    show
+DESCRIPTION
+    shows current board and additional statistics
+SEMANTICS
+    show
+OPTIONS
+    -

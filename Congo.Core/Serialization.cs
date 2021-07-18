@@ -1,4 +1,5 @@
-﻿namespace Congo.Core {
+﻿namespace Congo.Core
+{
 
 	public class SerializedGame {  }
 

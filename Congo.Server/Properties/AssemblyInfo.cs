@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Congo.Def")]
+[assembly: AssemblyTitle("Congo.Server")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Congo.Def")]
+[assembly: AssemblyProduct("Congo.Server")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("773b4243-e4c3-45d3-a7ce-417eb91a4508")]
+[assembly: Guid("969ccf7b-47e5-4c1e-ad7f-2d5c14f43d21")]
 
 // Version information for an assembly consists of the following four values:
 //

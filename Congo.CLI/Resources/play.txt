@@ -1,0 +1,8 @@
+NAME
+    play
+DESCRIPTION
+    decides types of players for the certain game
+SEMANTICS
+    play player_type player_type
+OPTIONS
+    ai, hi

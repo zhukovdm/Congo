@@ -91,5 +91,11 @@
   <ItemGroup>
     <Folder Include="Games\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Congo.Core\Congo.Core.csproj">
+      <Project>{fc66bc2e-577e-487c-8c24-d201c895addd}</Project>
+      <Name>Congo.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

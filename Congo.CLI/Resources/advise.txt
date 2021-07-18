@@ -1,0 +1,8 @@
+NAME
+    advise
+DESCRIPTION
+    advise next move based on a chosen heuristic
+SEMANTICS
+    advise heuristic
+OPTIONS
+    minimax, negamax, iterdeep

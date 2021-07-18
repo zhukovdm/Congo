@@ -1,0 +1,8 @@
+NAME
+    help
+DESCRIPTION
+    shows help manual for a chosen command
+SEMANTICS
+    help command
+OPTIONS
+    advise, exit, help, move, play, show
