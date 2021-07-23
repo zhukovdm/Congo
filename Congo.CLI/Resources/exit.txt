@@ -1,8 +1,6 @@
-NAME
+ NAME
     exit
-DESCRIPTION
-    exits the game
-SEMANTICS
+ DESCRIPTION
+    stores and exits the game
+ USAGE
     exit
-OPTIONS
-    -

@@ -1,0 +1,7 @@
+﻿ NAME
+    game
+ DESCRIPTION
+    Restores the existing game or starts new. The command has different
+    context in local and network modes.
+ USAGE
+    game standard | <fen_word> | <game_id>

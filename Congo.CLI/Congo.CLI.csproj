@@ -118,9 +118,11 @@
     <Content Include="Resources\advise.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\connect.txt" />
     <Content Include="Resources\exit.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\game.txt" />
     <Content Include="Resources\greet.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

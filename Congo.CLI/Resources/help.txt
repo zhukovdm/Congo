@@ -1,8 +1,6 @@
-NAME
+ NAME
     help
-DESCRIPTION
+ DESCRIPTION
     shows help manual for a chosen command
-SEMANTICS
-    help command
-OPTIONS
-    advise, exit, help, move, play, show
+ USAGE
+    help advise | connect | exit | game | help | move | play | show

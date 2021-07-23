@@ -1,8 +1,6 @@
-NAME
+ NAME
     move
-DESCRIPTION
+ DESCRIPTION
     moves a certain piece from a square to a square
-SEMANTICS
-    move from to
-USAGE
-    m [a-g][1-7] [a-g][1-7]
+ USAGE
+    move [a-g][1-7] [a-g][1-7]

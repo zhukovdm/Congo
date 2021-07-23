@@ -7,199 +7,463 @@ using Congo.Core;
 
 namespace Congo.CLI
 {
-	public class CongoCommandLine : ICongoUserInterface
+	class ExitCommandException : Exception { }
+
+	public abstract class CongoCommandLine : ICongoUserInterface, IDisposable
 	{
-		private static string readFile(string filename)
-			=> File.ReadAllText(resourcesPrefix + filename + textFileExt);
-
-		private static void reportWrongFormat(string command)
-		{
-			writer.WriteLine($"Wrong format. Consult help {command}.");
-		}
-
-		private delegate CongoUserCommand D(string[] line);
 		private static readonly string resourcesPrefix = "Resources\\";
 		private static readonly string textFileExt = ".txt";
-		private static readonly TextReader reader = Console.In;
-		private static readonly TextWriter writer = Console.Out;
+		protected static readonly char[] separators = new char[] { ' ', '\t', '\n' };
+		protected static readonly TextReader reader = Console.In;
+		protected static readonly TextWriter writer = Console.Out;
 
-		private static readonly ImmutableDictionary<PieceCode, string> pieceView =
-			new Dictionary<PieceCode, string>() {
-				{ PieceCode.Lion,      " l" }, { PieceCode.Zebra,    " z" },
-				{ PieceCode.Elephant,  " e" }, { PieceCode.Giraffe,  " g" },
-				{ PieceCode.Crocodile, " c" }, { PieceCode.Pawn,     " p" },
-				{ PieceCode.Superpawn, " s" }, { PieceCode.Monkey,   " m" },
-				{ PieceCode.Empty,     " -" }, { PieceCode.Captured, " x" }
+		private delegate string[] VerifyCommandDelegate(string[] input);
+
+		private static readonly ImmutableDictionary<string, VerifyCommandDelegate> supportedCommands =
+			new Dictionary<string, VerifyCommandDelegate>() {
+				{ "advise",  verifyAdviseCommand  },
+				{ "connect", verifyConnectCommand },
+				{ "exit",    verifyExitCommand    },
+				{ "game",    verifyGameCommand    },
+				{ "help",    verifyHelpCommand    },
+				{ "move",    verifyMoveCommand    },
+				{ "play",    verifyPlayCommand    },
+				{ "show",    verifyShowCommand    }
 			}.ToImmutableDictionary();
 
-		private static readonly ImmutableDictionary<string, D> supportedCommands =
-			new Dictionary<string, D>() {
-				{ "advise", new D(tryParseAdviseCommand) },
-				{ "exit"  , new D(tryParseExitCommand)   },
-				{ "help"  , new D(tryParseHelpCommand)   },
-				{ "move"  , new D(tryParseMoveCommand)   },
-				{ "play"  , new D(tryParsePlayCommand)   },
-				{ "show"  , new D(tryParseShowCommand)   }
+		private delegate CongoMove AlgorithmDelegate(CongoGame game);
+
+		private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
+			new Dictionary<string, AlgorithmDelegate> {
+				{ "rnd",      Algorithm.Rnd      },
+				{ "minimax",  Algorithm.MiniMax  },
+				{ "negamax",  Algorithm.NegaMax  },
+				{ "iterdeep", Algorithm.IterDeep }
 			}.ToImmutableDictionary();
 
-		private static readonly ImmutableDictionary<string, HeuristicCode> supportedHeuristics =
-			new Dictionary<string, HeuristicCode> {
-				{ "minimax",  HeuristicCode.MiniMax  },
-				{ "negamax",  HeuristicCode.NegaMax  },
-				{ "iterdeep", HeuristicCode.IterDeep }
+		private static readonly ImmutableList<string> squareView =
+			new List<string> {
+				"a7", "b7", "c7", "d7", "e7", "f7", "g7",
+				"a6", "b6", "c6", "d6", "e6", "f6", "g6",
+				"a5", "b5", "c5", "d5", "e5", "f5", "g5",
+				"a4", "b4", "c4", "d4", "e4", "f4", "g4",
+				"a3", "b3", "c3", "d3", "e3", "f3", "g3",
+				"a2", "b2", "c2", "d2", "e2", "f2", "g2",
+				"a1", "b1", "c1", "d1", "e1", "f1", "g1"
+			}.ToImmutableList();
+
+		private static readonly ImmutableList<Type> pieceTypes =
+			new Type[] {
+				typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
+				typeof(Giraffe), typeof(Crocodile), typeof(Pawn), typeof(Superpawn),
+				typeof(Lion), typeof(Monkey), typeof(Captured)
+			}.ToImmutableList();
+
+		private static readonly ImmutableDictionary<Type, string> pieceView =
+			new Dictionary<Type, string>() {
+				{ typeof(Ground),   "-" }, { typeof(River),     "+" },
+				{ typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
+				{ typeof(Giraffe),  "g" }, { typeof(Crocodile), "c" },
+				{ typeof(Pawn),     "p" }, { typeof(Superpawn), "s" },
+				{ typeof(Lion),     "l" }, { typeof(Monkey),    "m" },
+				{ typeof(Captured), "x" }
 			}.ToImmutableDictionary();
 
-		private static readonly ImmutableDictionary<string, PlayerCode> supportedPlayers =
-			new Dictionary<string, PlayerCode> {
-				{ "ai", PlayerCode.AI },
-				{ "hi", PlayerCode.HI }
+		private delegate void ShowDelegate(CongoGame game);
+
+		private static readonly ImmutableDictionary<string, ShowDelegate> supportedShows =
+			new Dictionary<string, ShowDelegate> {
+				{ "board", showBoard }, { "players", showPlayers },
+				{ "moves", showMoves }, { "game",    showGame    }
 			}.ToImmutableDictionary();
 
-		private static CongoUserCommand tryParseAdviseCommand(string[] line)
+		private static string getMoveRepr(CongoMove move)
+			=> " (" + squareView[move.Fr] + "," + squareView[move.To] + ")";
+
+		private static string readTextFile(string filename)
 		{
-			if (line.Length != 2 || !supportedCommands.ContainsKey(line[0])) {
-				reportWrongFormat(line[0]);
+			try {
+				return File.ReadAllText(resourcesPrefix + filename + textFileExt);
+			} catch (Exception) {
 				return null;
 			}
-
-			return new AdviseCommand(supportedHeuristics[line[1]]);
+		}
+		
+		private static void reportHelpFile(string helpFile)
+		{
+			writer.Write(helpFile);
 		}
 
-		private static CongoUserCommand tryParseExitCommand(string[] line)
+		private static void reportNotSupportedCommand(string command)
 		{
-			if (line.Length != 1) {
-				reportWrongFormat(line[0]);
-				return null;
+			writer.WriteLine($" Command {command} is not supported. Consult help help.");
+		}
+
+		private static void reportWrongCommandFormat(string command)
+		{
+			writer.WriteLine($" Wrong command format. Consult help {command}.");
+		}
+
+		private static void reportNotAllowedCommand(string command)
+		{
+			writer.WriteLine($" Command {command} is not allowed at the moment.");
+		}
+
+		private static void reportAdvisedMove(CongoMove move, string algorithm)
+		{
+			writer.WriteLine($" Algorithm {algorithm} advises move {getMoveRepr(move)}.");
+		}
+
+		private static int[] countPieces(CongoBoard board, CongoColor color)
+		{
+			var counter = new int[pieceTypes.Count];
+			var enumerator = board.GetEnumerator(color);
+
+			while (enumerator.MoveNext()) {
+				var type = board.GetPiece(enumerator.Current).GetType();
+				counter[pieceTypes.IndexOf(type)]++;
 			}
 
-			return new ExitCommand();
+			return counter;
 		}
 
-		private static CongoUserCommand tryParseHelpCommand(string[] line)
-		{
-			if (line.Length != 2 || !supportedCommands.ContainsKey(line[1])) {
-				reportWrongFormat(line[0]);
-			} else {
-				writer.Write(readFile(line[1]));
-			}
-
-			return null;
-		}
-
-		public static CongoUserCommand tryParseMoveCommand(string[] line)
-		{
-			if (line.Length == 3) {
-				var fr = SquareCodeExtensions.GetValue(line[1]);
-				var to = SquareCodeExtensions.GetValue(line[2]);
-				if (fr >= 0 && to >= 0) return new MoveCommand(fr, to);
-			}
-			
-			reportWrongFormat(line[0]);
-			return null;
-		}
-
-		public static CongoUserCommand tryParsePlayCommand(string[] line)
-		{
-			if (line.Length == 3) {
-				var whitePlayerCode = line[1].ToLower();
-				var blackPlayerCode = line[2].ToLower();
-				if (supportedPlayers.ContainsKey(whitePlayerCode) &&
-					supportedPlayers.ContainsKey(blackPlayerCode)) {
-					return new PlayCommand(supportedPlayers[whitePlayerCode],
-										   supportedPlayers[blackPlayerCode]);
-				}
-			}
-
-			reportWrongFormat(line[0]);
-			return null;
-		}
-
-		public static CongoUserCommand tryParseShowCommand(string[] line)
-		{
-			if (line.Length != 1) {
-				reportWrongFormat(line[0]);
-				return null;
-			}
-
-			return new ShowCommand();
-		}
-
-		private bool isStartable(CongoUserCommand command)
-		{
-			return command is PlayCommand;
-		}
-
-		public CongoUserCommand ForceStart()
-		{
-			CongoUserCommand command;
-
-			do {
-				command = GetUserCommand();
-			} while (!isStartable(command));
-
-			return command;
-		}
-
-		public void Greet()
+		private static void showBoard(CongoGame game)
 		{
 			writer.WriteLine();
-			writer.Write(readFile("greet"));
-		}
-
-		public void Show(CongoBoard board)
-		{
-			writer.WriteLine();
-			var upperBound = board.Size * board.Size;
+			var upperBound = game.Board.Size * game.Board.Size;
 
 			for (int square = 0; square < upperBound; square++) {
-				if (square % board.Size == 0) {
-					writer.Write($" {board.Size - square / board.Size}  ");
+				if (square % game.Board.Size == 0) {
+					writer.Write($" {game.Board.Size - square / game.Board.Size}  ");
 				}
 
-				var pv = pieceView[board.GetPieceCode(square)];
-				if (board.IsFirstMovePiece(square)) pv = pv.ToUpper();
-				writer.Write(pv);
-				if (square % board.Size == board.Size - 1) writer.WriteLine();
+				var pv = pieceView[game.Board.GetPiece(square).GetType()];
+				if (game.Board.IsFirstMovePiece(square)) pv = pv.ToUpper();
+				writer.Write(" " + pv);
+				if (square % game.Board.Size == game.Board.Size - 1) writer.WriteLine();
 			}
 
 			writer.WriteLine();
 			writer.Write(" /  ");
-			for (int i = 0; i < board.Size; i++) {
+			for (int i = 0; i < game.Board.Size; i++) {
 				writer.Write(" " + ((char)('a' + i)).ToString());
 			}
 			writer.WriteLine();
 		}
 
-		public CongoUserCommand GetUserCommand()
+		private static void showPlayer(CongoBoard board, CongoColor color, CongoColor activeColor)
 		{
-			string[] line;
-			CongoUserCommand command = null;
-			var separators = new char[] { ' ', '\t', '\n' };
+			var activeRepr = color.Equals(activeColor) ? "*" : " ";
+			var colorRepr  = color.IsWhite() ? "white" : "black";
+			var counter    = countPieces(board, color);
+
+			writer.Write($" {activeRepr} {colorRepr}");
+			for (int i = 2; i < pieceTypes.Count; i++) {
+				var pieceRepr = color.IsWhite()
+					? pieceView[pieceTypes[i]].ToUpper()
+					: pieceView[pieceTypes[i]].ToLower();
+				writer.Write($" {counter[i]}{pieceRepr}");
+			}
+			writer.WriteLine();
+		}
+
+		private static void showPlayers(CongoGame game)
+		{
+			writer.WriteLine();
+			showPlayer(game.Board, White.Color, game.ActivePlayerColor);
+			showPlayer(game.Board, Black.Color, game.ActivePlayerColor);
+		}
+
+		private static void showMoves(CongoGame game)
+		{
+			writer.WriteLine();
+			int cnt = 0;
+			foreach (var move in game.ActivePlayer.Moves) {
+				var repr = getMoveRepr(move);
+				if (cnt + repr.Length > 60) {
+					cnt = 0;
+					writer.WriteLine();
+				}
+				cnt += repr.Length;
+				writer.Write(repr);
+			}
+			writer.WriteLine();
+		}
+
+		private static void showGame(CongoGame game)
+		{
+			showBoard(game);
+			showPlayers(game);
+			showMoves(game);
+		}
+
+		private static string[] verifyCommand(Func<string[], bool> predicate, string[] input)
+		{
+			if (predicate(input)) {
+				reportWrongCommandFormat(input[0]);
+				input = null;
+			}
+			
+			return input;
+		}
+
+		private static string[] verifyAdviseCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr)
+				=> arr.Length != 2 || !supportedAlgorithms.ContainsKey(arr[1]);
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyConnectCommand(string[] input)
+		{
+			throw new NotImplementedException();
+		}
+		
+		private static string[] verifyExitCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr) => arr.Length != 1;
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyGameCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr)
+				=> arr.Length != 2 || !(arr[1] == "standard" || CongoGame.IsFenValid(arr[1]) || CongoGame.IsFenValid(readTextFile(arr[1])));
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyHelpCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr)
+				=> arr.Length != 2 || !supportedCommands.ContainsKey(arr[1]);
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyMoveCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr)
+				=> arr.Length != 3 || squareView.IndexOf(arr[1]) < 0 || squareView.IndexOf(arr[1]) < 0;
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyPlayCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr)
+				=> arr.Length != 2 || !(arr[1] == "local" || arr[1] == "network");
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyShowCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr)
+				=> arr.Length != 2 || !supportedShows.ContainsKey(arr[1]);
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static void Greet()
+		{
+			writer.WriteLine();
+			writer.Write(readTextFile("greet"));
+		}
+
+		protected static string[] getUserCommand(List<string> allowedCommands)
+		{
+			string[] input;
+			string[] command;
 
 			do {
 				writer.WriteLine();
 				writer.Write(" > ");
-				line = reader.ReadLine().ToLower().Split(
+				input = reader.ReadLine().ToLower().Split(
 					separators, StringSplitOptions.RemoveEmptyEntries);
-				if (line.Length > 0 && supportedCommands.ContainsKey(line[0])) {
-					command = supportedCommands[line[0]].Invoke(line);
+
+				if (input.Length > 0 && supportedCommands.ContainsKey(input[0])) {
+					if (allowedCommands.IndexOf(input[0]) >= 0) {
+						command = supportedCommands[input[0]].Invoke(input);
+					} else {
+						reportNotAllowedCommand(input[0]);
+						command = null;
+					}					
 				} else {
-					writer.WriteLine(" Invalid input, consult help help.");
+					reportNotSupportedCommand(input[0]);
+					command = null;
 				}
 			} while (command == null);
 
 			return command;
 		}
 
-		public void ReportAdvice(CongoMove move, HeuristicCode heuristic)
+		protected static Type getPlayerType(CongoColor color)
 		{
-			writer.WriteLine(
-				$"Move {move} is adviced by {heuristic}.");
+			string type;
+			var playerColor = color.IsWhite() ? "white" : "black";
+			var allowedTypes = new Dictionary<string, Type> {
+				{ "ai", typeof(AI) }, { "hi", typeof(HI) }
+			};
+
+			do {
+				writer.WriteLine();
+				writer.Write($" Set {playerColor} player type (ai | hi) ");
+				type = reader.ReadLine().ToLower();
+				if (!allowedTypes.ContainsKey(type)) {
+					writer.WriteLine($" The type {type} is not allowed. Try again.");
+				}
+			} while (!allowedTypes.ContainsKey(type));
+
+			return allowedTypes[type];
 		}
 
-		public void ReportExit(string message)
+		public void ShowBoard(CongoGame game)
 		{
-			writer.WriteLine(message);
+			showBoard(game);
+		}
+
+		/* decides local or network command line */
+		public static CongoCommandLine SetCommandLine()
+		{
+			Greet();
+			var allowedCommands = new List<string>() {
+				"exit", "help", "play"
+			};
+
+			CongoCommandLine cli = null;
+
+			do {
+
+				var command = getUserCommand(allowedCommands);
+
+				switch (command[0]) {
+
+					case "exit":
+						throw new ExitCommandException();
+
+					case "help":
+						reportHelpFile(readTextFile(command[1]));
+						break;
+
+					case "play":
+						if (command[1] == "local") cli = new LocalCommandLine();
+						else cli = new NetworkCommandLine();
+						break;
+
+					default:
+						throw new InvalidOperationException();
+				}
+			} while (cli == null);
+
+			return cli;
+		}
+
+		public CongoMove GetHIMove(CongoGame game)
+		{
+			CongoMove move = null;
+			var allowedCommands = new List<string>() {
+				"advise", "exit", "help", "move", "show"
+			};
+
+			do {
+				var command = getUserCommand(allowedCommands);
+
+				switch (command[0]) {
+
+					case "advise":
+						move = supportedAlgorithms[command[0]].Invoke(game);
+						reportAdvisedMove(move, command[1]);
+						move = null;
+						break;
+
+					case "exit":
+						throw new ExitCommandException();
+
+					case "help":
+						writer.WriteLine(readTextFile(command[1]));
+						break;
+
+					case "move":
+						move = new CongoMove(squareView.IndexOf(command[1]),
+											 squareView.IndexOf(command[2]));
+						break;
+
+					case "show":
+						supportedShows[command[1]].Invoke(game);
+						break;
+
+					default:
+						throw new InvalidOperationException();
+				}
+
+			} while (move == null);
+
+			return move;
+		}
+
+		public abstract CongoGame SetGame();
+
+		public abstract CongoGame WaitResponse(CongoGame game);
+
+		public void ReportResult(CongoGame game)
+		{
+			writer.WriteLine();
+			var winner = game.ActivePlayerColor.Invert().IsWhite() ? "white" : "black";
+			var move = getMoveRepr(game.TransitionMove);
+			writer.WriteLine($" {winner} wins via {move}.");
+		}
+
+		public abstract void Dispose();
+	}
+
+	public class LocalCommandLine : CongoCommandLine
+	{
+		public override CongoGame SetGame()
+		{
+			var allowedCommands = new List<string>() {
+				"game"
+			};
+
+			var command = getUserCommand(allowedCommands);
+
+			var wp = getPlayerType(White.Color);
+			var bp = getPlayerType(Black.Color);
+
+			if (command[1] == "standard") {
+				return CongoGame.Standard(wp, bp);
+			} else if (CongoGame.IsFenValid(command[1])) {
+				throw new NotImplementedException();							// TODO
+			} else {
+				throw new NotImplementedException();							// TODO
+			}
+		}
+
+		public override CongoGame WaitResponse(CongoGame game) => game;
+
+		public override void Dispose()
+		{
+																				// TODO
+		}
+	}
+
+	public class NetworkCommandLine : CongoCommandLine
+	{
+		public override CongoGame SetGame()
+		{
+			throw new NotImplementedException();                                // TODO
+		}
+
+		public override CongoGame WaitResponse(CongoGame game)
+		{
+			throw new NotImplementedException();                                // TODO
+		}
+
+		public override void Dispose()
+		{
+			throw new NotImplementedException();                                // TODO
 		}
 	}
 }

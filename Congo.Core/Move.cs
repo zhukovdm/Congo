@@ -21,15 +21,20 @@ namespace Congo.Core
 			=> Compare(m1, m2) == 0;
 
 		public readonly int Fr, To;
-		public CongoMove(int fr, int to) { Fr = fr; To = to; }
 
-		public override string ToString()
-			=> ((SquareCode)Fr).ToString() + ", " + ((SquareCode)To).ToString();
+		public CongoMove(int fr, int to) { Fr = fr; To = to; }
+	}
+
+	public class MonkeyJump : CongoMove
+	{
+		public readonly int Bt;
+
+		public MonkeyJump(int fr, int bt, int to) :base(fr, to) { Bt = bt; }
 	}
 
 	public class CongoMoveObjComparer : IComparer
 	{
-		public int Compare(object x, object y) /* not typesafe */
+		public int Compare(object x, object y) /* not type-safe */
 			=> CongoMove.Compare((CongoMove)x, (CongoMove)y);
 	}
 

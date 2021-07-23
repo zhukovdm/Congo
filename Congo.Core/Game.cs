@@ -1,148 +1,187 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Congo.Core
 {
 	public class CongoGame
 	{
-		private static CongoBoard setMixedRank(CongoBoard board, ColorCode color, int rank)
+		#region Standard game
+
+		private static CongoBoard setMixedRank(CongoBoard board, CongoColor color, int rank)
 		{
-			board = board.With(color, PieceCode.Giraffe,   rank * board.Size + 0)
-						 .With(color, PieceCode.Monkey,	   rank * board.Size + 1)
-						 .With(color, PieceCode.Elephant,  rank * board.Size + 2)
-						 .With(color, PieceCode.Lion,      rank * board.Size + 3)
-						 .With(color, PieceCode.Elephant,  rank * board.Size + 4)
-						 .With(color, PieceCode.Crocodile, rank * board.Size + 5)
-						 .With(color, PieceCode.Zebra,     rank * board.Size + 6);
+			board = board.With(color, Giraffe.Piece,   rank * board.Size + 0)
+						 .With(color, Monkey.Piece,	   rank * board.Size + 1)
+						 .With(color, Elephant.Piece,  rank * board.Size + 2)
+						 .With(color, Lion.Piece,      rank * board.Size + 3)
+						 .With(color, Elephant.Piece,  rank * board.Size + 4)
+						 .With(color, Crocodile.Piece, rank * board.Size + 5)
+						 .With(color, Zebra.Piece,     rank * board.Size + 6);
 			
 			return board;
 		}
 
-		private static CongoBoard setPawnRank(CongoBoard board, ColorCode color, int rank)
+		private static CongoBoard setPawnRank(CongoBoard board, CongoColor color, int rank)
 		{
 			for (int file = 0; file < board.Size; file++) {
-				board = board.With(color, PieceCode.Pawn, rank * board.Size + file);
+				board = board.With(color, Pawn.Piece, rank * board.Size + file);
 			}
 
 			return board;
 		}
 
-		public static CongoGame New(ICongoUserInterface ui)
+		private static CongoPlayer getPlayer(CongoColor color, CongoBoard board, Type playerType)
+		{
+			if (playerType == typeof(AI)) return new AI(color, board, null);
+			else                          return new HI(color, board, null);
+		}
+
+		public static CongoGame Standard(Type whiteType, Type blackType)
 		{
 			var b = CongoBoard.Empty;
-			b = setMixedRank(b, ColorCode.Black, 0);
-			b = setPawnRank (b, ColorCode.Black, 1);
-			b = setPawnRank (b, ColorCode.White, 5);
-			b = setMixedRank(b, ColorCode.White, 6);
+			b = setMixedRank(b, Black.Color, 0);
+			b = setPawnRank (b, Black.Color, 1);
+			b = setPawnRank (b, White.Color, 5);
+			b = setMixedRank(b, White.Color, 6);
 
-			ui.Greet();
-			var command = ui.ForceStart();
+			var wp = getPlayer(White.Color, b, whiteType);
+			var bp = getPlayer(Black.Color, b, blackType);
 
-			var wp = CongoPlayerFactory.GetInstance(
-				ColorCode.White, b, (PlayCommand)command);
-
-			var bp = CongoPlayerFactory.GetInstance(
-				ColorCode.Black, b, (PlayCommand)command);
-
-			return new CongoGame(null, b, ColorCode.White, wp, bp, ui);
+			return new CongoGame(null, null, null, b, White.Color, wp, bp);
 		}
 
-		public static CongoGame GetFromFEN(string fen)
-			=> throw new Exception();
+		#endregion
+
+		#region Unattached game
+
+		public static CongoGame Unattached(CongoBoard board, CongoColor color,
+			CongoPlayer whitePlayer, CongoPlayer blackPlayer)
+		{
+			return new CongoGame(null, null, null, board, color, whitePlayer, blackPlayer);
+		}
+
+		#endregion
+
+		#region FEN (de-)serialization
+
+		/* 
+		 * Simplified FEN format:
+		 *     rank/rank/rank/rank/rank/rank/rank active_color 
+		 *         3z1p1/... w m
+		 *         8/8/2zGm/... b -
+		 */
+
+		public static bool IsFenValid(string fen)
+			=> throw new NotImplementedException();
+
+		public static CongoGame FromFen(string fen)
+			=> throw new NotImplementedException();
+
+		public static string ToFen(CongoGame game)
+			=> throw new NotImplementedException();
+
+		#endregion
 
 		private readonly CongoGame previousGame;
+		private readonly CongoMove transitionMove;
+		private readonly ImmutableList<int> monkeyCaptures;
 		private readonly CongoBoard board;
-		private readonly ColorCode activePlayer;
+		private readonly CongoColor activePlayerColor;
 		private readonly CongoPlayer whitePlayer;
 		private readonly CongoPlayer blackPlayer;
-		private readonly ICongoUserInterface userInterface;
 
-		public CongoPlayer ActivePlayer
-			=> activePlayer.IsWhite() ? whitePlayer : blackPlayer;
-
-		private CongoPlayer Opponent
-			=> activePlayer.IsWhite() ? blackPlayer : whitePlayer;
-
-		private bool isValid(CongoMove candidateMove)
-		{
-			var query = from validMove in ActivePlayer.Moves
-						where CongoMove.AreEqual(candidateMove, validMove)
-						select validMove;
-
-			foreach (var move in query) return true;
-
-			return false;
-		}
-
-		private CongoMove GetUserMove()
-		{
-			CongoMove move = null;
-
-			do {
-				var command = userInterface.GetUserCommand();
-				if (command is AdviseCommand) {
-					var advice = (AdviseCommand)command;
-					move = Algorithm.GetMove(this, advice.Heuristic);
-					userInterface.ReportAdvice(move, advice.Heuristic);
-					move = null;
-				} else if (command is ExitCommand) {
-					throw new Exception(" The game has suddenly ended.");
-				} else if (command is MoveCommand) {
-					var unpack = (MoveCommand)command;
-					move = new CongoMove(unpack.Fr, unpack.To);
-					if (!isValid(move)) move = null;
-				} else if (command is ShowCommand) {
-					userInterface.Show(board);
-				} else {
-					/* do nothing */
-				}
-			} while (move == null);
-
-			return move;
-		}
-
-		private CongoGame(CongoGame previousGame, CongoBoard board,
-			ColorCode activePlayer, CongoPlayer whitePlayer,
-			CongoPlayer blackPlayer, ICongoUserInterface userInterface)
+		private CongoGame(CongoGame previousGame, CongoMove transitionMove,
+			ImmutableList<int> monkeyCaptures, CongoBoard board,
+			CongoColor activePlayerColor, CongoPlayer whitePlayer,
+			CongoPlayer blackPlayer)
 		{
 			this.previousGame = previousGame;
+			this.transitionMove = transitionMove;
+			this.monkeyCaptures = monkeyCaptures;
 			this.board = board;
+			this.activePlayerColor = activePlayerColor;
 			this.whitePlayer = whitePlayer;
 			this.blackPlayer = blackPlayer;
-			this.activePlayer = activePlayer;
-			this.userInterface = userInterface;
+		}
+
+		public CongoMove TransitionMove => transitionMove;
+
+		public CongoBoard Board => board;
+
+		public CongoColor ActivePlayerColor => activePlayerColor;
+
+		public CongoPlayer ActivePlayer
+			=> activePlayerColor.IsWhite() ? whitePlayer : blackPlayer;
+
+		public CongoPlayer Opponent
+			=> activePlayerColor.IsWhite() ? blackPlayer : whitePlayer;
+
+		public CongoGame Transition(CongoMove move)
+		{
+			var newMonkeyCaptures = monkeyCaptures;
+			var newBoard = board;
+			CongoColor newActivePlayerColor = activePlayerColor.Invert();
+			CongoPlayer newWhitePlayer;
+			CongoPlayer newBlackPlayer;
+
+			if (move is MonkeyJump) {
+
+				/* first or consecutive monkey jump */
+
+				var jump = (MonkeyJump)move;
+
+				newBoard = newBoard.With(activePlayerColor, board.GetPiece(move.Fr), move.To)
+								   .With(activePlayerColor.Invert(), Captured.Piece, jump.Bt)
+								   .Without(move.Fr);
+
+				if (newMonkeyCaptures == null) {
+					newMonkeyCaptures = new List<int>().ToImmutableList();
+				}
+
+				newMonkeyCaptures = newMonkeyCaptures.Add(jump.Bt);
+				newActivePlayerColor = newActivePlayerColor.Invert(); // repeated move
+
+			} else if (board.GetPiece(move.Fr) is Monkey && move.Fr == move.To) {
+
+				/* interrupted monkey jump, remove all captured pieces */
+
+				foreach (var capture in monkeyCaptures) {
+					newBoard = newBoard.Without(capture);
+				}
+
+			} else {
+
+				/* ordinary move */
+
+				newBoard = newBoard.With(activePlayerColor, board.GetPiece(move.Fr), move.To)
+								   .Without(move.Fr);
+			}
+
+			newWhitePlayer = whitePlayer.With(White.Color, newBoard, newMonkeyCaptures);
+			newBlackPlayer = blackPlayer.With(Black.Color, newBoard, newMonkeyCaptures);
+
+			return new CongoGame(this, move, newMonkeyCaptures, newBoard,
+				newActivePlayerColor, newWhitePlayer, newBlackPlayer);
+		}
+
+		public bool IsInvalid()
+		{
+			return !ActivePlayer.HasLion && !Opponent.HasLion;
+		}
+
+		public bool IsWin()
+		{
+			return !ActivePlayer.HasLion;
+		}
+
+		public bool IsDraw()
+		{
+			return !ActivePlayer.HasNonLion && !ActivePlayer.HasNonLion;
 		}
 
 		public bool HasEnded()
 		{
-			return false;
-		}
-
-		public CongoGame Proceed()
-		{
-			userInterface.Show(board);
-
-			CongoMove move;
-			if (ActivePlayer.Code.IsHI()) {
-				move = GetUserMove();
-			} else { // some heuristic
-				move = Algorithm.GetMove(this, HeuristicCode.Random);
-			}
-
-			var newBoard = board.With(activePlayer, board.GetPieceCode(move.Fr), move.To)
-								.Without(move.Fr);
-
-			var newWhitePlayer = whitePlayer.With(ColorCode.White, newBoard);
-			var newBlackPlayer = blackPlayer.With(ColorCode.Black, newBoard);
-
-			return new CongoGame(this, newBoard, activePlayer.Invert(),
-				newWhitePlayer, newBlackPlayer, userInterface);
-		}
-
-		public void ReportResult()
-		{
-			// TODO
-			throw new Exception();
+			return IsInvalid() || IsWin() || IsDraw();
 		}
 	}
 }

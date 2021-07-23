@@ -1,8 +1,6 @@
-NAME
+ NAME
     show
-DESCRIPTION
-    shows current board and additional statistics
-SEMANTICS
-    show
-OPTIONS
-    -
+ DESCRIPTION
+    shows game statistics
+ USAGE
+    show board | players | moves | game

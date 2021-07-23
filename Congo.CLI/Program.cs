@@ -1,6 +1,4 @@
-﻿using System;
-
-using Congo.Core;
+﻿using Congo.Core;
 
 namespace Congo.CLI
 {
@@ -8,17 +6,24 @@ namespace Congo.CLI
 	{
 		static void Main(string[] args)
 		{
-			CongoCommandLine ui = null;
 			CongoGame game;
+			CongoMove move;
+			CongoCommandLine ui = null;
+			
 			try {
-				ui = new CongoCommandLine();
-				game = CongoGame.New(ui);
+				ui = CongoCommandLine.SetCommandLine();
+				game = ui.SetGame();
 				while (!game.HasEnded()) {
-					game = game.Proceed();
+					ui.ShowBoard(game);
+					move = game.ActivePlayer.GetValidMove(ui, game);
+					game = game.Transition(move);
+					game = ui.WaitResponse(game);
 				}
-				game.ReportResult();
-			} catch (Exception e) {
-				ui?.ReportExit(e.Message);
+				ui.ReportResult(game);
+			} catch (ExitCommandException) {
+
+			} finally {
+				ui?.Dispose(); /* network socket, database, etc. */
 			}
 		}
 	}

@@ -3,10 +3,10 @@
 namespace Congo.CLI.MSTest
 {
 	[TestClass]
-	public class UnitTest1
+	public class CommandLineTest
 	{
 		[TestMethod]
-		public void TestMethod1()
+		public void CommandLine_Test()
 		{
 
 		}
