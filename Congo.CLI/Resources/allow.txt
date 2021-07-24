@@ -1,0 +1,6 @@
+ NAME
+    allow
+ DESCRIPTION
+    shows allowed commands
+ USAGE
+    allow

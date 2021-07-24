@@ -22,6 +22,7 @@ namespace Congo.CLI
 		private static readonly ImmutableDictionary<string, VerifyCommandDelegate> supportedCommands =
 			new Dictionary<string, VerifyCommandDelegate>() {
 				{ "advise",  verifyAdviseCommand  },
+				{ "allow",   verifyAllowCommand   },
 				{ "connect", verifyConnectCommand },
 				{ "exit",    verifyExitCommand    },
 				{ "game",    verifyGameCommand    },
@@ -78,7 +79,7 @@ namespace Congo.CLI
 			}.ToImmutableDictionary();
 
 		private static string getMoveRepr(CongoMove move)
-			=> " (" + squareView[move.Fr] + "," + squareView[move.To] + ")";
+			=> "(" + squareView[move.Fr] + "," + squareView[move.To] + ")";
 
 		private static string readTextFile(string filename)
 		{
@@ -89,6 +90,11 @@ namespace Congo.CLI
 			}
 		}
 		
+		protected static void reportAllowedCommands(List<string> allowedCommands)
+		{
+			writer.WriteLine($" Allowed commands are {string.Join(", ", allowedCommands.ToArray())}.");
+		}
+
 		private static void reportHelpFile(string helpFile)
 		{
 			writer.Write(helpFile);
@@ -127,7 +133,13 @@ namespace Congo.CLI
 			return counter;
 		}
 
-		private static void showBoard(CongoGame game)
+		private static void showTransition(CongoGame game)
+		{
+			writer.WriteLine();
+			writer.WriteLine($" transition {getMoveRepr(game.TransitionMove)}");
+		}
+
+		protected static void showBoard(CongoGame game)
 		{
 			writer.WriteLine();
 			var upperBound = game.Board.Size * game.Board.Size;
@@ -180,12 +192,12 @@ namespace Congo.CLI
 			int cnt = 0;
 			foreach (var move in game.ActivePlayer.Moves) {
 				var repr = getMoveRepr(move);
-				if (cnt + repr.Length > 60) {
+				if (cnt + repr.Length > 50) {
 					cnt = 0;
 					writer.WriteLine();
 				}
 				cnt += repr.Length;
-				writer.Write(repr);
+				writer.Write($" {repr}");
 			}
 			writer.WriteLine();
 		}
@@ -211,6 +223,13 @@ namespace Congo.CLI
 		{
 			Func<string[], bool> predicate = (string[] arr)
 				=> arr.Length != 2 || !supportedAlgorithms.ContainsKey(arr[1]);
+
+			return verifyCommand(predicate, input);
+		}
+
+		private static string[] verifyAllowCommand(string[] input)
+		{
+			Func<string[], bool> predicate = (string[] arr) => arr.Length != 1;
 
 			return verifyCommand(predicate, input);
 		}
@@ -310,7 +329,7 @@ namespace Congo.CLI
 
 			do {
 				writer.WriteLine();
-				writer.Write($" Set {playerColor} player type (ai | hi) ");
+				writer.Write($" Set {playerColor} player type (ai|hi) ");
 				type = reader.ReadLine().ToLower();
 				if (!allowedTypes.ContainsKey(type)) {
 					writer.WriteLine($" The type {type} is not allowed. Try again.");
@@ -322,6 +341,7 @@ namespace Congo.CLI
 
 		public void ShowBoard(CongoGame game)
 		{
+			showTransition(game);
 			showBoard(game);
 		}
 
@@ -330,7 +350,7 @@ namespace Congo.CLI
 		{
 			Greet();
 			var allowedCommands = new List<string>() {
-				"exit", "help", "play"
+				"allow", "exit", "help", "play"
 			};
 
 			CongoCommandLine cli = null;
@@ -340,6 +360,10 @@ namespace Congo.CLI
 				var command = getUserCommand(allowedCommands);
 
 				switch (command[0]) {
+
+					case "allow":
+						reportAllowedCommands(allowedCommands);
+						break;
 
 					case "exit":
 						throw new ExitCommandException();
@@ -365,7 +389,7 @@ namespace Congo.CLI
 		{
 			CongoMove move = null;
 			var allowedCommands = new List<string>() {
-				"advise", "exit", "help", "move", "show"
+				"advise", "allow", "exit", "help", "move", "show"
 			};
 
 			do {
@@ -377,6 +401,10 @@ namespace Congo.CLI
 						move = supportedAlgorithms[command[0]].Invoke(game);
 						reportAdvisedMove(move, command[1]);
 						move = null;
+						break;
+
+					case "allow":
+						reportAllowedCommands(allowedCommands);
 						break;
 
 					case "exit":
@@ -423,22 +451,43 @@ namespace Congo.CLI
 	{
 		public override CongoGame SetGame()
 		{
+			string[] command;
 			var allowedCommands = new List<string>() {
-				"game"
+				"allow", "game"
 			};
 
-			var command = getUserCommand(allowedCommands);
+			do {
+				command = getUserCommand(allowedCommands);
+
+				switch (command[0]) {
+
+					case "allow":
+						reportAllowedCommands(allowedCommands);
+						break;
+
+					case "game":
+						break;
+
+					default:
+						throw new NotImplementedException();
+				}
+			} while (command[0] != "game");
 
 			var wp = getPlayerType(White.Color);
 			var bp = getPlayerType(Black.Color);
 
+			CongoGame game;
+
 			if (command[1] == "standard") {
-				return CongoGame.Standard(wp, bp);
+				game = CongoGame.Standard(wp, bp);
 			} else if (CongoGame.IsFenValid(command[1])) {
 				throw new NotImplementedException();							// TODO
 			} else {
 				throw new NotImplementedException();							// TODO
 			}
+
+			showBoard(game);
+			return game;
 		}
 
 		public override CongoGame WaitResponse(CongoGame game) => game;

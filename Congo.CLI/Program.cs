@@ -14,9 +14,9 @@ namespace Congo.CLI
 				ui = CongoCommandLine.SetCommandLine();
 				game = ui.SetGame();
 				while (!game.HasEnded()) {
-					ui.ShowBoard(game);
 					move = game.ActivePlayer.GetValidMove(ui, game);
 					game = game.Transition(move);
+					ui.ShowBoard(game);
 					game = ui.WaitResponse(game);
 				}
 				ui.ReportResult(game);
