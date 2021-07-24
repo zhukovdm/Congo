@@ -1,6 +1,6 @@
  NAME
     play
  DESCRIPTION
-    decides locality of the game
+    Decides locality of the game.
  USAGE
     play local | network

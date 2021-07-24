@@ -1,6 +1,6 @@
  NAME
     show
  DESCRIPTION
-    shows game statistics
+    Shows game statistics.
  USAGE
     show board | players | moves | game

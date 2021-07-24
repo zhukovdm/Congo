@@ -28,6 +28,8 @@ on the target system:
 Check out the [User's manual](./assets/doc/um.pdf) to learn more about rules
 and game control.
 
+### Console mode
+
 To start standard game against computer copy and paste the following.
 ```console
 play local
@@ -35,6 +37,8 @@ game standard
 hi
 ai
 ```
+
+![open](./assets/img/console.png)
 
 ## References
 

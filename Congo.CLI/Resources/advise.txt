@@ -1,6 +1,6 @@
  NAME
     advise
  DESCRIPTION
-    advise next move based on a chosen heuristic
+    Advises next move based on a chosen algorithm.
  USAGE
     advise rnd | minimax | negamax | iterdeep

@@ -1,6 +1,6 @@
  NAME
     exit
  DESCRIPTION
-    stores and exits the game
+    Stores and exits the game.
  USAGE
     exit

@@ -1,6 +1,6 @@
  NAME
     help
  DESCRIPTION
-    shows help manual for a chosen command
+    Shows help manual for a chosen command.
  USAGE
     help advise | connect | exit | game | help | move | play | show

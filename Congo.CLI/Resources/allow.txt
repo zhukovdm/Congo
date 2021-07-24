@@ -1,6 +1,6 @@
  NAME
     allow
  DESCRIPTION
-    shows allowed commands
+    Shows allowed commands.
  USAGE
     allow

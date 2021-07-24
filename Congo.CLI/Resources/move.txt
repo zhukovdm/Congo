@@ -1,6 +1,6 @@
  NAME
     move
  DESCRIPTION
-    moves a certain piece from a square to a square
+    Moves a certain piece from a square to a square.
  USAGE
     move [a-g][1-7] [a-g][1-7]
