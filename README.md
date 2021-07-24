@@ -1,5 +1,3 @@
-Please, note that the project is currently under construction.
-
 # Congo
 
 This project is a .NET implementation of the board game `Congo`.
@@ -10,19 +8,19 @@ Before installation, ensure that the following technologies are available
 on the target system:
 - `Windows 10`,
 - `.NET Framework 4.8`,
-- `Visual Studio 2019`.
+- `Visual Studio Community 2019`.
 
 ## Installation
 
-- Open `Visual Studio 2019`.
+- Open `Visual Studio Community 2019`.
 - Click on `Clone a repository` in the upper right corner.
 - Insert `https://github.com/zhukovdm/Congo` into `Repository location` field.
 - Click on `Clone` in the bottom right corner.
 - `Open` the solution.
 
 ![open](./assets/img/install.png)
-- Press `Ctrl + Shift + B` to build entire solution.
-- Press `Ctrl + F5` to start the game.
+- Press `Ctrl+Shift+B` to build entire solution.
+- Press `Ctrl+F5` to start the game.
 
 ## Gameplay
 
@@ -40,6 +38,14 @@ ai
 ```
 
 ![open](./assets/img/console.png)
+
+### WFA mode
+
+Not yet implemented.
+
+### WPF mode
+
+Not yet implemented.
 
 ## References
 
