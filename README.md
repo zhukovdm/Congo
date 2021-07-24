@@ -21,7 +21,8 @@ on the target system:
 - `Open` the solution.
 
 ![open](./assets/img/install.png)
-- Press `Ctrl + F5`.
+- Press `Ctrl + Shift + B` to build entire solution.
+- Press `Ctrl + F5` to start the game.
 
 ## Gameplay
 
