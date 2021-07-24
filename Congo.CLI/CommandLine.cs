@@ -363,7 +363,6 @@ namespace Congo.CLI
 			CongoCommandLine cli = null;
 
 			do {
-
 				var command = getUserCommand(allowedCommands);
 
 				switch (command[0]) {
@@ -418,7 +417,7 @@ namespace Congo.CLI
 						throw new ExitCommandException();
 
 					case "help":
-						writer.WriteLine(readTextFile(command[1]));
+						reportHelpFile(readTextFile(command[1]));
 						break;
 
 					case "move":
