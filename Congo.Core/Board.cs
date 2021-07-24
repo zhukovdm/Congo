@@ -259,14 +259,8 @@ namespace Congo.Core
 		{
 			var rank  = square / Size;
 			var shift = square % Size * 4;
-			var newWhiteOccupied = whiteOccupied;
-			var newBlackOccupied = blackOccupied;
-			
-			if (color.IsWhite()) {
-				newWhiteOccupied = setBitToValue(whiteOccupied, square, true);
-			} else {
-				newBlackOccupied = setBitToValue(blackOccupied, square, true);
-			}
+			var newWhiteOccupied = setBitToValue(whiteOccupied, square, color.IsWhite());
+			var newBlackOccupied = setBitToValue(blackOccupied, square, color.IsBlack());
 
 			return new CongoBoard(newWhiteOccupied, newBlackOccupied,
 				pieces.SetItem(rank, (pieces[rank] & ~(0xFU << shift)) | (piece.Code << shift)));

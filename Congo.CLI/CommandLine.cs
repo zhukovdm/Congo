@@ -398,7 +398,7 @@ namespace Congo.CLI
 				switch (command[0]) {
 
 					case "advise":
-						move = supportedAlgorithms[command[0]].Invoke(game);
+						move = supportedAlgorithms[command[1]].Invoke(game);
 						reportAdvisedMove(move, command[1]);
 						move = null;
 						break;

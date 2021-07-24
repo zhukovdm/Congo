@@ -32,6 +32,8 @@ namespace Congo.Core
 		public readonly int Bt;
 
 		public MonkeyJump(int fr, int bt, int to) :base(fr, to) { Bt = bt; }
+
+		public override string ToString() => (Square)Fr + ", " + (Square)Bt + ", " + (Square)To;
 	}
 
 	public class CongoMoveObjComparer : IComparer
