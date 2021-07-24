@@ -3,5 +3,6 @@
 	public interface ICongoUserInterface
 	{
 		CongoMove GetHIMove(CongoGame game);
+		void ReportWrongHIMove();
 	}
 }

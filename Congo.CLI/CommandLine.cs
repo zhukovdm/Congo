@@ -438,6 +438,11 @@ namespace Congo.CLI
 			return move;
 		}
 
+		public void ReportWrongHIMove()
+		{
+			writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
+		}
+
 		public abstract CongoGame SetGame();
 
 		public abstract CongoGame WaitResponse(CongoGame game);

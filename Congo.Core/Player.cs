@@ -87,7 +87,9 @@ namespace Congo.Core
 
 			do {
 				move = ui.GetHIMove(game);
-			} while ((move = find(move)) == null);
+				move = find(move);
+				if (move == null) ui.ReportWrongHIMove();
+			} while (move == null);
 			
 			return move;
 		}
