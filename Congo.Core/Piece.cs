@@ -159,7 +159,7 @@ namespace Congo.Core
 				temp += direction * board.Size;
 			}
 
-			if (board.IsRiver(temp) || board.IsOpponentPiece(color, temp)) {
+			if (!board.IsPieceFriendly(color, temp)) {
 				moves.Add(new CongoMove(square, temp));
 			}
 
