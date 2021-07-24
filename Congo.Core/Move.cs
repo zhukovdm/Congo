@@ -23,6 +23,8 @@ namespace Congo.Core
 		public readonly int Fr, To;
 
 		public CongoMove(int fr, int to) { Fr = fr; To = to; }
+
+		public override string ToString() => (Square)Fr + ", " + (Square)To;
 	}
 
 	public class MonkeyJump : CongoMove

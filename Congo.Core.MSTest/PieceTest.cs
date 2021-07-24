@@ -251,6 +251,28 @@ namespace Congo.Core.MSTest
 			expected.Sort(comparer);
 			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
 		}
+
+		[TestMethod]
+		public void GroundMovesBelowRiver()
+		{
+			var comparer = new CongoMoveGenComparer();
+			var board = CongoBoard.Empty
+				.With(White.Color, Crocodile.Piece, (int)Square.F1);
+			var piece = board.GetPiece((int)Square.F1);
+			var actual = piece.GetMoves(White.Color, board, (int)Square.F1);
+			actual.Sort(comparer);
+			var expected = new List<CongoMove>() {
+				new CongoMove((int)Square.F1, (int)Square.E1),
+				new CongoMove((int)Square.F1, (int)Square.E2),
+				new CongoMove((int)Square.F1, (int)Square.F4),
+				new CongoMove((int)Square.F1, (int)Square.F3),
+				new CongoMove((int)Square.F1, (int)Square.F2),
+				new CongoMove((int)Square.F1, (int)Square.G2),
+				new CongoMove((int)Square.F1, (int)Square.G1)
+			};
+			expected.Sort(comparer);
+			CollectionAssert.AreEqual(expected, actual, new CongoMoveObjComparer());
+		}
 	}
 
 	[TestClass]
