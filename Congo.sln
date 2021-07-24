@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.WPF", "Congo.WPF\Cong
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Server", "Congo.Server\Congo.Server.csproj", "{969CCF7B-47E5-4C1E-AD7F-2D5C14F43D21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{EDC54DEC-2880-4CDA-A457-518D2E270C32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{969CCF7B-47E5-4C1E-AD7F-2D5C14F43D21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{969CCF7B-47E5-4C1E-AD7F-2D5C14F43D21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{969CCF7B-47E5-4C1E-AD7F-2D5C14F43D21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDC54DEC-2880-4CDA-A457-518D2E270C32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDC54DEC-2880-4CDA-A457-518D2E270C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDC54DEC-2880-4CDA-A457-518D2E270C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDC54DEC-2880-4CDA-A457-518D2E270C32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
