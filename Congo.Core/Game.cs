@@ -149,6 +149,8 @@ namespace Congo.Core
 					newBoard = newBoard.Without(capture);
 				}
 
+				newMonkeyCaptures = null;
+
 			} else {
 
 				/* ordinary move */
