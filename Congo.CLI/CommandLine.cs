@@ -100,6 +100,11 @@ namespace Congo.CLI
 			writer.Write(helpFile);
 		}
 
+		private static void reportEmptyCommand()
+		{
+			writer.WriteLine(" Input is empty. Consult allow.");
+		}
+
 		private static void reportNotSupportedCommand(string command)
 		{
 			writer.WriteLine($" Command {command} is not supported. Consult help help.");
@@ -295,7 +300,7 @@ namespace Congo.CLI
 		protected static string[] getUserCommand(List<string> allowedCommands)
 		{
 			string[] input;
-			string[] command;
+			string[] command = null;
 
 			do {
 				writer.WriteLine();
@@ -310,9 +315,10 @@ namespace Congo.CLI
 						reportNotAllowedCommand(input[0]);
 						command = null;
 					}					
+				} else if (input.Length == 0) {
+					reportEmptyCommand();
 				} else {
 					reportNotSupportedCommand(input[0]);
-					command = null;
 				}
 			} while (command == null);
 
@@ -331,6 +337,7 @@ namespace Congo.CLI
 				writer.WriteLine();
 				writer.Write($" Set {playerColor} player type (ai|hi) ");
 				type = reader.ReadLine().ToLower();
+
 				if (!allowedTypes.ContainsKey(type)) {
 					writer.WriteLine($" The type {type} is not allowed. Try again.");
 				}

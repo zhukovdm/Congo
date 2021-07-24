@@ -28,6 +28,14 @@ on the target system:
 Check out the [User's manual](./assets/doc/um.pdf) to learn more about rules
 and game control.
 
+To start standard game against computer enter
+```console
+play local
+game standard
+hi
+ai
+```
+
 ## References
 
 - [Mindsports - Interesting game - Congo](https://www.mindsports.nl/index.php/side-dishes/interesting-games?start=2)
