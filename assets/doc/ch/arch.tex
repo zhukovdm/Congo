@@ -1,0 +1,67 @@
+\section{Application architecture}
+
+The entire application is divided into several projects.
+
+\subsection{Congo.Core}
+
+\textsf{Congo.Core} provides implementations of the high-level abstractions,
+such as Player, Board and all kinds of Pieces. There are two types of player
+instances, controlled by a real player and controlled by an artificial agent.
+Each player might enforce the board to advise using certain algorithm.
+Artificial agent uses this move to proceed.
+
+The player
+ensures that transition move is valid. According to the rules, there will be 8
+different types of pieces. Each piece has its own behavior under certain
+circumstances.
+
+\vspace{0.5em}
+
+Algoritm.cs provides implementations of the various algorithms and
+strategies, such as random choise, negamax, iterative deepening, and
+many more. Once a player decides to get an advise, the immediate board is
+passed to a certain algorithm, which returns a move. The current scope includes
+\textsf{NegaMax} and \textsf{Iterative Deepening} algorithms with possible
+extension in mind.
+
+\subsection{Congo.Core.MSTest}
+
+Supporting project used for \textsf{Congo.Core} unit testing.
+
+\subsection{Congo.CLI}
+
+\textsf{Congo.CLI} project will implement simple command line interface The
+game will be controlled via issuing commands. The following commands are
+supported: \textsf{a} (advice), \textsf{h} (help), \textsf{m} (move) and
+\textsf{p} (play). The detailed description on each command is provided upon
+request, enter \textsf{h h} to get more information.
+
+\subsection{Congo.CLI.MSTest}
+
+Supporting project used for \textsf{Congo.CLI} unit testing.
+
+\subsection{Congo.Server}
+
+Not yet implemented.
+
+\subsection{Congo.WFA}
+
+Not yet implemented.
+
+\subsection{Congo.WPF}
+
+Not yet implemented.
+
+\subsection{Project dependencies}
+
+\begin{center}
+\begin{tabular}{ l | l }
+Congo.Core        & -          \\
+Congo.Core.MSTest & Congo.Core \\
+Congo.CLI         & Congo.Core \\
+Congo.CLI.MSTest  & Congo.CLI  \\
+Congo.Server      & Congo.Core \\
+Congo.WFA         & Congo.Core \\
+Congo.WPF         & Congo.Core
+\end{tabular}
+\end{center}

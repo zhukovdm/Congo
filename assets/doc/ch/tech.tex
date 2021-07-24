@@ -1,0 +1,26 @@
+\section{.NET technology coverage}
+
+Game engine is supposed to be a computationaly intensive application,
+therefore it is reasonable to parallel evaluation once board is issued to the
+certain heuristic. The application will use pure threads or tasks to obtain
+the next move. To achieve better results it is important to avoid repeated
+evaluation of the already achieved boards. It is planned to implement data
+structure with simultaneous access for storing temporary results.
+
+\vspace{0.5em}
+
+The immediate states of the game (board with pieces and players) are supposed
+to be immutable for easier evaluation. Immutable data structures
+(\textsf{ImmutableArray}\textless \textsf{T}\textgreater, etc.) will certainly
+be used.
+
+\vspace{0.5em}
+
+The application will occasionally use LinqToObjects extensions to iterate
+over data structures in less computationaly intensive cases.
+
+\vspace{0.5em}
+
+It is planned to apply other technologies, such as delegates and lambda
+functions. However, the context or use cases are not clear at the moment.
+Therefore, I don't want to promise something I will not use at all.
