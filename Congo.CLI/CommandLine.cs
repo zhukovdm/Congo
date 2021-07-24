@@ -446,8 +446,8 @@ namespace Congo.CLI
 		{
 			writer.WriteLine();
 			var winner = game.ActivePlayerColor.Invert().IsWhite() ? "white" : "black";
-			var move = getMoveRepr(game.TransitionMove);
-			writer.WriteLine($" {winner} wins via {move}.");
+			writer.WriteLine($" {winner} wins.");
+			writer.WriteLine();
 		}
 
 		public abstract void Dispose();
