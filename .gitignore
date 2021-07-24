@@ -4,11 +4,13 @@
 bin/
 obj/
 publish/
-TestResults/
 *.user
 
 # NuGet packages
 packages/
+
+# MSTest out folder
+TestResults/
 
 # LaTeX files
 *.aux
