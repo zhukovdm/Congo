@@ -26,9 +26,8 @@ on the target system:
 ## Gameplay
 
 Check out the [User's manual](./assets/doc/um.pdf) to learn more about rules
-and game control.
-
-To start standard game against computer enter
+and game control. To start standard game against computer copy and paste the
+following.
 ```console
 play local
 game standard
