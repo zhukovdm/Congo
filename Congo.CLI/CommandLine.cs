@@ -196,13 +196,13 @@ namespace Congo.CLI
 			writer.WriteLine();
 			int cnt = 0;
 			foreach (var move in game.ActivePlayer.Moves) {
-				var repr = getMoveRepr(move);
-				if (cnt + repr.Length > 50) {
+				var repr = " " + getMoveRepr(move);
+				if (cnt + repr.Length > 40) {
 					cnt = 0;
 					writer.WriteLine();
 				}
 				cnt += repr.Length;
-				writer.Write($" {repr}");
+				writer.Write(repr);
 			}
 			writer.WriteLine();
 		}
