@@ -162,7 +162,7 @@ namespace Congo.Core
 
 		/* The order is critical, solution is implemented due to 
 		 * a performance issue (4-bit indexing). */
-		public static readonly ImmutableArray<CongoPiece> sample =
+		private static readonly ImmutableArray<CongoPiece> sample =
 			new CongoPiece[] {
 				Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
 				Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece,
@@ -334,30 +334,7 @@ namespace Congo.Core
 			return GetPiece(square).IsLion() && castle.Contains(square);
 		}
 
-		private class CongoBoardEnumerator : IParametrizedEnumerator<int>
-		{
-			private ulong occupancy;
-
-			public CongoBoardEnumerator(ulong occupancy)
-			{
-				this.occupancy = occupancy;
-				Current = -1;
-			}
-
-			public int Current { get; private set; }
-
-			public bool MoveNext()
-			{
-				if (occupancy == 0) return false;
-				var lsb = occupancy & (ulong.MaxValue - occupancy + 1);
-				Current = Decoder.DeBruijnLSB(lsb);
-				occupancy &= ~lsb;
-
-				return true;
-			}
-		}
-
 		public IParametrizedEnumerator<int> GetEnumerator(CongoColor color)
-			=> new CongoBoardEnumerator(color.IsWhite() ? whiteOccupied : blackOccupied);
+			=> new BitScanEnumerator(color.IsWhite() ? whiteOccupied : blackOccupied);
 	}
 }
