@@ -4,7 +4,7 @@
 	{
 		public static int Basic(CongoGame game)
 		{
-			return game.ActivePlayerColor.IsWhite() ? 1 : -1;
+			return game.ActivePlayer.Color.IsWhite() ? 1 : -1;
 		}
 	}
 }

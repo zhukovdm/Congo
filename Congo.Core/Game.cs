@@ -6,6 +6,16 @@ namespace Congo.Core
 {
 	public class CongoGame
 	{
+		#region Unattached game
+
+		public static CongoGame Unattached(CongoBoard board, CongoPlayer activePlayer,
+			CongoPlayer whitePlayer, CongoPlayer blackPlayer)
+		{
+			return new CongoGame(null, null, null, board, activePlayer, whitePlayer, blackPlayer);
+		}
+
+		#endregion
+
 		#region Standard game
 
 		private static CongoBoard setMixedRank(CongoBoard board, CongoColor color, int rank)
@@ -32,11 +42,11 @@ namespace Congo.Core
 
 		private static CongoPlayer getPlayer(CongoColor color, CongoBoard board, Type playerType)
 		{
-			if (playerType == typeof(AI)) return new AI(color, board, null);
-			else                          return new HI(color, board, null);
+			if (playerType == typeof(Ai)) return new Ai(color, board, null);
+			else                          return new Hi(color, board, null);
 		}
 
-		public static CongoGame Standard(Type whiteType, Type blackType)
+		public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
 		{
 			var b = CongoBoard.Empty;
 			b = setMixedRank(b, Black.Color, 0);
@@ -44,20 +54,10 @@ namespace Congo.Core
 			b = setPawnRank (b, White.Color, 5);
 			b = setMixedRank(b, White.Color, 6);
 
-			var wp = getPlayer(White.Color, b, whiteType);
-			var bp = getPlayer(Black.Color, b, blackType);
+			var wp = getPlayer(White.Color, b, whitePlayerType);
+			var bp = getPlayer(Black.Color, b, blackPlayerType);
 
-			return new CongoGame(null, null, null, b, White.Color, wp, bp);
-		}
-
-		#endregion
-
-		#region Unattached game
-
-		public static CongoGame Unattached(CongoBoard board, CongoColor color,
-			CongoPlayer whitePlayer, CongoPlayer blackPlayer)
-		{
-			return new CongoGame(null, null, null, board, color, whitePlayer, blackPlayer);
+			return Unattached(b, wp, wp, bp);
 		}
 
 		#endregion
@@ -84,22 +84,22 @@ namespace Congo.Core
 
 		private readonly CongoGame previousGame;
 		private readonly CongoMove transitionMove;
-		private readonly ImmutableList<int> monkeyCaptures;
+		private readonly ImmutableList<MonkeyJump> monkeyJumps;
 		private readonly CongoBoard board;
-		private readonly CongoColor activePlayerColor;
+		private readonly CongoPlayer activePlayer;
 		private readonly CongoPlayer whitePlayer;
 		private readonly CongoPlayer blackPlayer;
 
 		private CongoGame(CongoGame previousGame, CongoMove transitionMove,
-			ImmutableList<int> monkeyCaptures, CongoBoard board,
-			CongoColor activePlayerColor, CongoPlayer whitePlayer,
+			ImmutableList<MonkeyJump> monkeyJumps, CongoBoard board,
+			CongoPlayer activePlayer, CongoPlayer whitePlayer,
 			CongoPlayer blackPlayer)
 		{
 			this.previousGame = previousGame;
 			this.transitionMove = transitionMove;
-			this.monkeyCaptures = monkeyCaptures;
+			this.monkeyJumps = monkeyJumps; // only jumps of the active player
 			this.board = board;
-			this.activePlayerColor = activePlayerColor;
+			this.activePlayer = activePlayer;
 			this.whitePlayer = whitePlayer;
 			this.blackPlayer = blackPlayer;
 		}
@@ -108,19 +108,20 @@ namespace Congo.Core
 
 		public CongoBoard Board => board;
 
-		public CongoColor ActivePlayerColor => activePlayerColor;
-
 		public CongoPlayer ActivePlayer
-			=> activePlayerColor.IsWhite() ? whitePlayer : blackPlayer;
+			=> activePlayer.Color.IsWhite() ? whitePlayer : blackPlayer;
 
 		public CongoPlayer Opponent
-			=> activePlayerColor.IsWhite() ? blackPlayer : whitePlayer;
+			=> activePlayer.Color.IsWhite() ? blackPlayer : whitePlayer;
 
 		public CongoGame Transition(CongoMove move)
 		{
-			var newMonkeyCaptures = monkeyCaptures;
+			var newMonkeyJumps = monkeyJumps;
 			var newBoard = board;
-			CongoColor newActivePlayerColor = activePlayerColor.Invert();
+
+			// new players are generated later, white <-> black
+			CongoColor newActivePlayerColor = activePlayer.Color.Invert();
+
 			CongoPlayer newWhitePlayer;
 			CongoPlayer newBlackPlayer;
 
@@ -130,40 +131,46 @@ namespace Congo.Core
 
 				var jump = (MonkeyJump)move;
 
-				newBoard = newBoard.With(activePlayerColor, board.GetPiece(move.Fr), move.To)
-								   .With(activePlayerColor.Invert(), Captured.Piece, jump.Bt)
+				newBoard = newBoard.With(activePlayer.Color, board.GetPiece(move.Fr), move.To)
+								   .With(activePlayer.Color.Invert(), Captured.Piece, jump.Bt)
 								   .Without(move.Fr);
 
-				if (newMonkeyCaptures == null) {
-					newMonkeyCaptures = new List<int>().ToImmutableList();
+				if (newMonkeyJumps == null) {
+					newMonkeyJumps = new List<MonkeyJump>().ToImmutableList();
 				}
 
-				newMonkeyCaptures = newMonkeyCaptures.Add(jump.Bt);
-				newActivePlayerColor = newActivePlayerColor.Invert(); // repeated move
+				newMonkeyJumps = newMonkeyJumps.Add(jump);
+				newActivePlayerColor = newActivePlayerColor.Invert(); // same as activePlayer.Color!
 
 			} else if (board.GetPiece(move.Fr) is Monkey && move.Fr == move.To) {
 
 				/* interrupted monkey jump, remove all captured pieces */
 
-				foreach (var capture in monkeyCaptures) {
-					newBoard = newBoard.Without(capture);
+				foreach (var jump in monkeyJumps) {
+					newBoard = newBoard.Without(jump.Bt);
 				}
 
-				newMonkeyCaptures = null;
+				newMonkeyJumps = null;
 
 			} else {
 
 				/* ordinary move */
 
-				newBoard = newBoard.With(activePlayerColor, board.GetPiece(move.Fr), move.To)
+				newBoard = newBoard.With(activePlayer.Color, board.GetPiece(move.Fr), move.To)
 								   .Without(move.Fr);
 			}
 
-			newWhitePlayer = whitePlayer.With(White.Color, newBoard, newMonkeyCaptures);
-			newBlackPlayer = blackPlayer.With(Black.Color, newBoard, newMonkeyCaptures);
+			var newWhiteMonkeyJumps = newActivePlayerColor.IsWhite() ? newMonkeyJumps : null;
+			var newBlackMonkeyJumps = newActivePlayerColor.IsBlack() ? newMonkeyJumps : null;
 
-			return new CongoGame(this, move, newMonkeyCaptures, newBoard,
-				newActivePlayerColor, newWhitePlayer, newBlackPlayer);
+			newWhitePlayer = whitePlayer.With(newBoard, newWhiteMonkeyJumps);
+			newBlackPlayer = blackPlayer.With(newBoard, newBlackMonkeyJumps);
+
+			var newActivePlayer = newActivePlayerColor.IsWhite() ?
+				newWhitePlayer : newBlackPlayer;
+
+			return new CongoGame(this, move, newMonkeyJumps, newBoard,
+				newActivePlayer, newWhitePlayer, newBlackPlayer);
 		}
 
 		public bool IsInvalid()
@@ -173,12 +180,15 @@ namespace Congo.Core
 
 		public bool IsWin()
 		{
-			return !ActivePlayer.HasLion;
+
+			return (ActivePlayer.HasLion && !Opponent.HasLion) ||
+				(!ActivePlayer.HasLion && Opponent.HasNonLion);
 		}
 
 		public bool IsDraw()
 		{
-			return !ActivePlayer.HasNonLion && !ActivePlayer.HasNonLion;
+			return ActivePlayer.HasLion && !ActivePlayer.HasNonLion &&
+				   Opponent.HasLion && !Opponent.HasNonLion;
 		}
 
 		public bool HasEnded()

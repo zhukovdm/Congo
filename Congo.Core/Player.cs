@@ -7,14 +7,15 @@ namespace Congo.Core
 	public abstract class CongoPlayer
 	{
 		protected readonly ImmutableArray<CongoMove> moves;
-		public readonly bool HasLion;
-		public readonly bool HasNonLion;
+		protected readonly bool hasLion;
+		protected readonly bool hasNonLion;
+		protected readonly CongoColor color;
 
-		protected static ImmutableArray<CongoMove> GenerateMoves(CongoColor color,
-			CongoBoard board, ImmutableList<int> monkeyCaptures, ref bool hasLion,
-			ref bool hasNonLion)
+		public CongoPlayer(CongoColor color, CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
 		{
-			hasLion = hasNonLion = false;
+			this.color = color;
+			hasLion = false;
+			hasNonLion = false;
 			var allMoves = new List<CongoMove>();
 			var e = board.GetEnumerator(color);
 
@@ -22,9 +23,9 @@ namespace Congo.Core
 				var piece = board.GetPiece(e.Current);
 				if (piece.IsLion()) hasLion = true;
 				if (piece.IsAnimal() && !piece.IsLion()) hasNonLion = true;
-				if (monkeyCaptures == null) {               /* ordinary move */
+				if (monkeyJumps == null) { /* ordinary move */
 					allMoves.AddRange(piece.GetMoves(color, board, e.Current));
-				} else {                                      /* monkey jump */
+				} else { /* monkey jump */
 					if (piece.IsMonkey()) {
 						var monkey = (Monkey)piece;
 						allMoves.AddRange(monkey.ContinueJump(color, board, e.Current));
@@ -32,35 +33,35 @@ namespace Congo.Core
 				}
 			}
 
-			return allMoves.ToImmutableArray();
-		}
-
-		public CongoPlayer(CongoColor color, CongoBoard board, ImmutableList<int> monkeyCaptures)
-		{
-			moves = GenerateMoves(color, board, monkeyCaptures, ref HasLion, ref HasNonLion);
+			moves = allMoves.ToImmutableArray();
 		}
 
 		public ImmutableArray<CongoMove> Moves => moves;
 
-		public abstract CongoPlayer With(CongoColor color, CongoBoard board,
-			ImmutableList<int> monkeyCaptures);
+		public bool HasLion => hasLion;
+
+		public bool HasNonLion => hasNonLion;
+
+		public CongoColor Color => color;
+
+		public abstract CongoPlayer With(CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps);
 
 		public abstract CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game);
 	}
 
-	public sealed class AI : CongoPlayer
+	public sealed class Ai : CongoPlayer
 	{
-		public AI(CongoColor color, CongoBoard board, ImmutableList<int> monkeyCaptures)
-			: base(color, board, monkeyCaptures) { }
+		public Ai(CongoColor color, CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
+			: base(color, board, monkeyJumps) { }
 
-		public override CongoPlayer With(CongoColor color, CongoBoard board, ImmutableList<int> monkeyCaptures)
-			=> new AI(color, board, monkeyCaptures);
+		public override CongoPlayer With(CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
+			=> new Ai(color, board, monkeyJumps);
 
 		public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
 			=> Algorithm.Rnd(game);
 	}
 
-	public sealed class HI : CongoPlayer
+	public sealed class Hi : CongoPlayer
 	{
 		private CongoMove find(CongoMove candidateMove)
 		{
@@ -75,20 +76,20 @@ namespace Congo.Core
 			return null;
 		}
 
-		public HI(CongoColor color, CongoBoard board, ImmutableList<int> monkeyCaptures)
-			:base(color, board, monkeyCaptures) { }
+		public Hi(CongoColor color, CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
+			:base(color, board, monkeyJumps) { }
 
-		public override CongoPlayer With(CongoColor color, CongoBoard board, ImmutableList<int> monkeyCaptures)
-			=> new HI(color, board, monkeyCaptures);
+		public override CongoPlayer With(CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
+			=> new Hi(color, board, monkeyJumps);
 
 		public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
 		{
 			CongoMove move;
 
 			do {
-				move = ui.GetHIMove(game);
+				move = ui.GetHiMove(game);
 				move = find(move);
-				if (move == null) ui.ReportWrongHIMove();
+				if (move == null) ui.ReportWrongHiMove();
 			} while (move == null);
 			
 			return move;

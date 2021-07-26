@@ -10,7 +10,7 @@ namespace Congo.Core.MSTest {
 			var result = true;
 			var num = 0x1UL;
 			for (int i = 0; i < 64; i++) {
-				var immed = Decoder.DeBruijnLSB(num << i);
+				var immed = BitScan.DeBruijnLsb(num << i);
 				result &= immed == i;
 			}
 			Assert.IsTrue(result);
