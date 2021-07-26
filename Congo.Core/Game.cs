@@ -142,7 +142,7 @@ namespace Congo.Core
 				newMonkeyJumps = newMonkeyJumps.Add(jump);
 				newActivePlayerColor = newActivePlayerColor.Invert(); // same as activePlayer.Color!
 
-			} else if (board.GetPiece(move.Fr) is Monkey && move.Fr == move.To) {
+			} else if (board.GetPiece(move.Fr).IsMonkey() && move.Fr == move.To) {
 
 				/* interrupted monkey jump, remove all captured pieces */
 
@@ -152,6 +152,12 @@ namespace Congo.Core
 
 				newMonkeyJumps = null;
 
+			} else if (board.GetPiece(move.Fr).IsPawn() && board.IsPawnPromotion(ActivePlayer.Color, move.To)) {
+
+				/* pawn -> superpawn promotion */
+
+				newBoard = newBoard.With(activePlayer.Color, Superpawn.Piece, move.To)
+								   .Without(move.Fr);
 			} else {
 
 				/* ordinary move */

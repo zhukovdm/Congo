@@ -242,6 +242,13 @@ namespace Congo.Core
 
 		public bool IsBelowRiver(int square) => isBelowRiver(square);
 
+		public bool IsPawnPromotion(CongoColor color, int square)
+		{
+			return color.IsWhite()
+				? square >= (int)Square.A7 && square <= (int)Square.G7
+				: square >= (int)Square.A1 && square <= (int)Square.G1;
+		}
+
 		public bool IsOccupied(int square) => getBit(whiteOccupied | blackOccupied, square);
 
 		public bool IsFirstMovePiece(int square) => isPieceWhite(square);

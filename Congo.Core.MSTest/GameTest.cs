@@ -47,5 +47,28 @@ namespace Congo.Core.MSTest
 		{
 			
 		}
+
+		[TestMethod]
+		public void Game_PawnToSuperpawnPromotion()
+		{
+			var board = CongoBoard.Empty
+				.With(White.Color, Pawn.Piece, (int)Square.D6)
+				.With(Black.Color, Pawn.Piece, (int)Square.F2)
+				.With(White.Color, Pawn.Piece, (int)Square.G5)
+				.With(Black.Color, Pawn.Piece, (int)Square.B3);
+			var white = new Hi(White.Color, board, null);
+			var black = new Hi(Black.Color, board, null);
+			var game = CongoGame.Unattached(board, white, white, black);
+			game = game.Transition(new CongoMove((int)Square.D6, (int)Square.D7));
+			game = game.Transition(new CongoMove((int)Square.F2, (int)Square.F1));
+			game = game.Transition(new CongoMove((int)Square.G5, (int)Square.G6));
+			game = game.Transition(new CongoMove((int)Square.B3, (int)Square.B2));
+			Assert.IsTrue(
+				game.Board.GetPiece((int)Square.D7).IsSuperpawn() &&
+				game.Board.GetPiece((int)Square.F1).IsSuperpawn() &&
+				game.Board.GetPiece((int)Square.G6).IsPawn() &&
+				game.Board.GetPiece((int)Square.B2).IsPawn()
+			);
+		}
 	}
 }

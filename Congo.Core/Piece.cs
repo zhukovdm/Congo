@@ -42,6 +42,10 @@ namespace Congo.Core
 
 		public bool IsAnimal() => Id != PieceId.Ground && Id != PieceId.River;
 
+		public bool IsPawn() => Id == PieceId.Pawn;
+
+		public bool IsSuperpawn() => Id == PieceId.Superpawn;
+
 		public bool IsLion() => Id == PieceId.Lion;
 
 		public bool IsMonkey() => Id == PieceId.Monkey;
