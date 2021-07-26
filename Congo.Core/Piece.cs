@@ -278,7 +278,7 @@ namespace Congo.Core
 
 		private protected override PieceId Id => PieceId.Lion;
 
-		public List<CongoMove> verticalJump(List<CongoMove> moves,
+		private List<CongoMove> verticalJump(List<CongoMove> moves,
 			CongoColor color, CongoBoard board, int square)
 		{
 			if (board.IsLionCastle(color, square)) {
@@ -298,7 +298,7 @@ namespace Congo.Core
 			return moves;
 		}
 
-		public List<CongoMove> diagonalJump(List<CongoMove> moves,
+		private List<CongoMove> diagonalJump(List<CongoMove> moves,
 			CongoColor color, CongoBoard board, int square)
 		{
 			if (board.TryDiagonalJump(color, square, out int target)) {
@@ -331,7 +331,8 @@ namespace Congo.Core
 
 		private protected override PieceId Id => PieceId.Monkey;
 
-		private List<CongoMove> addMonkeyJump(List<CongoMove> moves, CongoBoard board, int square, int leap)
+		private List<CongoMove> addMonkeyJump(List<CongoMove> moves,
+			CongoBoard board, int square, int leap)
 		{
 			var newRank = 2 * (leap / board.Size) - square / board.Size;
 			var newFile = 2 * (leap % board.Size) - square % board.Size;

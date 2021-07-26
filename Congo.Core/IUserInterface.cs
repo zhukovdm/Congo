@@ -2,7 +2,7 @@
 {
 	public interface ICongoUserInterface
 	{
-		CongoMove GetHIMove(CongoGame game);
-		void ReportWrongHIMove();
+		CongoMove GetHiMove(CongoGame game);
+		void ReportWrongHiMove();
 	}
 }

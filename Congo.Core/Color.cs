@@ -15,6 +15,7 @@
 
 		public CongoColor Invert() => IsWhite() ? Black.Color : White.Color;
 
+		// intentionally NOT an .Equals(object o) override
 		public bool Equals(CongoColor color)
 		{
 			return Id == color.Id;

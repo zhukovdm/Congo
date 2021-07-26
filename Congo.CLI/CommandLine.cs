@@ -85,7 +85,7 @@ namespace Congo.CLI
 		{
 			try {
 				return File.ReadAllText(resourcesPrefix + filename + textFileExt);
-			} catch (Exception) {
+			} catch (Exception) /* any exception */ {
 				return null;
 			}
 		}
@@ -102,17 +102,17 @@ namespace Congo.CLI
 
 		private static void reportEmptyCommand()
 		{
-			writer.WriteLine(" Input is empty. Consult allow.");
+			writer.WriteLine(" Input is empty. Consult \"allow\".");
 		}
 
 		private static void reportNotSupportedCommand(string command)
 		{
-			writer.WriteLine($" Command {command} is not supported. Consult help help.");
+			writer.WriteLine($" Command {command} is not supported. Consult \"help help\".");
 		}
 
 		private static void reportWrongCommandFormat(string command)
 		{
-			writer.WriteLine($" Wrong command format. Consult help {command}.");
+			writer.WriteLine($" Wrong command format. Consult \"help {command}\".");
 		}
 
 		private static void reportNotAllowedCommand(string command)
@@ -168,9 +168,9 @@ namespace Congo.CLI
 			writer.WriteLine();
 		}
 
-		private static void showPlayer(CongoBoard board, CongoColor color, CongoColor activeColor)
+		private static void showPlayer(CongoBoard board, CongoColor color, CongoPlayer activePlayer)
 		{
-			var activeRepr = color.Equals(activeColor) ? "*" : " ";
+			var activeRepr = color.Equals(activePlayer.Color) ? "*" : " ";
 			var colorRepr  = color.IsWhite() ? "white" : "black";
 			var counter    = countPieces(board, color);
 
@@ -187,8 +187,8 @@ namespace Congo.CLI
 		private static void showPlayers(CongoGame game)
 		{
 			writer.WriteLine();
-			showPlayer(game.Board, White.Color, game.ActivePlayerColor);
-			showPlayer(game.Board, Black.Color, game.ActivePlayerColor);
+			showPlayer(game.Board, White.Color, game.ActivePlayer);
+			showPlayer(game.Board, Black.Color, game.ActivePlayer);
 		}
 
 		private static void showMoves(CongoGame game)
@@ -330,7 +330,7 @@ namespace Congo.CLI
 			string type;
 			var playerColor = color.IsWhite() ? "white" : "black";
 			var allowedTypes = new Dictionary<string, Type> {
-				{ "ai", typeof(AI) }, { "hi", typeof(HI) }
+				{ "ai", typeof(Ai) }, { "hi", typeof(Hi) }
 			};
 
 			do {
@@ -391,7 +391,7 @@ namespace Congo.CLI
 			return cli;
 		}
 
-		public CongoMove GetHIMove(CongoGame game)
+		public CongoMove GetHiMove(CongoGame game)
 		{
 			CongoMove move = null;
 			var allowedCommands = new List<string>() {
@@ -438,7 +438,7 @@ namespace Congo.CLI
 			return move;
 		}
 
-		public void ReportWrongHIMove()
+		public void ReportWrongHiMove()
 		{
 			writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
 		}
@@ -450,7 +450,7 @@ namespace Congo.CLI
 		public void ReportResult(CongoGame game)
 		{
 			writer.WriteLine();
-			var winner = game.ActivePlayerColor.Invert().IsWhite() ? "white" : "black";
+			var winner = game.ActivePlayer.Color.Invert().IsWhite() ? "white" : "black";
 			writer.WriteLine($" {winner} wins.");
 			writer.WriteLine();
 		}
@@ -492,9 +492,9 @@ namespace Congo.CLI
 			if (command[1] == "standard") {
 				game = CongoGame.Standard(wp, bp);
 			} else if (CongoGame.IsFenValid(command[1])) {
-				throw new NotImplementedException();							// TODO
+				throw new NotImplementedException(); // TODO
 			} else {
-				throw new NotImplementedException();							// TODO
+				throw new NotImplementedException(); // TODO
 			}
 
 			showBoard(game);
@@ -503,27 +503,24 @@ namespace Congo.CLI
 
 		public override CongoGame WaitResponse(CongoGame game) => game;
 
-		public override void Dispose()
-		{
-																				// TODO
-		}
+		public override void Dispose() { } // TODO
 	}
 
 	public class NetworkCommandLine : CongoCommandLine
 	{
 		public override CongoGame SetGame()
 		{
-			throw new NotImplementedException();                                // TODO
+			throw new NotImplementedException(); // TODO
 		}
 
 		public override CongoGame WaitResponse(CongoGame game)
 		{
-			throw new NotImplementedException();                                // TODO
+			throw new NotImplementedException(); // TODO
 		}
 
 		public override void Dispose()
 		{
-			throw new NotImplementedException();                                // TODO
+			throw new NotImplementedException(); // TODO
 		}
 	}
 }

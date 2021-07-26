@@ -17,13 +17,16 @@ namespace Congo.Core
 			}
 		}
 
-		public static bool AreEqual(CongoMove m1, CongoMove m2)
-			=> Compare(m1, m2) == 0;
+		public static bool AreEqual(CongoMove x, CongoMove y)
+			=> Compare(x, y) == 0;
 
 		public readonly int Fr, To;
 
 		public CongoMove(int fr, int to) { Fr = fr; To = to; }
 
+		/// <summary>
+		/// This method is used only for testing purposes!
+		/// </summary>
 		public override string ToString() => (Square)Fr + ", " + (Square)To;
 	}
 
@@ -33,12 +36,19 @@ namespace Congo.Core
 
 		public MonkeyJump(int fr, int bt, int to) :base(fr, to) { Bt = bt; }
 
+		/// <summary>
+		/// This method is used only for testing purposes!
+		/// </summary>
 		public override string ToString() => (Square)Fr + ", " + (Square)Bt + ", " + (Square)To;
 	}
 
+	/// <summary>
+	/// This comparer is implemented due to MSTest framework limitations.
+	/// Do not use it anywhere else!
+	/// </summary>
 	public class CongoMoveObjComparer : IComparer
 	{
-		public int Compare(object x, object y) /* not type-safe */
+		public int Compare(object x, object y) /* not type-safe! */
 			=> CongoMove.Compare((CongoMove)x, (CongoMove)y);
 	}
 
