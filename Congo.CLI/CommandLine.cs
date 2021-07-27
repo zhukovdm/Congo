@@ -57,7 +57,7 @@ namespace Congo.CLI
 			new Type[] {
 				typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
 				typeof(Giraffe), typeof(Crocodile), typeof(Pawn), typeof(Superpawn),
-				typeof(Lion), typeof(Monkey), typeof(Captured)
+				typeof(Lion), typeof(Monkey)
 			}.ToImmutableList();
 
 		// Char piece views are completely separated from pieces intentionally.
@@ -67,8 +67,7 @@ namespace Congo.CLI
 				{ typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
 				{ typeof(Giraffe),  "g" }, { typeof(Crocodile), "c" },
 				{ typeof(Pawn),     "p" }, { typeof(Superpawn), "s" },
-				{ typeof(Lion),     "l" }, { typeof(Monkey),    "m" },
-				{ typeof(Captured), "x" }
+				{ typeof(Lion),     "l" }, { typeof(Monkey),    "m" }
 			}.ToImmutableDictionary();
 
 		private delegate void ShowDelegate(CongoGame game);

@@ -165,8 +165,7 @@ namespace Congo.Core
 		private static readonly ImmutableArray<CongoPiece> sample =
 			new CongoPiece[] {
 				Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
-				Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece,
-				Captured.Piece
+				Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece
 			}.ToImmutableArray();
 
 		private static readonly CongoBoard empty =
@@ -240,7 +239,7 @@ namespace Congo.Core
 
 		public bool IsBelowRiver(int square) => isBelowRiver(square);
 
-		public bool IsPawnPromotion(CongoColor color, int square)
+		public bool IsUpDownBorder(CongoColor color, int square)
 		{
 			return color.IsWhite()
 				? square >= (int)Square.A7 && square <= (int)Square.G7

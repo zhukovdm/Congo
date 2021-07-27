@@ -13,7 +13,7 @@ namespace Congo.Core.MSTest
 						 .With(Black.Color, Pawn.Piece, (int)Square.A2);
 			var white = new Hi(White.Color, board, null);
 			var black = new Hi(Black.Color, board, null);
-			var game = CongoGame.Unattached(board, white, white, black);
+			var game = CongoGame.Unattached(board, white, black, white, null);
 			Assert.IsTrue(game.IsInvalid());
 		}
 
@@ -25,7 +25,7 @@ namespace Congo.Core.MSTest
 						 .With(Black.Color, Lion.Piece, (int)Square.A7);
 			var white = new Hi(White.Color, board, null);
 			var black = new Hi(Black.Color, board, null);
-			var game = CongoGame.Unattached(board, white, white, black);
+			var game = CongoGame.Unattached(board, white, black, white, null);
 			Assert.IsTrue(game.IsDraw());
 		}
 
@@ -38,7 +38,7 @@ namespace Congo.Core.MSTest
 						 .With(Black.Color, Pawn.Piece, (int)Square.A7);
 			var white = new Hi(White.Color, board, null);
 			var black = new Hi(Black.Color, board, null);
-			var game = CongoGame.Unattached(board, white, white, black);
+			var game = CongoGame.Unattached(board, white, black, white, null);
 			Assert.IsTrue(game.IsWin());
 		}
 
@@ -58,7 +58,7 @@ namespace Congo.Core.MSTest
 				.With(Black.Color, Pawn.Piece, (int)Square.B3);
 			var white = new Hi(White.Color, board, null);
 			var black = new Hi(Black.Color, board, null);
-			var game = CongoGame.Unattached(board, white, white, black);
+			var game = CongoGame.Unattached(board, white, black, white, null);
 			game = game.Transition(new CongoMove((int)Square.D6, (int)Square.D7));
 			game = game.Transition(new CongoMove((int)Square.F2, (int)Square.F1));
 			game = game.Transition(new CongoMove((int)Square.G5, (int)Square.G6));
@@ -78,7 +78,7 @@ namespace Congo.Core.MSTest
 		[TestMethod]
 		public void Game_FromFen_TwoLions()
 		{
-			var game = CongoGame.FromFen("3l3/7/7/7/7/7/3L3/h/a/w");
+			var game = CongoGame.FromFen("3l3/7/7/7/7/7/3L3/h/a/w/-1");
 			Assert.IsTrue(
 				game.Board.GetPiece((int)Square.D7).IsLion() &&
 				game.Board.IsPieceBlack((int)Square.D7) &&
@@ -91,23 +91,23 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
+		public void Game_FromFen_InvalidShortRankUnderflow()
+		{
+			var game = CongoGame.FromFen("3l2/7/7/7/7/7/3L3/h/a/w/-1");
+			Assert.IsTrue(game == null);
+		}
+
+		[TestMethod]
 		public void Game_FromFen_InvalidLongRankOverflow()
 		{
-			var game = CongoGame.FromFen("3l3/8/7/7/7/7/3L3/h/a/w");
+			var game = CongoGame.FromFen("3l3/8/7/7/7/7/3L3/h/a/w/-1");
 			Assert.IsTrue(game == null);
 		}
 
 		[TestMethod]
 		public void Game_FromFen_InvalidRankPiecesOnRankOverflow()
 		{
-			var game = CongoGame.FromFen("3l3p/7/7/7/7/7/7/h/a/w");
-			Assert.IsTrue(game == null);
-		}
-
-		[TestMethod]
-		public void Game_FromFen_InvalidRankCountPiecesOverflow()
-		{
-			var game = CongoGame.FromFen("3l3l/7/7/7/7/7/7/h/a/w");
+			var game = CongoGame.FromFen("7/7/7/7/7/7/3L3P/h/a/w/-1");
 			Assert.IsTrue(game == null);
 		}
 
@@ -116,7 +116,7 @@ namespace Congo.Core.MSTest
 		{
 			var game = CongoGame.Standard(typeof(Hi), typeof(Ai));
 			var actual = CongoGame.ToFen(game);
-			var expected = "gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w";
+			var expected = "gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1";
 			Assert.IsTrue(expected == actual);
 		}
 
@@ -124,11 +124,11 @@ namespace Congo.Core.MSTest
 		public void Game_ToFen_Empty()
 		{
 			var board = CongoBoard.Empty;
-			var whitePlayer = new Hi(White.Color, board, null);
-			var blackPlayer = new Ai(Black.Color, board, null);
-			var game = CongoGame.Unattached(board, blackPlayer, whitePlayer, blackPlayer);
+			var white = new Hi(White.Color, board, null);
+			var black = new Ai(Black.Color, board, null);
+			var game = CongoGame.Unattached(board, white, black, black, null);
 			var actual = CongoGame.ToFen(game);
-			var expected = "7/7/7/7/7/7/7/h/a/b";
+			var expected = "7/7/7/7/7/7/7/h/a/b/-1";
 			Assert.IsTrue(expected == actual);
 		}
 	}

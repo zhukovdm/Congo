@@ -11,7 +11,7 @@ namespace Congo.Core
 		protected readonly bool hasNonLion;
 		protected readonly CongoColor color;
 
-		public CongoPlayer(CongoColor color, CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
+		public CongoPlayer(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
 		{
 			this.color = color;
 			hasLion = false;
@@ -21,14 +21,17 @@ namespace Congo.Core
 
 			while (e.MoveNext()) {
 				var piece = board.GetPiece(e.Current);
+
 				if (piece.IsLion()) hasLion = true;
 				if (piece.IsAnimal() && !piece.IsLion()) hasNonLion = true;
-				if (monkeyJumps == null) { /* ordinary move */
+
+				if (firstMonkeyJump == null) { // ordinary move
 					allMoves.AddRange(piece.GetMoves(color, board, e.Current));
-				} else { /* monkey jump */
+				} else { // monkey jump
 					if (piece.IsMonkey()) {
 						var monkey = (Monkey)piece;
 						allMoves.AddRange(monkey.ContinueJump(color, board, e.Current));
+						break; // there is only one monkey
 					}
 				}
 			}
@@ -44,18 +47,18 @@ namespace Congo.Core
 
 		public CongoColor Color => color;
 
-		public abstract CongoPlayer With(CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps);
+		public abstract CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump);
 
 		public abstract CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game);
 	}
 
 	public sealed class Ai : CongoPlayer
 	{
-		public Ai(CongoColor color, CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
-			: base(color, board, monkeyJumps) { }
+		public Ai(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJumps)
+			: base(color, board, firstMonkeyJumps) { }
 
-		public override CongoPlayer With(CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
-			=> new Ai(color, board, monkeyJumps);
+		public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJumps)
+			=> new Ai(color, board, firstMonkeyJumps);
 
 		public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
 			=> Algorithm.Rnd(game);
@@ -76,11 +79,11 @@ namespace Congo.Core
 			return null;
 		}
 
-		public Hi(CongoColor color, CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
-			:base(color, board, monkeyJumps) { }
+		public Hi(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
+			:base(color, board, firstMonkeyJump) { }
 
-		public override CongoPlayer With(CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
-			=> new Hi(color, board, monkeyJumps);
+		public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
+			=> new Hi(color, board, firstMonkeyJump);
 
 		public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
 		{
