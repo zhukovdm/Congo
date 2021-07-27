@@ -76,7 +76,7 @@ namespace Congo.Core.MSTest
 	public class Game_Fen_Test
 	{
 		[TestMethod]
-		public void Game_FromFenTwoLions()
+		public void Game_FromFen_TwoLions()
 		{
 			var game = CongoGame.FromFen("3l3/7/7/7/7/7/3L3/h/a/w");
 			Assert.IsTrue(
@@ -91,7 +91,28 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
-		public void Game_ToFenStandard()
+		public void Game_FromFen_InvalidLongRankOverflow()
+		{
+			var game = CongoGame.FromFen("3l3/8/7/7/7/7/3L3/h/a/w");
+			Assert.IsTrue(game == null);
+		}
+
+		[TestMethod]
+		public void Game_FromFen_InvalidRankPiecesOnRankOverflow()
+		{
+			var game = CongoGame.FromFen("3l3p/7/7/7/7/7/7/h/a/w");
+			Assert.IsTrue(game == null);
+		}
+
+		[TestMethod]
+		public void Game_FromFen_InvalidRankCountPiecesOverflow()
+		{
+			var game = CongoGame.FromFen("3l3l/7/7/7/7/7/7/h/a/w");
+			Assert.IsTrue(game == null);
+		}
+
+		[TestMethod]
+		public void Game_ToFen_Standard()
 		{
 			var game = CongoGame.Standard(typeof(Hi), typeof(Ai));
 			var actual = CongoGame.ToFen(game);
@@ -100,7 +121,7 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
-		public void Game_ToFenEmpty()
+		public void Game_ToFen_Empty()
 		{
 			var board = CongoBoard.Empty;
 			var whitePlayer = new Hi(White.Color, board, null);
