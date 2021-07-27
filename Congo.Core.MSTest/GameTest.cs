@@ -131,5 +131,17 @@ namespace Congo.Core.MSTest
 			var expected = "7/7/7/7/7/7/7/h/a/b/-1";
 			Assert.IsTrue(expected == actual);
 		}
+
+		[TestMethod]
+		public void Game_ToFen_WithFirstMonkeyJump()
+		{
+			var board = CongoBoard.Empty;
+			var white = new Hi(White.Color, board, null);
+			var black = new Ai(Black.Color, board, null);
+			var game = CongoGame.Unattached(board, white, black, white, new MonkeyJump(5, -1, -1));
+			var actual = CongoGame.ToFen(game);
+			var expected = "7/7/7/7/7/7/7/h/a/w/5";
+			Assert.IsTrue(expected == actual);
+		}
 	}
 }
