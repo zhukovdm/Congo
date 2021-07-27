@@ -40,10 +40,11 @@ namespace Congo.Core
 			return board;
 		}
 
-		private static CongoPlayer getPlayer(CongoColor color, CongoBoard board, Type playerType)
+		private static CongoPlayer getPlayerByType(CongoColor color, Type playerType,
+			CongoBoard board, ImmutableList<MonkeyJump> monkeyJumps)
 		{
-			if (playerType == typeof(Ai)) return new Ai(color, board, null);
-			else                          return new Hi(color, board, null);
+			if (playerType == typeof(Ai)) return new Ai(color, board, monkeyJumps);
+			else                          return new Hi(color, board, monkeyJumps);
 		}
 
 		public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
@@ -54,33 +55,188 @@ namespace Congo.Core
 			b = setPawnRank (b, White.Color, 5);
 			b = setMixedRank(b, White.Color, 6);
 
-			var wp = getPlayer(White.Color, b, whitePlayerType);
-			var bp = getPlayer(Black.Color, b, blackPlayerType);
+			var wp = getPlayerByType(White.Color, whitePlayerType, b, null);
+			var bp = getPlayerByType(Black.Color, blackPlayerType, b, null);
 
 			return Unattached(b, wp, wp, bp);
 		}
 
 		#endregion
 
-		#region FEN (de-)serialization
+		#region Fen (de-)serialization
 
 		/* 
-		 * Simplified FEN format:
-		 *     rank/rank/rank/rank/rank/rank/rank active_color 
-		 *         3z1p1/... w m
-		 *         8/8/2zGm/... b -
+		 * Simplified Fen format, 7 ranks, 2 player types, 1 active color
+		 *     rank/rank/rank/rank/rank/rank/rank/type/type/color 
+		 * Fen for standard board
+		 *     gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w
 		 */
 
-		public static bool IsFenValid(string fen)
-			=> throw new NotImplementedException();
+		private static readonly string fenPieceSignatures = "gmelczpsx";
+		private static readonly ImmutableDictionary<char, CongoPiece> fenPieceViews =
+			new Dictionary<char, CongoPiece>() {
+				{ 'g', Giraffe.Piece   }, { 'm', Monkey.Piece    },
+				{ 'e', Elephant.Piece  }, { 'l', Lion.Piece      },
+				{ 'c', Crocodile.Piece }, { 'z', Zebra.Piece     },
+				{ 'p', Pawn.Piece      }, { 's', Superpawn.Piece },
+				{ 'x', Captured.Piece  }
+			}.ToImmutableDictionary();
+
+		private static int[] fenPieceDistribution()
+		{
+			var pieces = new int[11];
+
+			pieces[(int)Giraffe.Piece.Code]   =  1; pieces[(int)Monkey.Piece.Code]    = 1;
+			pieces[(int)Elephant.Piece.Code]  =  2; pieces[(int)Lion.Piece.Code]      = 1;
+			pieces[(int)Crocodile.Piece.Code] =  1; pieces[(int)Zebra.Piece.Code]     = 1;
+			pieces[(int)Pawn.Piece.Code]      =  7; pieces[(int)Superpawn.Piece.Code] = 7;
+			pieces[(int)Captured.Piece.Code]  = 14;
+
+			return pieces;
+		}
+
+		private static CongoBoard fenAddPiece(CongoBoard board, CongoColor color, char pieceView,
+			int square, ref int file, ref ImmutableList<MonkeyJump> monkeyJumps, int[] pieceCounter)
+		{
+			if (pieceView == 'x') {
+
+				/* Trick how to force player to continue monkey jump (!= null).
+				 * Values -1 does not cause issues with addressing. */
+
+				if (monkeyJumps == null) { new List<MonkeyJump>().ToImmutableArray(); }
+				monkeyJumps = monkeyJumps.Add(new MonkeyJump(-1, square, -1));
+			}
+
+			file++;
+			pieceCounter[(int)fenPieceViews[pieceView].Code]--;
+
+			return board.With(color, fenPieceViews[pieceView], square);
+		}
+
+		private static CongoPlayer fenGetPlayer(CongoColor color, CongoBoard board,
+			string type, ImmutableList<MonkeyJump> monkeyJumps)
+		{
+			if (type != "a" && type != "h") { return null; }
+
+			var playerType = type == "a" ? typeof(Ai) : typeof(Hi);
+
+			return getPlayerByType(color, playerType, board, monkeyJumps);
+		}
+
+		private static CongoPlayer fenGetActivePlayer(string color,
+			CongoPlayer whitePlayer, CongoPlayer blackPlayer)
+		{
+			if (color != "w" && color != "b") { return null; }
+
+			return color == "w" ? whitePlayer : blackPlayer;
+		}
+
+		private static bool isFenPieceCountValid(int[] pieceCount)
+		{
+			foreach (var cnt in pieceCount) {
+				if (cnt < 0) { return false; }
+			}
+
+			return true;
+		}
 
 		public static CongoGame FromFen(string fen)
-			=> throw new NotImplementedException();
+		{
+			var whitePieceCounter = fenPieceDistribution();
+			var blackPieceCounter = fenPieceDistribution();
+			var seps = new char[] { '/' };
+			var sfen = fen.Split(seps, StringSplitOptions.RemoveEmptyEntries);
+			ImmutableList<MonkeyJump> whiteMonkeyJumps = null;
+			ImmutableList<MonkeyJump> blackMonkeyJumps = null;
+
+			if (sfen.Length != 10) { return null; }
+
+			var board = CongoBoard.Empty;
+
+			for (int rank = 0; rank < CongoBoard.Empty.Size; rank++) { // ranks
+				int file = 0;
+
+				for (int i = 0; i < sfen[rank].Length; i++) {
+					if (sfen[rank][i] >= '1' && sfen[rank][i] <= '7') {
+						file += sfen[rank][i] - '0'; // skip empty squares
+					} else if (fenPieceSignatures.ToUpper().IndexOf(sfen[rank][i]) >= 0) { // white pieces
+						board = fenAddPiece(board, White.Color, (char)(sfen[rank][i] - 'A' + 'a'),
+							rank * board.Size + file, ref file, ref whiteMonkeyJumps,
+							whitePieceCounter);
+					} else if (fenPieceSignatures.ToLower().IndexOf(sfen[rank][i]) >= 0) { // black pieces
+						board = fenAddPiece(board, Black.Color, sfen[rank][i],
+							rank * board.Size + file, ref file, ref blackMonkeyJumps,
+							blackPieceCounter);
+					} else {
+						return null;
+					}
+				}
+
+				if (file > board.Size || (whiteMonkeyJumps != null && blackMonkeyJumps != null) ||
+					!isFenPieceCountValid(whitePieceCounter) || !isFenPieceCountValid(blackPieceCounter))
+					{ return null; }
+			}
+
+			var whitePlayer = fenGetPlayer(White.Color, board, sfen[7], whiteMonkeyJumps);
+			var blackPlayer = fenGetPlayer(Black.Color, board, sfen[8], blackMonkeyJumps);
+			var activePlayer = fenGetActivePlayer(sfen[9], whitePlayer, blackPlayer);
+
+			if (whitePlayer == null || blackPlayer == null || activePlayer == null) { return null; }
+
+			var monkeyJumps = activePlayer.Color.IsWhite() ? whiteMonkeyJumps : blackMonkeyJumps;
+
+			return new CongoGame(null, null, monkeyJumps, board, activePlayer, whitePlayer, blackPlayer);
+		}
 
 		public static string ToFen(CongoGame game)
-			=> throw new NotImplementedException();
+		{
+			var result = "";
+			var sep = "/";
+
+			Dictionary<Type, string> typeViews = new Dictionary<Type, string>() {
+				{ typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
+				{ typeof(Giraffe),  "g" }, { typeof(Crocodile), "c" },
+				{ typeof(Pawn),     "p" }, { typeof(Superpawn), "s" },
+				{ typeof(Lion),     "l" }, { typeof(Monkey),    "m" },
+				{ typeof(Captured), "x" },
+				{ typeof(Ai),       "a" }, { typeof(Hi),        "h" },
+				{ typeof(White),    "w" }, { typeof(Black),     "b"}
+			};
+
+			for (int rank = 0; rank < game.Board.Size; rank++) {
+				int cnt = 0;
+				for (int file = 0; file < game.Board.Size; file++) {
+					var square = rank * game.Board.Size + file;
+					var piece = game.Board.GetPiece(square);
+
+					if (typeViews.ContainsKey(piece.GetType())) { // player piece
+						
+						if (cnt > 0) { result += cnt.ToString(); }
+						cnt = 0;
+
+						var repr = game.Board.IsPieceWhite(square)
+							? typeViews[piece.GetType()].ToUpper()
+							: typeViews[piece.GetType()].ToLower();
+						result += repr;
+					} else { // ground or river
+						cnt++;
+					}
+				}
+
+				if (cnt > 0) { result += cnt.ToString(); }
+				result += sep;
+			}
+
+			result += typeViews[game.WhitePlayer.GetType()] + sep;
+			result += typeViews[game.BlackPlayer.GetType()] + sep;
+			result += typeViews[game.ActivePlayer.Color.GetType()];
+
+			return result;
+		}
 
 		#endregion
+
+		#region Instance members
 
 		private readonly CongoGame previousGame;
 		private readonly CongoMove transitionMove;
@@ -107,6 +263,10 @@ namespace Congo.Core
 		public CongoMove TransitionMove => transitionMove;
 
 		public CongoBoard Board => board;
+
+		public CongoPlayer WhitePlayer => whitePlayer;
+
+		public CongoPlayer BlackPlayer => blackPlayer;
 
 		public CongoPlayer ActivePlayer
 			=> activePlayer.Color.IsWhite() ? whitePlayer : blackPlayer;
@@ -202,4 +362,6 @@ namespace Congo.Core
 			return IsInvalid() || IsWin() || IsDraw();
 		}
 	}
+
+	#endregion
 }

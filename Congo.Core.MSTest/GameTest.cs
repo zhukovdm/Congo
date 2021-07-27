@@ -3,10 +3,10 @@
 namespace Congo.Core.MSTest
 {
 	[TestClass]
-	public class GameTest
+	public class Game_State_Test
 	{
 		[TestMethod]
-		public void Game_IsInvalid()
+		public void IsInvalid()
 		{
 			var board = CongoBoard.Empty;
 			board = board.With(White.Color, Pawn.Piece, (int)Square.A1)
@@ -18,7 +18,7 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
-		public void Game_IsDraw()
+		public void IsDraw()
 		{
 			var board = CongoBoard.Empty;
 			board = board.With(White.Color, Lion.Piece, (int)Square.A1)
@@ -30,7 +30,7 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
-		public void Game_IsWin()
+		public void IsWin()
 		{
 			var board = CongoBoard.Empty;
 			board = board.With(White.Color, Lion.Piece, (int)Square.A1)
@@ -43,13 +43,13 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
-		public void Game_MonkeyJumps()
+		public void MonkeyJumps()
 		{
 			
 		}
 
 		[TestMethod]
-		public void Game_PawnToSuperpawnPromotion()
+		public void PawnToSuperpawnPromotion()
 		{
 			var board = CongoBoard.Empty
 				.With(White.Color, Pawn.Piece, (int)Square.D6)
@@ -69,6 +69,46 @@ namespace Congo.Core.MSTest
 				game.Board.GetPiece((int)Square.G6).IsPawn() &&
 				game.Board.GetPiece((int)Square.B2).IsPawn()
 			);
+		}
+	}
+
+	[TestClass]
+	public class Game_Fen_Test
+	{
+		[TestMethod]
+		public void Game_FromFenTwoLions()
+		{
+			var game = CongoGame.FromFen("3l3/7/7/7/7/7/3L3/h/a/w");
+			Assert.IsTrue(
+				game.Board.GetPiece((int)Square.D7).IsLion() &&
+				game.Board.IsPieceBlack((int)Square.D7) &&
+				game.Board.GetPiece((int)Square.D1).IsLion() &&
+				game.Board.IsPieceWhite((int)Square.D1) &&
+				game.WhitePlayer is Hi &&
+				game.BlackPlayer is Ai &&
+				game.ActivePlayer.Color.IsWhite()
+			);
+		}
+
+		[TestMethod]
+		public void Game_ToFenStandard()
+		{
+			var game = CongoGame.Standard(typeof(Hi), typeof(Ai));
+			var actual = CongoGame.ToFen(game);
+			var expected = "gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w";
+			Assert.IsTrue(expected == actual);
+		}
+
+		[TestMethod]
+		public void Game_ToFenEmpty()
+		{
+			var board = CongoBoard.Empty;
+			var whitePlayer = new Hi(White.Color, board, null);
+			var blackPlayer = new Ai(Black.Color, board, null);
+			var game = CongoGame.Unattached(board, blackPlayer, whitePlayer, blackPlayer);
+			var actual = CongoGame.ToFen(game);
+			var expected = "7/7/7/7/7/7/7/h/a/b";
+			Assert.IsTrue(expected == actual);
 		}
 	}
 }

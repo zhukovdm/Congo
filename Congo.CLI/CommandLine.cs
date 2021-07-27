@@ -60,6 +60,7 @@ namespace Congo.CLI
 				typeof(Lion), typeof(Monkey), typeof(Captured)
 			}.ToImmutableList();
 
+		// Char piece views are completely separated from pieces intentionally.
 		private static readonly ImmutableDictionary<Type, string> pieceView =
 			new Dictionary<Type, string>() {
 				{ typeof(Ground),   "-" }, { typeof(River),     "+" },
@@ -253,8 +254,12 @@ namespace Congo.CLI
 
 		private static string[] verifyGameCommand(string[] input)
 		{
-			Func<string[], bool> predicate = (string[] arr)
-				=> arr.Length != 2 || !(arr[1] == "standard" || CongoGame.IsFenValid(arr[1]) || CongoGame.IsFenValid(readTextFile(arr[1])));
+			Func<string[], bool> predicate = (string[] arr) =>
+			{
+				return arr.Length != 2 || !(arr[1] == "standard" ||
+					CongoGame.FromFen(arr[1]) != null ||
+					CongoGame.FromFen(readTextFile(arr[1])) != null);
+			};
 
 			return verifyCommand(predicate, input);
 		}
@@ -491,7 +496,7 @@ namespace Congo.CLI
 
 			if (command[1] == "standard") {
 				game = CongoGame.Standard(wp, bp);
-			} else if (CongoGame.IsFenValid(command[1])) {
+			} else if (CongoGame.FromFen(command[1]) != null) {
 				throw new NotImplementedException(); // TODO
 			} else {
 				throw new NotImplementedException(); // TODO

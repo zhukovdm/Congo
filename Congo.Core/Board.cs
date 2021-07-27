@@ -251,6 +251,8 @@ namespace Congo.Core
 
 		public bool IsPieceWhite(int square) => getBit(whiteOccupied, square);
 
+		public bool IsPieceBlack(int square) => getBit(blackOccupied, square);
+
 		public bool IsFirstMovePiece(int square) => IsPieceWhite(square);
 
 		public bool IsPieceFriendly(CongoColor color, int square)
