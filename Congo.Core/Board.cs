@@ -22,7 +22,7 @@ namespace Congo.Core
 		private delegate ImmutableArray<int> ColoredLeapGenerator(
 			CongoColor color, int rank, int file);
 
-		private static int size = 7;
+		private static readonly int size = 7;
 
 		private static bool isJungle(int rank, int file)
 			=> rank >= 0 && rank < size && file >= 0 && file < size;
@@ -218,8 +218,6 @@ namespace Congo.Core
 		private readonly ulong blackOccupied;
 		private readonly ImmutableArray<uint> pieces;
 
-		private bool isPieceWhite(int square) => getBit(whiteOccupied, square);
-
 		private uint getPieceCode(int square)
 			=> (pieces[square / Size] >> (square % Size * 4)) & 0xFU;
 
@@ -251,7 +249,9 @@ namespace Congo.Core
 
 		public bool IsOccupied(int square) => getBit(whiteOccupied | blackOccupied, square);
 
-		public bool IsFirstMovePiece(int square) => isPieceWhite(square);
+		public bool IsPieceWhite(int square) => getBit(whiteOccupied, square);
+
+		public bool IsFirstMovePiece(int square) => IsPieceWhite(square);
 
 		public bool IsPieceFriendly(CongoColor color, int square)
 			=> getBit(color.IsWhite() ? whiteOccupied : blackOccupied, square);
