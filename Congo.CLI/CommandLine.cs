@@ -170,7 +170,7 @@ namespace Congo.CLI
 
 		private static void showPlayer(CongoBoard board, CongoColor color, CongoPlayer activePlayer)
 		{
-			var activeRepr = color.Equals(activePlayer.Color) ? "*" : " ";
+			var activeRepr = color == activePlayer.Color ? "*" : " ";
 			var colorRepr  = color.IsWhite() ? "white" : "black";
 			var counter    = countPieces(board, color);
 

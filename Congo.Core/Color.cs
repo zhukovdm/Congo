@@ -2,6 +2,12 @@
 {
 	public abstract class CongoColor
 	{
+		public static bool operator ==(CongoColor c1, CongoColor c2)
+			=> c1.Id == c2.Id;
+
+		public static bool operator !=(CongoColor c1, CongoColor c2)
+			=> !(c1 == c2);
+
 		private protected enum ColorId : int
 		{
 			White, Black
@@ -15,11 +21,9 @@
 
 		public CongoColor Invert() => IsWhite() ? Black.Color : White.Color;
 
-		// intentionally NOT an .Equals(object o) override
-		public bool Equals(CongoColor color)
-		{
-			return Id == color.Id;
-		}
+		public override bool Equals(object o) => Id == ((CongoColor)o).Id;
+
+		public override int GetHashCode() => base.GetHashCode();
 	}
 
 	public sealed class White : CongoColor
