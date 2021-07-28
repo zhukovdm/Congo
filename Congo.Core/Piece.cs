@@ -67,6 +67,8 @@ namespace Congo.Core
 
 		public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 			=> new List<CongoMove>();
+
+		public override string ToString() => "-";
 	}
 
 	public sealed class River : CongoPiece
@@ -79,6 +81,8 @@ namespace Congo.Core
 
 		public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 			=> new List<CongoMove>();
+
+		public override string ToString() => "+";
 	}
 
 	public sealed class Elephant : CongoPiece
@@ -92,6 +96,8 @@ namespace Congo.Core
 		public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 			=> getValidCapturingLeaps(new List<CongoMove>(), board.LeapsAsElephant(square),
 				color, board, square);
+
+		public override string ToString() => "e";
 	}
 
 	public sealed class Zebra : CongoPiece
@@ -105,6 +111,8 @@ namespace Congo.Core
 		public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 			=> getValidCapturingLeaps(new List<CongoMove>(), board.LeapsAsKnight(square),
 				color, board, square);
+
+		public override string ToString() => "z";
 	}
 
 	public sealed class Giraffe : CongoPiece
@@ -127,6 +135,8 @@ namespace Congo.Core
 
 			return moves;
 		}
+
+		public override string ToString() => "g";
 	}
 
 	public sealed class Crocodile : CongoPiece
@@ -188,6 +198,8 @@ namespace Congo.Core
 
 			return moves;
 		}
+
+		public override string ToString() => "c";
 	}
 
 	public class Pawn : CongoPiece
@@ -229,6 +241,8 @@ namespace Congo.Core
 
 			return moves;
 		}
+
+		public override string ToString() => "p";
 	}
 
 	public sealed class Superpawn : Pawn
@@ -274,6 +288,8 @@ namespace Congo.Core
 
 			return moves;
 		}
+
+		public override string ToString() => "s";
 	}
 
 	public sealed class Lion : CongoPiece
@@ -327,6 +343,8 @@ namespace Congo.Core
 
 			return moves;
 		}
+
+		public override string ToString() => "l";
 	}
 
 	public sealed class Monkey : CongoPiece
@@ -387,5 +405,7 @@ namespace Congo.Core
 
 			return moves;
 		}
+
+		public override string ToString() => "m";
 	}
 }

@@ -248,11 +248,11 @@ namespace Congo.Core
 
 		public bool IsOccupied(int square) => getBit(whiteOccupied | blackOccupied, square);
 
-		public bool IsPieceWhite(int square) => getBit(whiteOccupied, square);
+		public bool IsWhitePiece(int square) => getBit(whiteOccupied, square);
 
-		public bool IsPieceBlack(int square) => getBit(blackOccupied, square);
+		public bool IsBlackPiece(int square) => getBit(blackOccupied, square);
 
-		public bool IsFirstMovePiece(int square) => IsPieceWhite(square);
+		public bool IsFirstMovePiece(int square) => IsWhitePiece(square);
 
 		public bool IsFriendlyPiece(CongoColor color, int square)
 			=> getBit(color.IsWhite() ? whiteOccupied : blackOccupied, square);
@@ -344,5 +344,18 @@ namespace Congo.Core
 
 		public IParametrizedEnumerator<int> GetEnumerator(CongoColor color)
 			=> new BitScanEnumerator(color.IsWhite() ? whiteOccupied : blackOccupied);
+
+		public override string ToString()
+		{
+			string boardView = "";
+
+			for (int i = 0; i < size * size; i++) {
+				if (i != 0 && i % size == 0) { boardView += Environment.NewLine; }
+				var pieceView = GetPiece(i).ToString();
+				boardView += IsWhitePiece(i) ? pieceView.ToUpper() : pieceView.ToLower();
+			}
+
+			return boardView;
+		}
 	}
 }

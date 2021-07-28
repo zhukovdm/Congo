@@ -152,7 +152,7 @@ namespace Congo.Core
 			for (int square = (int)Square.A4; square <= (int)Square.G4; square++) {
 
 				var piece = board.GetPiece(square);
-				var color = board.IsPieceWhite(square) ? White.Color : Black.Color;
+				var color = board.IsWhitePiece(square) ? White.Color : Black.Color;
 
 				// consider only friendly non-crocodiles
 				if (!isFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }

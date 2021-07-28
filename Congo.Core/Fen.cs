@@ -151,18 +151,17 @@ namespace Congo.Core
 					if (typeViews.ContainsKey(piece.GetType())) {
 
 						if (cnt > 0) { result += cnt.ToString(); }
+						
 						cnt = 0;
-
-						var repr = game.Board.IsPieceWhite(square)
+						var repr = game.Board.IsWhitePiece(square)
 							? typeViews[piece.GetType()].ToUpper()
 							: typeViews[piece.GetType()].ToLower();
+
 						result += repr;
 					}
 
 					// ground or river
-					else {
-						cnt++;
-					}
+					else { cnt++; }
 				}
 
 				if (cnt > 0) { result += cnt.ToString(); }
