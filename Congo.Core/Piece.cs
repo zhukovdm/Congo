@@ -42,6 +42,8 @@ namespace Congo.Core
 
 		public bool IsAnimal() => Id != PieceId.Ground && Id != PieceId.River;
 
+		public bool IsCrocodile() => Id == PieceId.Crocodile;
+
 		public bool IsPawn() => Id == PieceId.Pawn;
 
 		public bool IsSuperpawn() => Id == PieceId.Superpawn;
@@ -163,7 +165,7 @@ namespace Congo.Core
 				temp += direction * board.Size;
 			}
 
-			if (!board.IsPieceFriendly(color, temp)) {
+			if (!board.IsFriendlyPiece(color, temp)) {
 				moves.Add(new CongoMove(square, temp));
 			}
 
@@ -385,17 +387,5 @@ namespace Congo.Core
 
 			return moves;
 		}
-	}
-
-	public sealed class Captured : CongoPiece
-	{
-		public static CongoPiece Piece { get; } = new Captured();
-
-		private Captured() { }
-
-		private protected override PieceId Id => PieceId.Captured;
-
-		public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
-			=> new List<CongoMove>();
 	}
 }
