@@ -74,6 +74,9 @@ namespace Congo.Core
 				board.IsUpDownBorder(activePlayer.Color, move.To);
 		}
 
+		private bool isFriendlyAnimal(CongoPiece piece, CongoColor color)
+			=> piece.IsAnimal() && color == activePlayer.Color;
+
 		private CongoGame(CongoGame previousGame, CongoMove transitionMove,
 			CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer,
 			CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
@@ -111,7 +114,7 @@ namespace Congo.Core
 			CongoColor newActivePlayerColor = activePlayer.Color.Invert();
 			MonkeyJump newFirstMonkeyJump = firstMonkeyJump;
 
-			#region define newBoard, newFirstMonkeyJump, newActivePlayerColor
+			#region Execute move. Define newBoard, newFirstMonkeyJump, newActivePlayerColor.
 
 			// first or consecutive monkey jump
 			if (move is MonkeyJump) {
@@ -144,13 +147,53 @@ namespace Congo.Core
 
 			#endregion
 
-			#region drowning
+			#region Drowning. Define newBoard.
 
+			for (int square = (int)Square.A4; square <= (int)Square.G4; square++) {
 
+				var piece = board.GetPiece(square);
+				var color = board.IsPieceWhite(square) ? White.Color : Black.Color;
+
+				// consider only friendly non-crocodiles
+				if (!isFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }
+
+				// not-moved piece -> stay at the river -> drown
+				else if (move.To != square) { newBoard = newBoard.Without(square); }
+
+				/* from now onwards move.To == square */
+
+				// ground-to-river move
+				else if (!board.IsRiver(move.Fr)) { }
+
+				// ordinary non-monkey river-to-river move -> drown
+				else if (!piece.IsMonkey() && board.IsRiver(move.Fr)) {
+					newBoard = newBoard.Without(square);
+				}
+
+				/* from now onwards monkey river-to-river move */
+
+				// interrupted monkey jump
+				else if (move.Fr == move.To) {
+
+					// started from the river -> drown
+					if (board.IsRiver(firstMonkeyJump.Fr)) {
+						newBoard = newBoard.Without(square);
+					}
+					
+					// otherwise, remains on the board
+					else { }
+				}
+
+				// continued monkey jump
+				else if (move is MonkeyJump) { }
+
+				// ordinary monkey river-to-river move -> drown
+				else { newBoard = newBoard.Without(square); }
+			}
 
 			#endregion
 
-			#region define newWhitePlayers, newBlackPlayer, newActivePlayer
+			#region Finalize. Define newWhitePlayers, newBlackPlayer, newActivePlayer.
 
 			var newWhiteMonkeyJumps = newActivePlayerColor.IsWhite() ? newFirstMonkeyJump : null;
 			var newBlackMonkeyJumps = newActivePlayerColor.IsBlack() ? newFirstMonkeyJump : null;
