@@ -221,15 +221,9 @@ namespace Congo.Core
 				(!ActivePlayer.HasLion && Opponent.HasNonLion);
 		}
 
-		public bool IsDraw()
-		{
-			return ActivePlayer.HasLion && !ActivePlayer.HasNonLion &&
-				   Opponent.HasLion && !Opponent.HasNonLion;
-		}
-
 		public bool HasEnded()
 		{
-			return IsInvalid() || IsWin() || IsDraw();
+			return IsInvalid() || IsWin();
 		}
 	}
 
