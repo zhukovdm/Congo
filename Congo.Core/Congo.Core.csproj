@@ -61,6 +61,7 @@
     <Compile Include="BitScan.cs" />
     <Compile Include="Board.cs" />
     <Compile Include="Evaluator.cs" />
+    <Compile Include="Fen.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Algorithm.cs" />
     <Compile Include="IUserInterface.cs" />

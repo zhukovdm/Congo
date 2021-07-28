@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -10,6 +11,17 @@ namespace Congo.Core
 		protected readonly bool hasLion;
 		protected readonly bool hasNonLion;
 		protected readonly CongoColor color;
+
+		public static CongoPlayer GetByType(CongoBoard board, Type playerType,
+			CongoColor color, MonkeyJump firstMonkeyJump)
+		{
+			if (playerType == typeof(Ai)) {
+				return new Ai(color, board, firstMonkeyJump);
+			}
+			else {
+				return new Hi(color, board, firstMonkeyJump);
+			}
+		}
 
 		public CongoPlayer(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
 		{
