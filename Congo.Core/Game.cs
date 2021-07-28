@@ -120,7 +120,7 @@ namespace Congo.Core
 			if (move is MonkeyJump) {
 				var jump = (MonkeyJump)move;
 
-				newBoard = newBoard.With(activePlayer.Color, board.GetPiece(jump.Fr), jump.To)
+				newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(jump.Fr), jump.To)
 								   .Without(jump.Bt)
 								   .Without(jump.Fr);
 
@@ -141,7 +141,7 @@ namespace Congo.Core
 			// ordinary move
 			else {
 
-				newBoard = newBoard.With(activePlayer.Color, board.GetPiece(move.Fr), move.To)
+				newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(move.Fr), move.To)
 								   .Without(move.Fr);
 			}
 
@@ -151,8 +151,8 @@ namespace Congo.Core
 
 			for (int square = (int)Square.A4; square <= (int)Square.G4; square++) {
 
-				var piece = board.GetPiece(square);
-				var color = board.IsWhitePiece(square) ? White.Color : Black.Color;
+				var piece = newBoard.GetPiece(square);
+				var color = newBoard.IsWhitePiece(square) ? White.Color : Black.Color;
 
 				// consider only friendly non-crocodiles
 				if (!isFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }
@@ -163,10 +163,10 @@ namespace Congo.Core
 				/* from now onwards move.To == square */
 
 				// ground-to-river move
-				else if (!board.IsRiver(move.Fr)) { }
+				else if (!newBoard.IsRiver(move.Fr)) { }
 
 				// ordinary non-monkey river-to-river move -> drown
-				else if (!piece.IsMonkey() && board.IsRiver(move.Fr)) {
+				else if (!piece.IsMonkey() && newBoard.IsRiver(move.Fr)) {
 					newBoard = newBoard.Without(square);
 				}
 
@@ -176,7 +176,7 @@ namespace Congo.Core
 				else if (move.Fr == move.To) {
 
 					// started from the river -> drown
-					if (board.IsRiver(firstMonkeyJump.Fr)) {
+					if (newBoard.IsRiver(firstMonkeyJump.Fr)) {
 						newBoard = newBoard.Without(square);
 					}
 					
