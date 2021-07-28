@@ -37,7 +37,6 @@ namespace Congo.CLI
 		private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
 			new Dictionary<string, AlgorithmDelegate> {
 				{ "rnd",      Algorithm.Rnd      },
-				{ "minimax",  Algorithm.MiniMax  },
 				{ "negamax",  Algorithm.NegaMax  },
 				{ "iterdeep", Algorithm.IterDeep }
 			}.ToImmutableDictionary();
@@ -309,8 +308,8 @@ namespace Congo.CLI
 			do {
 				writer.WriteLine();
 				writer.Write(" > ");
-				input = reader.ReadLine().ToLower().Split(
-					separators, StringSplitOptions.RemoveEmptyEntries);
+				input = reader.ReadLine().Split(separators,
+					StringSplitOptions.RemoveEmptyEntries);
 
 				if (input.Length > 0 && supportedCommands.ContainsKey(input[0])) {
 					if (allowedCommands.IndexOf(input[0]) >= 0) {
@@ -488,18 +487,15 @@ namespace Congo.CLI
 				}
 			} while (command[0] != "game");
 
-			var wp = getPlayerType(White.Color);
-			var bp = getPlayerType(Black.Color);
-
-			CongoGame game;
+			var game = CongoFen.FromFen(command[1]);
 
 			if (command[1] == "standard") {
+				var wp = getPlayerType(White.Color);
+				var bp = getPlayerType(Black.Color);
 				game = CongoGame.Standard(wp, bp);
-			} else if (CongoFen.FromFen(command[1]) != null) {
-				throw new NotImplementedException(); // TODO
-			} else {
-				throw new NotImplementedException(); // TODO
 			}
+
+			if (game == null) { throw new InvalidOperationException(); }
 
 			showBoard(game);
 			return game;

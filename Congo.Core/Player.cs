@@ -76,7 +76,7 @@ namespace Congo.Core
 			=> new Ai(color, board, firstMonkeyJumps);
 
 		public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
-			=> Algorithm.Rnd(game);
+			=> Algorithm.NegaMax(game);
 	}
 
 	public sealed class Hi : CongoPlayer

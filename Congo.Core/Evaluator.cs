@@ -4,7 +4,8 @@
 	{
 		public static int Basic(CongoGame game)
 		{
-			return game.ActivePlayer.Color.IsWhite() ? 1 : -1;
+			if (game.IsWin()) { return game.WhitePlayer.HasLion ? 1 : -1; }
+			return 0;
 		}
 	}
 }
