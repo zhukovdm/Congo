@@ -256,8 +256,8 @@ namespace Congo.CLI
 			Func<string[], bool> predicate = (string[] arr) =>
 			{
 				return arr.Length != 2 || !(arr[1] == "standard" ||
-					CongoGame.FromFen(arr[1]) != null ||
-					CongoGame.FromFen(readTextFile(arr[1])) != null);
+					CongoFen.FromFen(arr[1]) != null ||
+					CongoFen.FromFen(readTextFile(arr[1])) != null);
 			};
 
 			return verifyCommand(predicate, input);
@@ -454,7 +454,7 @@ namespace Congo.CLI
 		public void ReportResult(CongoGame game)
 		{
 			writer.WriteLine();
-			var winner = game.ActivePlayer.Color.Invert().IsWhite() ? "white" : "black";
+			var winner = game.WhitePlayer.HasLion ? "white" : "black";
 			writer.WriteLine($" {winner} wins.");
 			writer.WriteLine();
 		}
@@ -495,7 +495,7 @@ namespace Congo.CLI
 
 			if (command[1] == "standard") {
 				game = CongoGame.Standard(wp, bp);
-			} else if (CongoGame.FromFen(command[1]) != null) {
+			} else if (CongoFen.FromFen(command[1]) != null) {
 				throw new NotImplementedException(); // TODO
 			} else {
 				throw new NotImplementedException(); // TODO

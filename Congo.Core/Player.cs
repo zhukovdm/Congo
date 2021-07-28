@@ -37,13 +37,16 @@ namespace Congo.Core
 				if (piece.IsLion()) hasLion = true;
 				if (piece.IsAnimal() && !piece.IsLion()) hasNonLion = true;
 
-				if (firstMonkeyJump == null) { // ordinary move
+				// ordinary move
+				if (firstMonkeyJump == null) {
 					allMoves.AddRange(piece.GetMoves(color, board, e.Current));
-				} else { // monkey jump
+				}
+
+				// monkey jump -> only monkey moves
+				else {
 					if (piece.IsMonkey()) {
 						var monkey = (Monkey)piece;
 						allMoves.AddRange(monkey.ContinueJump(color, board, e.Current));
-						break; // there is only one monkey
 					}
 				}
 			}
