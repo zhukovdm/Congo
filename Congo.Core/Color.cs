@@ -3,7 +3,7 @@
 	public abstract class CongoColor
 	{
 		public static bool operator ==(CongoColor c1, CongoColor c2)
-			=> c1.Id == c2.Id;
+			=> c1?.Id == c2?.Id;
 
 		public static bool operator !=(CongoColor c1, CongoColor c2)
 			=> !(c1 == c2);
