@@ -54,8 +54,6 @@ namespace Congo.Core
 
 		public bool IsMonkey() => Id == PieceId.Monkey;
 
-		public bool IsCaptured() => Id == PieceId.Captured;
-
 		public abstract List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square);
 	}
 

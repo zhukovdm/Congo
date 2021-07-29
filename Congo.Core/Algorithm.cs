@@ -18,7 +18,7 @@ namespace Congo.Core
 			int score = int.MinValue;
 
 			if (game.HasEnded() || depth == 0) {
-				score = Evaluator.Basic(game);
+				score = Evaluator.Material(game);
 				return game.Opponent.Color.IsWhite() ? score : -score;
 			}
 
@@ -27,7 +27,7 @@ namespace Congo.Core
 				var newGame = game.Transition(moves[i]);
 				score = Math.Max(score, negamaxGetScore(newGame, -beta, -alpha, depth - 1));
 
-				// fail-hard beta cut-off
+				// fail-hard beta cut-off, no opponent's alpha update (--beta = alpha)
 				if (score >= beta) { return -beta; }
 
 				// alpha update
