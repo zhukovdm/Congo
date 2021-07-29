@@ -68,9 +68,72 @@ namespace Congo.Core
 			return condition ? (score, move) : (-score, move);
 		}
 
-		private static CongoMove negamaxMultiThread(CongoGame game, int depth)
+
+
+		private static (int, CongoMove) negamaxMultiThread(CongoGame game, int depth)
 		{
-			return null;
+
+			/* Multi-threading is based on Thread pool. We create a task
+			 * with certain and plan it to the threading pool. The total
+			 * amount of tasks are chosen based on actual processor count.
+			 * This is rather easy task due to board immutability. Undo
+			 * moves are not necessary.
+			 */
+
+			(int, CongoMove) result;
+			var moves = game.ActivePlayer.Moves;
+
+			// avoid flooding the system
+			var cpus = Math.Max(Environment.ProcessorCount - 2, 1);
+
+			// adjust number of tasks, >= 1 move per task
+			while (moves.Length / cpus == 0) cpus--;
+
+			/* one move -> one thread */
+
+			if (cpus == 1) {
+				return negamaxSingleThread(game, game.ActivePlayer.Moves,
+					-Evaluator.INF, Evaluator.INF, negamaxDepth);
+			}
+
+			/* otherwise divide moves evenly */
+
+			var div = moves.Length / cpus;
+			var rem = moves.Length % cpus;
+
+			// cpus > 1
+			var taskPool = new Task<(int, CongoMove)>[cpus - 1];
+
+			int from = 0;
+
+			for (int i = 0; i < cpus - 1; i++) {
+
+				// prepare segment
+				var arr = new CongoMove[div];
+				moves.CopyTo(from, arr, 0, div);
+
+				// plan and store new task
+				taskPool[i] = Task.Run(() => {
+					return negamaxSingleThread(game, arr.ToImmutableArray(),
+						-Evaluator.INF, Evaluator.INF, negamaxDepth);
+				});
+
+				from += div;
+			}
+
+			{
+				var arr = new CongoMove[div + rem];
+				moves.CopyTo(from, arr, 0, div + rem);
+				result = negamaxSingleThread(game, arr.ToImmutableArray(),
+					-Evaluator.INF, Evaluator.INF, negamaxDepth);
+			}
+			
+			foreach (var task in taskPool) {
+				task.Wait();
+				result = Max(result, task.Result);
+			}
+
+			return result;
 		}
 
 		private static readonly int negamaxDepth = 5;
@@ -83,8 +146,7 @@ namespace Congo.Core
 
 			if (game.HasEnded() || negamaxDepth <= 0) { return null; }
 
-			var (_, move) = negamaxSingleThread(game, game.ActivePlayer.Moves,
-				-Evaluator.INF, Evaluator.INF, negamaxDepth);
+			var (_, move) = negamaxMultiThread(game, negamaxDepth);
 			
 			return move;
 		}
