@@ -18,18 +18,6 @@ namespace Congo.Core.MSTest
 		}
 
 		[TestMethod]
-		public void IsDraw()
-		{
-			var board = CongoBoard.Empty;
-			board = board.With(White.Color, Lion.Piece, (int)Square.A1)
-						 .With(Black.Color, Lion.Piece, (int)Square.A7);
-			var white = new Hi(White.Color, board, null);
-			var black = new Hi(Black.Color, board, null);
-			var game = CongoGame.Unattached(board, white, black, white, null);
-			Assert.IsTrue(game.IsDraw());
-		}
-
-		[TestMethod]
 		public void IsWin()
 		{
 			var board = CongoBoard.Empty;
