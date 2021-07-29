@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Congo.Core
 {
@@ -12,38 +13,47 @@ namespace Congo.Core
 			return game.ActivePlayer.Moves[rnd.Next(upperBound)];
 		}
 
-		private static int negamaxGetScore(CongoGame game, int depth)
+		private static int negamaxGetScore(CongoGame game, int alpha, int beta, int depth)
 		{
-			int score;
+			int score = int.MinValue;
 
 			if (game.HasEnded() || depth == 0) {
 				score = Evaluator.Basic(game);
 				return game.Opponent.Color.IsWhite() ? score : -score;
 			}
 
-			score = int.MinValue;
-
 			var moves = game.ActivePlayer.Moves;
 			for (int i = 0; i < moves.Length; i++) {
 				var newGame = game.Transition(moves[i]);
-				score = Math.Max(score, negamaxGetScore(newGame, depth - 1));
+				score = Math.Max(score, negamaxGetScore(newGame, -beta, -alpha, depth - 1));
+
+				// fail-hard beta cut-off
+				if (score >= beta) { return -beta; }
+
+				// alpha update
+				if (score > alpha) { alpha = score; }
 			}
 
+			// the better for the active player -> the worser for its opponent
 			return -score;
 		}
 
 		private static (int, CongoMove) negamaxSingleThread(CongoGame game, int depth)
 		{
-			int bestScore = int.MinValue;
+			int bestScore = int.MinValue; // also alpha!
+			int beta = int.MaxValue;
 			CongoGame bestGame = null;
-
+			
 			// corner cases, final board or bad depth
 			if (game.HasEnded() || depth == 0) { return (bestScore, null); }
 
 			var moves = game.ActivePlayer.Moves;
 			for (int i = 0; i < moves.Length; i++) {
 				var newGame = game.Transition(moves[i]);
-				var newScore = negamaxGetScore(newGame, depth - 1);
+				var newScore = negamaxGetScore(newGame, -beta, -bestScore, depth - 1);
+
+				// newScore cannot exceed beta = +Inf, no cut-off
+
 				if (bestScore < newScore) {
 					bestScore = newScore;
 					bestGame = newGame;
@@ -53,7 +63,12 @@ namespace Congo.Core
 			return (bestScore, bestGame?.TransitionMove);
 		}
 
-		private static readonly int negamaxDepth = 3;
+		private static CongoMove negamaxMultiThread(CongoGame game, int depth)
+		{
+			return null;
+		}
+
+		private static readonly int negamaxDepth = 10;
 		
 		public static CongoMove Negamax(CongoGame game)
 		{
