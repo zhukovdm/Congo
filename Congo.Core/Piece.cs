@@ -5,11 +5,13 @@ namespace Congo.Core
 {
 	public abstract class CongoPiece
 	{
+
+		/* The enum is used for defining piece codes, that are used
+		 * all over the Congo.Core project. Do not change the order! */
 		private protected enum PieceId : uint
 		{
 			Ground, River, Elephant, Zebra, Giraffe,
-			Crocodile, Pawn, Superpawn, Lion, Monkey,
-			Captured
+			Crocodile, Pawn, Superpawn, Lion, Monkey
 		}
 
 		private protected abstract PieceId Id { get; }
