@@ -46,6 +46,12 @@ namespace Congo.Core
 			score += scoreByColor(White.Color, game.Board);
 			score += scoreByColor(Black.Color, game.Board);
 
+			if (!game.HasEnded() &&
+				game.Predecessor.ActivePlayer.Color != game.ActivePlayer.Color &&
+				game.Predecessor.ActivePlayer.InCheck(game.ActivePlayer.Moves)) {
+				score += game.ActivePlayer.Color.IsWhite() ? 100 : -100;
+			}
+
 			return score;
 		}
 	}

@@ -8,7 +8,7 @@ namespace Congo.Core
 	public abstract class CongoPlayer
 	{
 		protected readonly ImmutableArray<CongoMove> moves;
-		protected readonly bool hasLion;
+		protected readonly int lionSquare;
 		protected readonly bool hasNonLion;
 		protected readonly CongoColor color;
 
@@ -26,7 +26,7 @@ namespace Congo.Core
 		public CongoPlayer(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
 		{
 			this.color = color;
-			hasLion = false;
+			lionSquare = -1;
 			hasNonLion = false;
 			var allMoves = new List<CongoMove>();
 			var e = board.GetEnumerator(color);
@@ -34,7 +34,7 @@ namespace Congo.Core
 			while (e.MoveNext()) {
 				var piece = board.GetPiece(e.Current);
 
-				if (piece.IsLion()) hasLion = true;
+				if (piece.IsLion()) lionSquare = e.Current;
 				if (piece.IsAnimal() && !piece.IsLion()) hasNonLion = true;
 
 				// ordinary move
@@ -56,7 +56,7 @@ namespace Congo.Core
 
 		public ImmutableArray<CongoMove> Moves => moves;
 
-		public bool HasLion => hasLion;
+		public bool HasLion => lionSquare >= 0;
 
 		public bool HasNonLion => hasNonLion;
 
@@ -65,6 +65,15 @@ namespace Congo.Core
 		public abstract CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump);
 
 		public abstract CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game);
+
+		public bool InCheck(ImmutableArray<CongoMove> opponentMoves)
+		{
+			foreach (var move in opponentMoves) {
+				if (move.To == lionSquare) { return true; }
+			}
+
+			return false;
+		}
 	}
 
 	public sealed class Ai : CongoPlayer
