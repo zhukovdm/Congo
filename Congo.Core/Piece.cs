@@ -377,7 +377,7 @@ namespace Congo.Core
 			var leaps = board.LeapsAsKing(square);
 
 			foreach (var leap in leaps) {
-				if (board.IsOpponentPiece(color, leap) && !board.GetPiece(leap).IsCaptured()) {
+				if (board.IsOpponentPiece(color, leap)) {
 					moves = addMonkeyJump(moves, board, square, leap);					
 				} else {
 					/* do nothing, only captures are allowed */
