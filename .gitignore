@@ -20,3 +20,4 @@ TestResults/
 *.out
 *.synctex.gz
 *.toc
+assets/doc/*.pdf
