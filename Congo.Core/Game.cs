@@ -218,7 +218,7 @@ namespace Congo.Core
 		public bool IsWin()
 		{
 			return (ActivePlayer.HasLion && !Opponent.HasLion) ||
-				(!ActivePlayer.HasLion && Opponent.HasNonLion);
+				(!ActivePlayer.HasLion && Opponent.HasLion);
 		}
 
 		public bool HasEnded()
