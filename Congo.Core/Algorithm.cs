@@ -15,7 +15,7 @@ namespace Congo.Core
 
 		private static int negamaxGetScore(CongoGame game, int alpha, int beta, int depth)
 		{
-			int score = int.MinValue;
+			int score = -Evaluator.INF;
 
 			if (game.HasEnded() || depth == 0) {
 				score = Evaluator.Material(game);
@@ -40,8 +40,8 @@ namespace Congo.Core
 
 		private static (int, CongoMove) negamaxSingleThread(CongoGame game, int depth)
 		{
-			int bestScore = int.MinValue; // also alpha!
-			int beta = int.MaxValue;
+			int bestScore = -Evaluator.INF; // also alpha!
+			int beta = Evaluator.INF;
 			CongoGame bestGame = null;
 			
 			// corner cases, final board or bad depth
@@ -68,7 +68,7 @@ namespace Congo.Core
 			return null;
 		}
 
-		private static readonly int negamaxDepth = 10;
+		private static readonly int negamaxDepth = 5;
 		
 		public static CongoMove Negamax(CongoGame game)
 		{

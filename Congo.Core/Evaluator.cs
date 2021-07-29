@@ -4,6 +4,9 @@ namespace Congo.Core
 {
 	public static class Evaluator
 	{
+		// Shall ensure +/- Inf for all evaluation functions!
+		public static int INF => 1_000_000;
+
 		public static int WinLose(CongoGame game)
 		{
 			if (game.IsWin()) { return game.WhitePlayer.HasLion ? 1 : -1; }
