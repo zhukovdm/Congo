@@ -1,0 +1,66 @@
+\section{Algorithms}
+
+\subsection{Alpha-beta negamax}
+
+Please, refer to \textsf{Congo.Core.Algorithm.cs} for implementation details.
+
+\vspace{0.5em}
+
+In original Minimax algorithm, one of the players (white) maximizes, another
+(black) minimizes. Score is calculated with respect to both players. The value
+could be either +high, 0 or --low. For white player, the higher score is the
+better. On the contrary, for black the lower score is the better.
+
+\vspace{0.5em}
+
+\textbf{Negamax, leaf node}
+
+\vspace{0.5em}
+
+This paragraph describes how board score is determined and passed within
+decision tree with respect to Minimax algorithm. Negamax deals with both
+players equally, both maximize. To achieve such behavior we should properly
+adjust score at the leaf node and pass obtained score in a specific way.
+
+\vspace{0.5em}
+
+Lets proceed with example. Suppose evaluation function returns +1 if white
+player wins, --1 if black player wins, otherwise 0. White player checks
+winning move and calls negamax with deep 0. Black player recognize that the
+game is over and returns +1. White player goes through all returned values and
+takes maximum value +1 if it appears.
+
+\vspace{0.5em}
+
+Next situation, the same evaluation function, but black player checks winning
+move and neutral move (neither winning nor loosing) and calls negamax. For the
+first move the board is evaluated to --1, and for the second to 0. Maximum of
+two values is 0, so black would skip the best option if miximizes. We should
+have inverted obtained score at the leaf node before the value is returned.
+Then 0 becomes 0, but --1 becomes +1. Smaller values at the leaf nodes become
+larger values when returned!
+
+\vspace{0.5em}
+
+All in all, black active player (or white opponent) at a terminal node returns
++score, white active player (or black opponent) at a terminal node returns
+--score.
+
+\vspace{0.5em}
+
+\textbf{Negamax, internal node}
+
+\vspace{0.5em}
+
+Suppose, there is a white player from the previous paragraph. It found winning
+move at the leaf node. Let black player be above white player within the
+decision tree. If white player returns +1 (maximum possible value) and black
+maximizes, then black would choose worst possible value and eventually move.
+The best values returned from nodes below should be represented as the worsest
+values for the opponent. Therefore, before value is returned, it should be
+inverted (* --1), so that the player above could maximize.
+
+\vspace{0.5em}
+
+\textbf{Alpha-beta pruning}
+
