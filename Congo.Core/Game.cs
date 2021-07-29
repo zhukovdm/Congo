@@ -57,7 +57,7 @@ namespace Congo.Core
 
 		#region Instance members
 
-		private readonly CongoGame previousGame;
+		private readonly CongoGame predecessor;
 		private readonly CongoMove transitionMove;
 		private readonly CongoBoard board;
 		private readonly CongoPlayer whitePlayer;
@@ -77,11 +77,11 @@ namespace Congo.Core
 		private bool isFriendlyAnimal(CongoPiece piece, CongoColor color)
 			=> piece.IsAnimal() && color == activePlayer.Color;
 
-		private CongoGame(CongoGame previousGame, CongoMove transitionMove,
+		private CongoGame(CongoGame predecessor, CongoMove transitionMove,
 			CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer,
 			CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
 		{
-			this.previousGame = previousGame;
+			this.predecessor = predecessor;
 			this.transitionMove = transitionMove;
 			this.firstMonkeyJump = firstMonkeyJump; // only jump of the active player
 			this.board = board;
@@ -89,6 +89,8 @@ namespace Congo.Core
 			this.whitePlayer = whitePlayer;
 			this.blackPlayer = blackPlayer;
 		}
+
+		public CongoGame Predecessor => predecessor;
 
 		public CongoMove TransitionMove => transitionMove;
 
