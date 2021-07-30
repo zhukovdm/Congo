@@ -16,7 +16,8 @@ namespace Congo.Core
 		IParametrizedEnumerator<U> GetEnumerator(T param);
 	}
 
-	public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>
+	public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>,
+		IHashableBoard<CongoBoard>
 	{
 		private delegate ImmutableArray<int> LeapGenerator(int rank, int file);
 		
@@ -199,7 +200,7 @@ namespace Congo.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator ==(CongoBoard b1, CongoBoard b2)
 		{
-			if (b1 is null && b2 is null) { return true; }
+			if (b1 is null && b2 is null) { return true;  }
 			if (b1 is null || b2 is null) { return false; }
 			
 			bool result = true;
@@ -220,6 +221,8 @@ namespace Congo.Core
 		public override bool Equals(object obj) => this == (CongoBoard)obj;
 
 		public override int GetHashCode() => base.GetHashCode();
+
+		public bool Equals(CongoBoard b) => this == b;
 
 		static CongoBoard()
 		{

@@ -2,7 +2,7 @@
 
 namespace Congo.Core
 {
-	public static class Evaluator
+	public static class CongoEvaluator
 	{
 		// Shall ensure +/- Inf for all evaluation functions!
 		public static int INF => 1_000_000;

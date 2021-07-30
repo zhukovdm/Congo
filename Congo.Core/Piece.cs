@@ -5,7 +5,6 @@ namespace Congo.Core
 {
 	public abstract class CongoPiece
 	{
-
 		/* The enum is used for defining piece codes, that are used
 		 * all over the Congo.Core project. Do not change the order! */
 		private protected enum PieceId : uint

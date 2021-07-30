@@ -57,6 +57,7 @@ namespace Congo.Core
 
 		#region Instance members
 
+		private readonly int distance;
 		private readonly CongoGame predecessor;
 		private readonly CongoMove transitionMove;
 		private readonly CongoBoard board;
@@ -81,6 +82,7 @@ namespace Congo.Core
 			CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer,
 			CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
 		{
+			distance = predecessor == null ? 0 : predecessor.distance + 1;
 			this.predecessor = predecessor;
 			this.transitionMove = transitionMove;
 			this.firstMonkeyJump = firstMonkeyJump; // only jump of the active player
@@ -212,10 +214,9 @@ namespace Congo.Core
 				newBlackPlayer, newActivePlayer, newFirstMonkeyJump);
 		}
 
-		public bool IsInvalid()
-		{
-			return !ActivePlayer.HasLion && !Opponent.HasLion;
-		}
+		public bool IsNew() => distance == 0;
+
+		public bool IsInvalid() => !ActivePlayer.HasLion && !Opponent.HasLion;
 
 		public bool IsWin()
 		{
@@ -223,11 +224,8 @@ namespace Congo.Core
 				(!ActivePlayer.HasLion && Opponent.HasLion);
 		}
 
-		public bool HasEnded()
-		{
-			return IsInvalid() || IsWin();
-		}
-	}
+		public bool HasEnded() => IsInvalid() || IsWin();
 
-	#endregion
+		#endregion
+	}
 }

@@ -23,14 +23,14 @@ namespace Congo.Core
 		private static (int, CongoMove) negamaxSingleThread(CongoGame game,
 			ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
 		{
-			int score = -Evaluator.INF;
+			int score = -CongoEvaluator.INF;
 			CongoMove move = null;
 
 			// recursion bottom
 			if (game.HasEnded() || depth <= 0) {
 				score = game.Predecessor.ActivePlayer.Color.IsWhite()
-					? Evaluator.Material(game)
-					: -Evaluator.Material(game);
+					? CongoEvaluator.Material(game)
+					: -CongoEvaluator.Material(game);
 
 				return (score, null); // predecessor knows moves[i]
 			}
@@ -87,7 +87,7 @@ namespace Congo.Core
 
 			if (cpus == 1) {
 				return negamaxSingleThread(game, game.ActivePlayer.Moves,
-					-Evaluator.INF, Evaluator.INF, negamaxDepth);
+					-CongoEvaluator.INF, CongoEvaluator.INF, negamaxDepth);
 			}
 
 			/* otherwise divide moves evenly */
@@ -109,7 +109,7 @@ namespace Congo.Core
 				// plan and store new task
 				taskPool[i] = Task.Run(() => {
 					return negamaxSingleThread(game, arr.ToImmutableArray(),
-						-Evaluator.INF, Evaluator.INF, negamaxDepth);
+						-CongoEvaluator.INF, CongoEvaluator.INF, negamaxDepth);
 				});
 
 				from += div;
@@ -119,7 +119,7 @@ namespace Congo.Core
 				var arr = new CongoMove[div + rem];
 				moves.CopyTo(from, arr, 0, div + rem);
 				result = negamaxSingleThread(game, arr.ToImmutableArray(),
-					-Evaluator.INF, Evaluator.INF, negamaxDepth);
+					-CongoEvaluator.INF, CongoEvaluator.INF, negamaxDepth);
 			}
 			
 			foreach (var task in taskPool) {
@@ -131,6 +131,8 @@ namespace Congo.Core
 		}
 
 		private static readonly int negamaxDepth = 5;
+
+		private static HashTable<CongoBoard> h;
 		
 		public static CongoMove Negamax(CongoGame game)
 		{
