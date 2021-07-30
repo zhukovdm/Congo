@@ -4,6 +4,11 @@ namespace Congo.Core
 {
 	public class CongoGame
 	{
+		public static void Initialize()
+		{
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(HashTable).TypeHandle);
+		}
+
 		#region Unattached game
 
 		public static CongoGame Unattached(CongoBoard board, CongoPlayer whitePlayer,

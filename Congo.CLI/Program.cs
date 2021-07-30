@@ -6,6 +6,8 @@ namespace Congo.CLI
 	{
 		static void Main(string[] args)
 		{
+			CongoGame.Initialize();
+
 			CongoGame game;
 			CongoMove move;
 			CongoCommandLine ui = null;

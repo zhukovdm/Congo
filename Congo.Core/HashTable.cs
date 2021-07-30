@@ -4,16 +4,18 @@ namespace Congo.Core
 {
 	class HashCell
 	{
-		public ulong Hash;
-		public int Depth;
 		public int Score;
+		public int Depth;
+		public ulong Hash;
+		public CongoMove Move;
 		public CongoBoard Board;
 	}
 
 	class HashTable
 	{
-		private static ulong[] hashValues;
-		private static int tableSize = 262_144; // 2^18
+		private static readonly ulong[] hashValues;
+		private static readonly int tableSize = 262_144; // 2^18
+		private static readonly ulong mask = 0x03_FF_FF;
 
 		private static int colorSpan = 2;
 		private static int pieceSpan = CongoBoard.PieceSample.Length;
@@ -44,24 +46,38 @@ namespace Congo.Core
 			}
 		}
 
-		public ulong GetHash(CongoBoard board)
+		/// <summary>
+		/// Hash comes directly from Negamax due to the efficient generation
+		/// method (XOR do/undo).
+		/// </summary>
+		public bool TryGetScore(ulong hash, CongoBoard board, int depth,
+			out (int, CongoMove) pair)
 		{
-			ulong hash = 0;
+			var cell = table[hash & mask]; // hash ~ 64b, table ~ 18b
 
-			for (int square = 0; square < board.Size; square++) {
-				WithSquare(hash, board, square);
+			lock (cell) {
+
+				// cell content cannot be used
+				if (hash != cell.Hash  || cell.Depth < depth        ||
+					cell.Board == null || !board.Equals(cell.Board)) {
+					pair = (-CongoEvaluator.INF, null);
+					return false;
+				}
+
+				// similar or better solution is found
+				else {
+					pair = (cell.Score, cell.Move);
+					return true;
+				}
 			}
-
-			return hash;
 		}
-		
-		public ulong WithSquare(ulong hash, CongoBoard board, int square)
+
+		private ulong addPiece(ulong hash, CongoPiece piece, CongoColor color, int square)
 		{
-			// ground and river are black by default
-			var colorOffset = board.IsWhitePiece(square)
+			var colorOffset = color.IsWhite()
 				? 0 * pieceSpan * boardSpan
 				: 1 * pieceSpan * boardSpan;
-			var pieceOffset = board.GetPiece(square).Code * boardSpan;
+			var pieceOffset = piece.Code * boardSpan;
 			var offset = colorOffset + pieceOffset + square;
 
 			hash ^= hashValues[offset];
@@ -72,37 +88,44 @@ namespace Congo.Core
 		/// <summary>
 		/// XOR undo by repeated application
 		/// </summary>
-		public ulong WithoutSquare(ulong hash, CongoBoard board, int square)
-			=> WithSquare(hash, board, square);
+		private ulong removePiece(ulong hash, CongoPiece piece, CongoColor color, int square)
+			=> addPiece(hash, piece, color, square);
 
-		/// <summary>
-		/// Hash comes directly from Negamax due to the efficient generation
-		/// method (XOR do/undo).
-		/// </summary>
-		public bool TryGetScore(ulong hash, CongoBoard board, int depth, out int score)
+		public ulong ApplyMove(ulong hash, CongoBoard board, CongoMove move)
 		{
-			var cell = table[hash & 0x03_FF_FF]; // hash ~ 64b, table ~ 18b
+			// ground and river are considered black pieces, no difference
 
-			lock (cell) {
+			var piece = board.GetPiece(move.To);
+			var color = board.IsWhitePiece(move.To) ? White.Color : Black.Color;
+			hash = removePiece(hash, piece, color, move.To);
 
-				// cell content cannot be used
-				if (hash != cell.Hash  || cell.Depth < depth       ||
-					cell.Board == null || !board.Equals(cell.Board)) {
-					score = 0;
-					return false;
-				}
+			piece = board.GetPiece(move.Fr);
+			color = board.IsWhitePiece(move.Fr) ? White.Color : Black.Color;
+			hash = addPiece(hash, piece, color, move.To);
+			hash = removePiece(hash, piece, color, move.Fr);
 
-				// similar or better solution is found
-				else {
-					score = cell.Score;
-					return true;
-				}
-			}
+			board = board.Without(move.Fr);
+			piece = board.GetPiece(move.Fr); // ground or river
+			hash = addPiece(hash, piece, Black.Color, move.Fr);
+
+			return hash;
 		}
 
-		public bool TrySetScore(int hash, CongoBoard board, int depth, int score)
+		public ulong ApplyMove(ulong hash, CongoBoard board, MonkeyJump jump)
 		{
-			var cell = table[hash];
+			hash = ApplyMove(hash, board, (CongoMove)jump);
+
+			board = board.Without(jump.Bt);
+			var piece = board.GetPiece(jump.Bt); // ground or river
+			hash = addPiece(hash, piece, Black.Color, jump.Bt);
+
+			return hash;
+		}
+
+		public bool TrySetScore(ulong hash, CongoBoard board, int depth,
+			int score, CongoMove move)
+		{
+			var cell = table[hash & mask];
 
 			lock (cell) {
 
@@ -110,8 +133,10 @@ namespace Congo.Core
 				 * better (deeper) solution is found -> eviction */
 				if (!board.Equals(cell.Board) || cell.Depth < depth)
 				{
-					cell.Depth = depth;
 					cell.Score = score;
+					cell.Depth = depth;
+					cell.Hash  = hash;
+					cell.Move  = move;
 					cell.Board = board;
 					return true;
 				}
@@ -121,6 +146,30 @@ namespace Congo.Core
 					return false;
 				}
 			}
+		}
+
+		public ulong GetHash(CongoBoard board)
+		{
+			ulong hash = 0;
+
+			for (int square = 0; square < board.Size; square++) {
+				var piece = board.GetPiece(square);
+				var color = board.IsWhitePiece(square) ? White.Color : Black.Color;
+				addPiece(hash, piece, color, square);
+			}
+
+			return hash;
+		}
+
+		public void ReportOccupancy()
+		{
+			var occupancy = 0;
+
+			foreach (var cell in table) {
+				if (cell.Board != null) { occupancy++; }
+			}
+
+			Console.WriteLine($"\n hash table occupancy {(double)occupancy / table.Length}");
 		}
 	}
 }

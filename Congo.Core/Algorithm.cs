@@ -20,8 +20,9 @@ namespace Congo.Core
 		/* In order to simplify source code, this method combines both,
 		 * searching best score and returning best move. That's why we use
 		 * constructs such as (score, null), (score, _) or (_, move). */
-		private static (int, CongoMove) negamaxSingleThread(CongoGame game,
-			ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
+		private static (int, CongoMove) negamaxSingleThread(ulong hash,
+			CongoGame game, ImmutableArray<CongoMove> moves, int alpha,
+			int beta, int depth)
 		{
 			int score = -CongoEvaluator.INF;
 			CongoMove move = null;
@@ -35,27 +36,52 @@ namespace Congo.Core
 				return (score, null); // predecessor knows moves[i]
 			}
 
-			for (int i = 0; i < moves.Length; i++) {
-				var newGame = game.Transition(moves[i]);
-
-				// ordinary move, active player changes the color
-				if (newGame.ActivePlayer.Color != game.ActivePlayer.Color) {
-					(score, _) = Max((score, null), negamaxSingleThread(
-						newGame, newGame.ActivePlayer.Moves, -beta, -alpha, depth - 1));
-				}
-
-				// multiple monkey jump, no color change
-				else {
-					(score, _) = Max((score, null), negamaxSingleThread(
-						newGame, newGame.ActivePlayer.Moves, alpha, beta, depth - 1));
-				}
-
-				// fail-hard beta cut-off
-				if (score >= beta) { score = beta; break; }
-
-				// alpha update
-				if (score > alpha) { alpha = score; move = moves[i]; }
+			// better (deeper) solution found
+			else if (hT.TryGetScore(hash, game.Board, depth, out var pair)) {
+				score = pair.Item1; move =  pair.Item2;
 			}
+
+			// otherwise, traverse moves
+			else {
+				for (int i = 0; i < moves.Length; i++) {
+
+					var newGame = game.Transition(moves[i]);
+
+					/* apply move using OLD board to find new hash */
+
+					ulong newHash;
+					
+					if (moves[i] is MonkeyJump) {
+						newHash = hT.ApplyMove(hash, game.Board, (MonkeyJump)moves[i]);
+					} else {
+						newHash = hT.ApplyMove(hash, game.Board, moves[i]);
+					}
+
+					/* negamax recursive call */
+
+					// ordinary move, active player changes the color
+					if (newGame.ActivePlayer.Color != game.ActivePlayer.Color) {
+						(score, _) = Max((score, null), negamaxSingleThread(newHash,
+							newGame, newGame.ActivePlayer.Moves, -beta, -alpha, depth - 1));
+					}
+
+					// multiple monkey jump, no color change
+					else {
+						(score, _) = Max((score, null), negamaxSingleThread(newHash,
+							newGame, newGame.ActivePlayer.Moves, alpha, beta, depth - 1));
+					}
+
+					/* evaluate negamax results */
+
+					// fail-hard beta cut-off
+					if (score >= beta) { score = beta; break; }
+
+					// alpha update
+					if (score > alpha) { alpha = score; move = moves[i]; }
+				}
+			}
+
+			_ = hT.TrySetScore(hash, game.Board, depth, score, move);
 
 			/* root game (no predecessor) or monkey jump (predecessor's
 			 * active player is of the same color) */
@@ -66,7 +92,8 @@ namespace Congo.Core
 			return condition ? (score, move) : (-score, move);
 		}
 
-		private static (int, CongoMove) negamaxMultiThread(CongoGame game, int depth)
+		private static (int, CongoMove) negamaxMultiThread(ulong hash,
+			CongoGame game, int depth)
 		{
 
 			/* Multithreading based on Thread pool. Create a task with
@@ -85,7 +112,7 @@ namespace Congo.Core
 			/* one move -> one thread */
 
 			if (cpus == 1) {
-				return negamaxSingleThread(game, game.ActivePlayer.Moves,
+				return negamaxSingleThread(hash, game, game.ActivePlayer.Moves,
 					-CongoEvaluator.INF, CongoEvaluator.INF, depth);
 			}
 
@@ -107,7 +134,7 @@ namespace Congo.Core
 
 				// plan and store new task
 				taskPool[i] = Task.Run(() => {
-					return negamaxSingleThread(game, arr.ToImmutableArray(),
+					return negamaxSingleThread(hash, game, arr.ToImmutableArray(),
 						-CongoEvaluator.INF, CongoEvaluator.INF, depth);
 				});
 
@@ -117,7 +144,7 @@ namespace Congo.Core
 			{
 				var arr = new CongoMove[div + rem];
 				moves.CopyTo(from, arr, 0, div + rem);
-				result = negamaxSingleThread(game, arr.ToImmutableArray(),
+				result = negamaxSingleThread(hash, game, arr.ToImmutableArray(),
 					-CongoEvaluator.INF, CongoEvaluator.INF, depth);
 			}
 			
@@ -146,8 +173,8 @@ namespace Congo.Core
 
 			var hash = hT.GetHash(game.Board);
 
-			var (_, move) = negamaxMultiThread(game, negamaxDepth);
-			
+			var (_, move) = negamaxMultiThread(hash, game, negamaxDepth);
+
 			return move;
 		}
 
