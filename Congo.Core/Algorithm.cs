@@ -18,9 +18,8 @@ namespace Congo.Core
 			=> pairA.Item1 >= pairB.Item1 ? pairA : pairB;
 
 		/* In order to simplify source code, this method combines both,
-		 * searching best score and returning best move. This is the reason 
-		 * why we return null or pass null to the call, or ignore returned 
-		 * move. */
+		 * searching best score and returning best move. That's why we use
+		 * constructs such as (score, null), (score, _) or (_, move). */
 		private static (int, CongoMove) negamaxSingleThread(CongoGame game,
 			ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
 		{
@@ -68,17 +67,12 @@ namespace Congo.Core
 			return condition ? (score, move) : (-score, move);
 		}
 
-
-
 		private static (int, CongoMove) negamaxMultiThread(CongoGame game, int depth)
 		{
 
-			/* Multi-threading is based on Thread pool. We create a task
-			 * with certain and plan it to the threading pool. The total
-			 * amount of tasks are chosen based on actual processor count.
-			 * This is rather easy task due to board immutability. Undo
-			 * moves are not necessary.
-			 */
+			/* Multithreading based on Thread pool. Create a task with
+			 * certain segment of possible moves and schedule it to thread 
+			 * pool. Do/undo is not necessary due to the game immutability. */
 
 			(int, CongoMove) result;
 			var moves = game.ActivePlayer.Moves;
@@ -108,7 +102,7 @@ namespace Congo.Core
 
 			for (int i = 0; i < cpus - 1; i++) {
 
-				// prepare segment
+				// cut out segment
 				var arr = new CongoMove[div];
 				moves.CopyTo(from, arr, 0, div);
 
@@ -151,6 +145,7 @@ namespace Congo.Core
 			return move;
 		}
 
-		public static CongoMove IterDeep(CongoGame game) => Rnd(game);
+		public static CongoMove IterDeep(CongoGame game)
+			=> throw new NotImplementedException();
 	}
 }
