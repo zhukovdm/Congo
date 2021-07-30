@@ -71,6 +71,63 @@ namespace Congo.Core.MSTest
 			}
 			Assert.IsTrue(isWater & isNotWater);
 		}
+
+		[TestMethod]
+		public void Board_EqualBothNull()
+		{
+			CongoBoard b1 = null;
+			CongoBoard b2 = null;
+			Assert.IsTrue(b1 == b2);
+		}
+
+		[TestMethod]
+		public void Board_NotEqualLeftNull()
+		{
+			CongoBoard b1 = null;
+			CongoBoard b2 = CongoBoard.Empty;
+			Assert.IsTrue(b1 != b2);
+		}
+
+		[TestMethod]
+		public void Board_NotEqualRightNull()
+		{
+			CongoBoard b1 = CongoBoard.Empty;
+			CongoBoard b2 = null;
+			Assert.IsTrue(b1 != b2);
+		}
+
+		[TestMethod]
+		public void Board_NotEqualBothNonNullSameColorDifferentPieces()
+		{
+			CongoBoard b1 = CongoBoard.Empty
+				.With(White.Color, Lion.Piece, (int)Square.D4);
+
+			CongoBoard b2 = CongoBoard.Empty
+				.With(White.Color, Pawn.Piece, (int)Square.D4);
+
+			Assert.IsTrue(b1 != b2);
+		}
+		
+		[TestMethod]
+		public void Board_NotEqualBothNonNullSamePiecesDifferentColor()
+		{
+			CongoBoard b1 = CongoBoard.Empty
+				.With(White.Color, Lion.Piece, (int)Square.D4);
+
+			CongoBoard b2 = CongoBoard.Empty
+				.With(Black.Color, Lion.Piece, (int)Square.D4);
+
+			Assert.IsTrue(b1 != b2);
+		}
+
+		[TestMethod]
+		public void Board_EqualStandard()
+		{
+			CongoBoard b1 = CongoGame.Standard(typeof(Hi), typeof(Hi)).Board;
+			CongoBoard b2 = CongoGame.Standard(typeof(Hi), typeof(Hi)).Board;
+
+			Assert.IsTrue(b1 == b2);
+		}
 	}
 
 	[TestClass]

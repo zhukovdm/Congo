@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 
 namespace Congo.Core
 {
@@ -88,17 +89,17 @@ namespace Congo.Core
 			return circleLeapGenerator(predicate, rank, file, 1);
 		}
 
-		private static HashSet<int> whiteLionCastle = new HashSet<int> {
+		private static ImmutableHashSet<int> whiteLionCastle = new HashSet<int> {
 			(int)Square.C3, (int)Square.D3, (int)Square.E3,
 			(int)Square.C2, (int)Square.D2, (int)Square.E2,
 			(int)Square.C1, (int)Square.D1, (int)Square.E1
-		};
+		}.ToImmutableHashSet();
 
-		private static HashSet<int> blackLionCastle = new HashSet<int> {
+		private static ImmutableHashSet<int> blackLionCastle = new HashSet<int> {
 			(int)Square.C7, (int)Square.D7, (int)Square.E7,
 			(int)Square.C6, (int)Square.D6, (int)Square.E6,
 			(int)Square.C5, (int)Square.D5, (int)Square.E5
-		};
+		}.ToImmutableHashSet();
 
 		private static ImmutableArray<int> lionLeapGenerator(CongoColor color, int rank, int file)
 		{
@@ -162,8 +163,7 @@ namespace Congo.Core
 
 		/* The order is critical, solution is implemented due to 
 		 * a performance issue (4-bit indexing). */
-		private static readonly ImmutableArray<CongoPiece> sample =
-			new CongoPiece[] {
+		private static readonly ImmutableArray<CongoPiece> sample = new CongoPiece[] {
 				Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
 				Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece
 			}.ToImmutableArray();
@@ -195,7 +195,32 @@ namespace Congo.Core
 			whiteSuperpawnLeaps, blackSuperpawnLeaps;
 
 		public static CongoBoard Empty => empty;
-		
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(CongoBoard b1, CongoBoard b2)
+		{
+			if (b1 is null && b2 is null) { return true; }
+			if (b1 is null || b2 is null) { return false; }
+			
+			bool result = true;
+
+			result &= b1.whiteOccupied == b2.whiteOccupied;
+			result &= b1.blackOccupied == b2.blackOccupied;
+
+			for (int i = 0; i < size; i++) {
+				result &= b1.pieces[i] == b2.pieces[i];
+			}
+
+			return result;
+		}
+
+		public static bool operator !=(CongoBoard b1, CongoBoard b2)
+			=> !(b1 == b2);
+
+		public override bool Equals(object obj) => this == (CongoBoard)obj;
+
+		public override int GetHashCode() => base.GetHashCode();
+
 		static CongoBoard()
 		{
 			kingLeaps = precalculateLeaps(kingLeapGenerator);

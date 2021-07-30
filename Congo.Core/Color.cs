@@ -3,7 +3,12 @@
 	public abstract class CongoColor
 	{
 		public static bool operator ==(CongoColor c1, CongoColor c2)
-			=> c1?.Id == c2?.Id;
+		{
+			if (c1 is null && c2 is null) { return true; }
+			if (c1 is null || c2 is null) { return false; }
+
+			return c1.Id == c2.Id;
+		}
 
 		public static bool operator !=(CongoColor c1, CongoColor c2)
 			=> !(c1 == c2);
@@ -21,7 +26,7 @@
 
 		public CongoColor Invert() => IsWhite() ? Black.Color : White.Color;
 
-		public override bool Equals(object o) => Id == ((CongoColor)o).Id;
+		public override bool Equals(object o) => this == (CongoColor)o;
 
 		public override int GetHashCode() => base.GetHashCode();
 	}
