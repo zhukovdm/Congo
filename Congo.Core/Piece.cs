@@ -398,7 +398,7 @@ namespace Congo.Core
 				} else if (board.IsOpponentPiece(color, leap)) {
 					moves = addMonkeyJump(moves, board, square, leap);
 				} else {
-					/* do nothing, occupied by friendly piece */
+					/* friendly piece -> do nothing */
 				}
 			}
 

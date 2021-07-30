@@ -4,7 +4,7 @@
 	{
 		public static bool operator ==(CongoColor c1, CongoColor c2)
 		{
-			if (c1 is null && c2 is null) { return true; }
+			if (c1 is null && c2 is null) { return true;  }
 			if (c1 is null || c2 is null) { return false; }
 
 			return c1.Id == c2.Id;

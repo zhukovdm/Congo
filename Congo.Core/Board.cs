@@ -16,8 +16,7 @@ namespace Congo.Core
 		IParametrizedEnumerator<U> GetEnumerator(T param);
 	}
 
-	public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>,
-		IHashableBoard<CongoBoard>
+	public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>
 	{
 		private delegate ImmutableArray<int> LeapGenerator(int rank, int file);
 		
@@ -165,9 +164,9 @@ namespace Congo.Core
 		/* The order is critical, solution is implemented due to 
 		 * a performance issue (4-bit indexing). */
 		private static readonly ImmutableArray<CongoPiece> sample = new CongoPiece[] {
-				Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
-				Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece
-			}.ToImmutableArray();
+			Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
+			Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece
+		}.ToImmutableArray();
 
 		private static readonly CongoBoard empty =
 			new CongoBoard(0, 0, new[] { 0U, 0U, 0U, 0x1111111U, 0U, 0U, 0U }.ToImmutableArray());
@@ -196,6 +195,8 @@ namespace Congo.Core
 			whiteSuperpawnLeaps, blackSuperpawnLeaps;
 
 		public static CongoBoard Empty => empty;
+
+		public static ImmutableArray<CongoPiece> PieceSample => sample;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator ==(CongoBoard b1, CongoBoard b2)
