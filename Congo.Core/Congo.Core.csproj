@@ -64,6 +64,7 @@
     <Compile Include="Fen.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Algorithm.cs" />
+    <Compile Include="HashTable.cs" />
     <Compile Include="IUserInterface.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="Piece.cs" />
