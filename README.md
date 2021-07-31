@@ -18,13 +18,13 @@ on the target system:
 - Click on `Clone` in the bottom right corner.
 - `Open` the solution.
 
-![open](./assets/img/install.png)
+![open](./assets/images/install.png)
 - Press `Ctrl+Shift+B` to build entire solution.
 - Press `Ctrl+F5` to start the game.
 
 ## Gameplay
 
-Check out the [User's manual](./assets/doc/um.pdf) to learn more about rules
+Check out the [User's manual](./assets/docs/um.pdf) to learn more about rules
 and game control.
 
 ### Console mode
@@ -37,15 +37,7 @@ hi
 ai
 ```
 
-![open](./assets/img/console.png)
-
-### WFA mode
-
-Not yet implemented.
-
-### WPF mode
-
-Not yet implemented.
+![open](./assets/images/console.png)
 
 ## References
 
