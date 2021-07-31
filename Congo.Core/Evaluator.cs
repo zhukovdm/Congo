@@ -54,5 +54,7 @@ namespace Congo.Core
 
 			return score;
 		}
+
+		public static int Default(CongoGame game) => Material(game);
 	}
 }

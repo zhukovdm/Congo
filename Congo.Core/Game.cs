@@ -6,7 +6,9 @@ namespace Congo.Core
 	{
 		public static void Initialize()
 		{
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(HashTable).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoBoard).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoHashCell).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoHashTable).TypeHandle);
 		}
 
 		#region Unattached game

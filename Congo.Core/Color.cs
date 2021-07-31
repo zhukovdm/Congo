@@ -20,6 +20,8 @@
 
 		private protected abstract ColorId Id { get; }
 
+		internal int Code => (int)Id;
+
 		public bool IsWhite() => Id == ColorId.White;
 
 		public bool IsBlack() => Id == ColorId.Black;
