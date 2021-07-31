@@ -13,12 +13,15 @@ on the target system:
 ## Installation
 
 - Open `Visual Studio Community 2019`.
-- Click on `Clone a repository` in the upper right corner.
+- Left click on `Clone a repository` in the upper right corner.
 - Insert `https://github.com/zhukovdm/Congo` into `Repository location` field.
-- Click on `Clone` in the bottom right corner.
+- Right click on `Clone` in the bottom right corner.
 - `Open` the solution.
 
 ![open](./assets/images/install.png)
+- Restore NuGet packages.
+
+![open](./assets/images/nugets.png)
 - Press `Ctrl+Shift+B` to build entire solution.
 - Press `Ctrl+F5` to start the game.
 
