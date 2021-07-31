@@ -105,9 +105,9 @@ namespace Congo.Core
 			 * certain segment of possible moves and schedule it. Do/undo
 			 * is not necessary due to the game immutability. */
 
-			(CongoMove, int) result;
 			var moves = game.ActivePlayer.Moves;
-
+			(CongoMove, int) result = (null, -CongoEvaluator.INF);
+			
 			// avoid flooding the system
 			var cpus = Math.Max(Environment.ProcessorCount - 2, 1);
 
@@ -144,7 +144,7 @@ namespace Congo.Core
 				from += div;
 			}
 
-			{
+			if (rem > 0) {
 				var arr = new CongoMove[rem];
 				moves.CopyTo(from, arr, 0, rem);
 				result = negamaxSingleThread(hash, game, arr.ToImmutableArray(),
@@ -156,7 +156,7 @@ namespace Congo.Core
 			return result;
 		}
 
-		private static readonly int negamaxDepth = 6;
+		private static readonly int negamaxDepth = 5;
 
 		private static CongoHashTable hT;
 		

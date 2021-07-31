@@ -35,3 +35,8 @@ game 2l4/7/7/7/7/7/2L4/h/h/b/-1
 play local
 game 2el3/7/7/7/7/7/4L2/h/a/b/-1
 ```
+
+```console
+play local
+game 1melecz/ppppP1p/7/7/7/PPPPP1P/1MgLECZ/h/a/b/-1
+```
