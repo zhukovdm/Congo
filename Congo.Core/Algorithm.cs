@@ -6,6 +6,8 @@ namespace Congo.Core
 {
 	public static class Algorithm
 	{
+		#region Random
+
 		private static readonly Random rnd = new Random();
 
 		/// <summary>
@@ -17,12 +19,21 @@ namespace Congo.Core
 			return game.ActivePlayer.Moves[rnd.Next(upperBound)];
 		}
 
+		#endregion
+
+		#region Negamax
+
+		/// <summary>
+		/// Pick maximum out of two scores.
+		/// </summary>
 		private static (CongoMove, int) Max((CongoMove, int score) p1, (CongoMove, int score) p2)
 			=> p1.score >= p2.score ? p1 : p2;
 
 		/// <summary>
 		/// Negamax heuristic traverses all possible moves recursively and
-		/// picks one with the highest score.
+		/// picks one with the highest reachable score. Score is obtained
+		/// either by applying default evaluator to the terminal or picking
+		/// solution from hash table if available.
 		/// 
 		/// To simplify source code, this method combines both, searching best
 		/// score and returning best move. Constructs, such as (null, score),
@@ -66,17 +77,18 @@ namespace Congo.Core
 
 					/* negamax recursive call */
 
+					// multiple monkey jump, no color change
+					var newAlpha = alpha;
+					var newBeta  = beta;
+
 					// ordinary move, active player changes the color
 					if (newGame.ActivePlayer.Color != game.ActivePlayer.Color) {
-						(_, score) = Max((null, score), negamaxSingleThread(newHash,
-							newGame, newGame.ActivePlayer.Moves, -beta, -alpha, depth - 1));
+						newAlpha = -beta;
+						newBeta = -alpha;
 					}
 
-					// multiple monkey jump, no color change
-					else {
-						(_, score) = Max((null, score), negamaxSingleThread(newHash,
-							newGame, newGame.ActivePlayer.Moves, alpha, beta, depth - 1));
-					}
+					(_, score) = Max((null, score), negamaxSingleThread(newHash, newGame,
+						newGame.ActivePlayer.Moves, newAlpha, newBeta, depth - 1));
 
 					/* evaluate negamax results */
 
@@ -93,18 +105,20 @@ namespace Congo.Core
 			/* Root game (no predecessor) or monkey jump (predecessor's active
 			 * player and current active player are of the same color) ->
 			 * no score inversion. */
+
 			var condition = depth == negamaxDepth ||
 				game.Predecessor.ActivePlayer.Color == game.ActivePlayer.Color;
 
 			return condition ? (move, score) : (move, -score);
 		}
 
+		/// <summary>
+		/// Multithreading based on Thread pool. Create a task with certain
+		/// segment of possible moves and schedule it. Do/undo is not necessary
+		/// due to the game immutability.
+		/// </summary>
 		private static (CongoMove, int) negamaxMultiThread(ulong hash, CongoGame game, int depth)
 		{
-			/* Multithreading based on Thread pool. Create a task with
-			 * certain segment of possible moves and schedule it. Do/undo
-			 * is not necessary due to the game immutability. */
-
 			var moves = game.ActivePlayer.Moves;
 			(CongoMove, int) result = (null, -CongoEvaluator.INF);
 			
@@ -121,7 +135,7 @@ namespace Congo.Core
 					-CongoEvaluator.INF, CongoEvaluator.INF, depth);
 			}
 
-			/* otherwise divide moves evenly */
+			/* otherwise, divide moves evenly */
 
 			// current thread plans tasks and process remainder
 			var div = moves.Length / (cpus - 1);
@@ -177,7 +191,13 @@ namespace Congo.Core
 			return move;
 		}
 
+		#endregion
+
+		#region Iterative deepening
+
 		public static CongoMove IterDeep(CongoGame game)
 			=> throw new NotImplementedException();
+
+		#endregion
 	}
 }

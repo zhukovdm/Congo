@@ -25,7 +25,7 @@ namespace Congo.CLI
 			} catch (ExitCommandException) {
 
 			} finally {
-				ui?.Dispose(); /* network socket, database, etc. */
+				ui?.Dispose(); // network socket, database, etc.
 			}
 		}
 	}

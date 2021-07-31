@@ -18,18 +18,77 @@ namespace Congo.Core
 
 	public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>
 	{
-		private delegate ImmutableArray<int> LeapGenerator(int rank, int file);
-		
-		private delegate ImmutableArray<int> ColoredLeapGenerator(
-			CongoColor color, int rank, int file);
-
 		private static readonly int size = 7;
+
+		private static readonly CongoBoard empty = new CongoBoard(
+			0, 0, new[] { 0U, 0U, 0U, 0x1111111U, 0U, 0U, 0U }.ToImmutableArray()
+		);
+
+		/// <summary>
+		/// The order is critical! 4-bit indexing due to a better performance.
+		/// </summary>
+		private static readonly ImmutableArray<CongoPiece> pieceSample = new CongoPiece[] {
+			Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
+			Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece
+		}.ToImmutableArray();
+
+		private static bool getBit(ulong word, int position)
+			=> ((word >> position) & 0x1UL) == 0x1UL;
+
+		private static ulong setBitToValue(ulong current, int position, bool value)
+			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
 
 		private static bool isJungle(int rank, int file)
 			=> rank >= 0 && rank < size && file >= 0 && file < size;
 
 		private static bool isJungle(int square)
 			=> square >= 0 && square < size * size;
+
+		private static bool isAboveRiver(int square) => square / size < size / 2;
+
+		private static bool isRiver(int square) => square / size == size / 2;
+
+		private static bool isBelowRiver(int square) => square / size > size / 2;
+
+		/// <summary>
+		/// Rank is a uint word from piece storage, it contains 4b piece codes.
+		/// </summary>
+		private static uint setPieceCode(uint rank, CongoPiece piece, int file)
+		{
+			var shift = file * 4;
+			return (rank & ~(0xFU << shift)) | piece.Code << shift;
+		}
+
+		public static CongoBoard Empty => empty;
+
+		public static ImmutableArray<CongoPiece> PieceSample => pieceSample;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(CongoBoard b1, CongoBoard b2)
+		{
+			if (b1 is null && b2 is null) { return true; }
+			if (b1 is null || b2 is null) { return false; }
+
+			var result = true;
+
+			result &= b1.whiteOccupied == b2.whiteOccupied;
+			result &= b1.blackOccupied == b2.blackOccupied;
+
+			for (int i = 0; i < size; i++) {
+				result &= b1.pieces[i] == b2.pieces[i];
+			}
+
+			return result;
+		}
+
+		public static bool operator !=(CongoBoard b1, CongoBoard b2) => !(b1 == b2);
+
+		#region Leap generation
+
+		private delegate ImmutableArray<int> LeapGenerator(int rank, int file);
+		
+		private delegate ImmutableArray<int> ColoredLeapGenerator(
+			CongoColor color, int rank, int file);
 
 		private static void addLeap(List<int> leaps, int rank, int file)
 		{
@@ -161,69 +220,12 @@ namespace Congo.Core
 			return allLeaps.ToImmutableArray();
 		}
 
-		/* The order is critical, solution is implemented due to 
-		 * a performance issue (4-bit indexing). */
-		private static readonly ImmutableArray<CongoPiece> sample = new CongoPiece[] {
-			Ground.Piece, River.Piece, Elephant.Piece, Zebra.Piece, Giraffe.Piece,
-			Crocodile.Piece, Pawn.Piece, Superpawn.Piece, Lion.Piece, Monkey.Piece
-		}.ToImmutableArray();
-
-		private static readonly CongoBoard empty =
-			new CongoBoard(0, 0, new[] { 0U, 0U, 0U, 0x1111111U, 0U, 0U, 0U }.ToImmutableArray());
-
-		private static bool getBit(ulong word, int position)
-			=> ((word >> position) & 0x1UL) == 0x1UL;
-
-		private static ulong setBitToValue(ulong current, int position, bool value)
-			=> value ? current | (0x1UL << position) : current & ~(0x1UL << position);
-
-		private static uint setPieceCode(uint rank, CongoPiece piece, int file)
-		{
-			var shift = file * 4;
-			return (rank & ~(0xFU << shift)) | piece.Code << shift;
-		}
-
-		private static bool isAboveRiver(int square) => square / size < size / 2;
-		
-		private static bool isRiver(int square) => square / size == size / 2;
-		
-		private static bool isBelowRiver(int square) => square / size > size / 2;
-
 		private static readonly ImmutableArray<ImmutableArray<int>> kingLeaps,
 			knightLeaps, elephantLeaps, capturingGiraffeLeaps, crocodileLeaps,
 			whiteLionLeaps, blackLionLeaps, whitePawnLeaps, blackPawnLeaps,
 			whiteSuperpawnLeaps, blackSuperpawnLeaps;
 
-		public static CongoBoard Empty => empty;
-
-		public static ImmutableArray<CongoPiece> PieceSample => sample;
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static bool operator ==(CongoBoard b1, CongoBoard b2)
-		{
-			if (b1 is null && b2 is null) { return true;  }
-			if (b1 is null || b2 is null) { return false; }
-			
-			bool result = true;
-
-			result &= b1.whiteOccupied == b2.whiteOccupied;
-			result &= b1.blackOccupied == b2.blackOccupied;
-
-			for (int i = 0; i < size; i++) {
-				result &= b1.pieces[i] == b2.pieces[i];
-			}
-
-			return result;
-		}
-
-		public static bool operator !=(CongoBoard b1, CongoBoard b2)
-			=> !(b1 == b2);
-
-		public override bool Equals(object obj) => this == (CongoBoard)obj;
-
-		public override int GetHashCode() => base.GetHashCode();
-
-		public bool Equals(CongoBoard b) => this == b;
+		#endregion
 
 		static CongoBoard()
 		{
@@ -246,15 +248,15 @@ namespace Congo.Core
 		private readonly ulong blackOccupied;
 		private readonly ImmutableArray<uint> pieces;
 
-		private uint getPieceCode(int square)
-			=> (pieces[square / Size] >> (square % Size * 4)) & 0xFU;
-
 		private CongoBoard(ulong whiteOccupied, ulong blackOccupied, ImmutableArray<uint> pieces)
 		{
 			this.whiteOccupied = whiteOccupied;
 			this.blackOccupied = blackOccupied;
 			this.pieces = pieces;
 		}
+
+		private uint getPieceCode(int square)
+			=> (pieces[square / size] >> (square % size * 4)) & 0xFU;
 
 		public int Size => size;
 
@@ -290,12 +292,12 @@ namespace Congo.Core
 			=> getBit(color.IsWhite() ? blackOccupied : whiteOccupied, square);
 
 		public CongoPiece GetPiece(int square)
-			=> sample[(int)getPieceCode(square)];
+			=> pieceSample[(int)getPieceCode(square)];
 
 		public CongoBoard With(CongoColor color, CongoPiece piece, int square)
 		{
-			var rank  = square / Size;
-			var shift = square % Size * 4;
+			var rank  = square / size;
+			var shift = square % size * 4;
 			var newWhiteOccupied = setBitToValue(whiteOccupied, square, color.IsWhite());
 			var newBlackOccupied = setBitToValue(blackOccupied, square, color.IsBlack());
 
@@ -308,15 +310,21 @@ namespace Congo.Core
 			var newWhiteOccupied = setBitToValue(whiteOccupied, square, false);
 			var newBlackOccupied = setBitToValue(blackOccupied, square, false);
 			var newPiece = isRiver(square) ? River.Piece : Ground.Piece;
-			var rank = square / Size;
+			var rank = square / size;
 
 			return new CongoBoard(newWhiteOccupied, newBlackOccupied,
-				pieces.SetItem(rank, setPieceCode(pieces[rank], newPiece, square % Size)));
+				pieces.SetItem(rank, setPieceCode(pieces[rank], newPiece, square % size)));
 		}
 
+		/// <summary>
+		/// Moves as chess king.
+		/// </summary>
 		public ImmutableArray<int> LeapsAsKing(int square)
 			=> kingLeaps[square];
 
+		/// <summary>
+		/// Moves as chess knight.
+		/// </summary>
 		public ImmutableArray<int> LeapsAsKnight(int square)
 			=> knightLeaps[square];
 
@@ -371,8 +379,15 @@ namespace Congo.Core
 			return GetPiece(square).IsLion() && castle.Contains(square);
 		}
 
+		/// <summary>
+		/// Enumerator versioning is not mandatory due to the board immutability.
+		/// </summary>
 		public IParametrizedEnumerator<int> GetEnumerator(CongoColor color)
 			=> new BitScanEnumerator(color.IsWhite() ? whiteOccupied : blackOccupied);
+
+		public override bool Equals(object obj) => this == (CongoBoard)obj;
+
+		public override int GetHashCode() => base.GetHashCode();
 
 		public override string ToString()
 		{

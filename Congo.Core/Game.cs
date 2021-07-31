@@ -6,8 +6,21 @@ namespace Congo.Core
 	{
 		public static void Initialize()
 		{
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoColor).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(White).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Black).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoPiece).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Ground).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(River).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Elephant).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Zebra).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Giraffe).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Crocodile).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Pawn).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Superpawn).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Lion).TypeHandle);
+			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Monkey).TypeHandle);
 			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoBoard).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoHashCell).TypeHandle);
 			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoHashTable).TypeHandle);
 		}
 
@@ -61,8 +74,6 @@ namespace Congo.Core
 		}
 
 		#endregion
-
-		#region Instance members
 
 		private readonly int distance;
 		private readonly CongoGame predecessor;
@@ -136,7 +147,9 @@ namespace Congo.Core
 								   .Without(jump.Fr);
 
 				if (newFirstMonkeyJump == null) { newFirstMonkeyJump = jump; }
-				newActivePlayerColor = newActivePlayerColor.Invert(); // the color remains
+
+				// the color remains unchanged
+				newActivePlayerColor = newActivePlayerColor.Invert();
 			}
 
 			// interrupted monkey jump
@@ -144,14 +157,12 @@ namespace Congo.Core
 
 			// pawn -> superpawn promotion
 			else if (isPawnPromotion(move)) {
-
 				newBoard = newBoard.With(activePlayer.Color, Superpawn.Piece, move.To)
 								   .Without(move.Fr);
 			}
 
 			// ordinary move
 			else {
-
 				newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(move.Fr), move.To)
 								   .Without(move.Fr);
 			}
@@ -206,8 +217,11 @@ namespace Congo.Core
 
 			#region Finalize. Define newWhitePlayers, newBlackPlayer, newActivePlayer.
 
-			var newWhiteMonkeyJumps = newActivePlayerColor.IsWhite() ? newFirstMonkeyJump : null;
-			var newBlackMonkeyJumps = newActivePlayerColor.IsBlack() ? newFirstMonkeyJump : null;
+			var newWhiteMonkeyJumps = newActivePlayerColor.IsWhite()
+				? newFirstMonkeyJump : null;
+
+			var newBlackMonkeyJumps = newActivePlayerColor.IsBlack()
+				? newFirstMonkeyJump : null;
 
 			newWhitePlayer = whitePlayer.With(newBoard, newWhiteMonkeyJumps);
 			newBlackPlayer = blackPlayer.With(newBoard, newBlackMonkeyJumps);
@@ -232,7 +246,5 @@ namespace Congo.Core
 		}
 
 		public bool HasEnded() => IsInvalid() || IsWin();
-
-		#endregion
 	}
 }

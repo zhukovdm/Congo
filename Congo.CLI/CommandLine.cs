@@ -13,9 +13,9 @@ namespace Congo.CLI
 	{
 		private static readonly string resourcesPrefix = "Resources\\";
 		private static readonly string textFileExt = ".txt";
-		protected static readonly char[] separators = new char[] { ' ', '\t', '\n' };
-		protected static readonly TextReader reader = Console.In;
-		protected static readonly TextWriter writer = Console.Out;
+		private static readonly char[] separators = new char[] { ' ', '\t', '\n' };
+		private static readonly TextReader reader = Console.In;
+		private static readonly TextWriter writer = Console.Out;
 
 		private delegate string[] VerifyCommandDelegate(string[] input);
 
@@ -41,7 +41,7 @@ namespace Congo.CLI
 				{ "iterdeep", Algorithm.IterDeep }
 			}.ToImmutableDictionary();
 
-		private static readonly ImmutableList<string> squareView =
+		private static readonly ImmutableList<string> squareViews =
 			new List<string> {
 				"a7", "b7", "c7", "d7", "e7", "f7", "g7",
 				"a6", "b6", "c6", "d6", "e6", "f6", "g6",
@@ -52,15 +52,14 @@ namespace Congo.CLI
 				"a1", "b1", "c1", "d1", "e1", "f1", "g1"
 			}.ToImmutableList();
 
-		private static readonly ImmutableList<Type> pieceTypes =
-			new Type[] {
-				typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
-				typeof(Giraffe), typeof(Crocodile), typeof(Pawn), typeof(Superpawn),
-				typeof(Lion), typeof(Monkey)
-			}.ToImmutableList();
+		private static readonly ImmutableList<Type> pieceTypes = new Type[] {
+			typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
+			typeof(Giraffe), typeof(Crocodile), typeof(Pawn), typeof(Superpawn),
+			typeof(Lion), typeof(Monkey)
+		}.ToImmutableList();
 
 		// Char piece views are completely separated from pieces intentionally.
-		private static readonly ImmutableDictionary<Type, string> pieceView =
+		private static readonly ImmutableDictionary<Type, string> pieceViews =
 			new Dictionary<Type, string>() {
 				{ typeof(Ground),   "-" }, { typeof(River),     "+" },
 				{ typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
@@ -78,7 +77,7 @@ namespace Congo.CLI
 			}.ToImmutableDictionary();
 
 		private static string getMoveRepr(CongoMove move)
-			=> "(" + squareView[move.Fr] + "," + squareView[move.To] + ")";
+			=> "(" + squareViews[move.Fr] + "," + squareViews[move.To] + ")";
 
 		private static string readTextFile(string filename)
 		{
@@ -153,7 +152,7 @@ namespace Congo.CLI
 					writer.Write($" {game.Board.Size - square / game.Board.Size}  ");
 				}
 
-				var pv = pieceView[game.Board.GetPiece(square).GetType()];
+				var pv = pieceViews[game.Board.GetPiece(square).GetType()];
 				if (game.Board.IsFirstMovePiece(square)) pv = pv.ToUpper();
 				writer.Write(" " + pv);
 				if (square % game.Board.Size == game.Board.Size - 1) writer.WriteLine();
@@ -176,8 +175,8 @@ namespace Congo.CLI
 			writer.Write($" {activeRepr} {colorRepr}");
 			for (int i = 2; i < pieceTypes.Count; i++) {
 				var pieceRepr = color.IsWhite()
-					? pieceView[pieceTypes[i]].ToUpper()
-					: pieceView[pieceTypes[i]].ToLower();
+					? pieceViews[pieceTypes[i]].ToUpper()
+					: pieceViews[pieceTypes[i]].ToLower();
 				writer.Write($" {counter[i]}{pieceRepr}");
 			}
 			writer.WriteLine();
@@ -273,7 +272,7 @@ namespace Congo.CLI
 		private static string[] verifyMoveCommand(string[] input)
 		{
 			Func<string[], bool> predicate = (string[] arr)
-				=> arr.Length != 3 || squareView.IndexOf(arr[1]) < 0 || squareView.IndexOf(arr[1]) < 0;
+				=> arr.Length != 3 || squareViews.IndexOf(arr[1]) < 0 || squareViews.IndexOf(arr[1]) < 0;
 
 			return verifyCommand(predicate, input);
 		}
@@ -308,8 +307,7 @@ namespace Congo.CLI
 			do {
 				writer.WriteLine();
 				writer.Write(" > ");
-				input = reader.ReadLine().Split(separators,
-					StringSplitOptions.RemoveEmptyEntries);
+				input = reader.ReadLine().Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
 				if (input.Length > 0 && supportedCommands.ContainsKey(input[0])) {
 					if (allowedCommands.IndexOf(input[0]) >= 0) {
@@ -349,13 +347,9 @@ namespace Congo.CLI
 			return allowedTypes[type];
 		}
 
-		public void ShowBoard(CongoGame game)
-		{
-			showTransition(game);
-			showBoard(game);
-		}
-
-		/* decides local or network command line */
+		/// <summary>
+		/// Decides local or network mode.
+		/// </summary>
 		public static CongoCommandLine SetCommandLine()
 		{
 			Greet();
@@ -424,8 +418,8 @@ namespace Congo.CLI
 						break;
 
 					case "move":
-						move = new CongoMove(squareView.IndexOf(command[1]),
-											 squareView.IndexOf(command[2]));
+						move = new CongoMove(squareViews.IndexOf(command[1]),
+											 squareViews.IndexOf(command[2]));
 						break;
 
 					case "show":
@@ -444,6 +438,12 @@ namespace Congo.CLI
 		public void ReportWrongHiMove()
 		{
 			writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
+		}
+
+		public void ShowBoard(CongoGame game)
+		{
+			showTransition(game);
+			showBoard(game);
 		}
 
 		public abstract CongoGame SetGame();

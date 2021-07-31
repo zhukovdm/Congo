@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 
 namespace Congo.Core
 {
@@ -11,7 +12,7 @@ namespace Congo.Core
 		public int Score;
 	}
 
-	class CongoHashTable
+	public class CongoHashTable
 	{
 		private static readonly int colorFactor = 2;
 		private static readonly int pieceFactor = CongoBoard.PieceSample.Length;
@@ -30,26 +31,28 @@ namespace Congo.Core
 		 * of 2 * 10 * 49 values.
 		 */
 
-		private static readonly ulong[] hashValues;
+		private static readonly ImmutableArray<ulong> hashValues;
 
 		private static readonly int tableSize = 262_144; // 2^18
 		private static readonly ulong mask = 0x03_FF_FFUL;
 
 		static CongoHashTable()
 		{
-			hashValues = new ulong[colorFactor * pieceFactor * boardFactor];
+			var values = new ulong[colorFactor * pieceFactor * boardFactor];
 
 			// 4x random words of len 16b -> 1x random word of len 64b
 			var words =  4;
 			var len   = 16;
 			var rnd   = new Random();
 
-			for (int i = 0; i < hashValues.Length; i++) {
+			for (int i = 0; i < values.Length; i++) {
 				for (int shift = 0; shift < words; shift++) {
 					var s = rnd.Next(1 << len); // next from [0, ..., 2^16)
-					hashValues[i] = hashValues[i] | ((ulong)s << (len * shift));
+					values[i] = values[i] | ((ulong)s << (len * shift));
 				}
 			}
+
+			hashValues = values.ToImmutableArray();
 		}
 
 		private static ulong addPiece(ulong hash, CongoPiece piece, CongoColor color, int square)
@@ -96,6 +99,10 @@ namespace Congo.Core
 			return hash;
 		}
 
+		/// <summary>
+		/// This method handles _ONLY_ jump.Between. To process .Fr and .To,
+		/// use ApplyMove method.
+		/// </summary>
 		public static ulong ApplyBetween(ulong hash, CongoBoard board, MonkeyJump jump)
 		{
 			CongoPiece piece;
@@ -157,7 +164,7 @@ namespace Congo.Core
 
 				// cell content cannot be used
 				if (hash != cell.Hash  || cell.Depth < depth ||
-					cell.Board == null || !board.Equals(cell.Board)) {
+					cell.Board == null || board != cell.Board) {
 					move = null; score = -CongoEvaluator.INF;
 					return false;
 				}
@@ -171,7 +178,7 @@ namespace Congo.Core
 		}
 
 		/// <summary>
-		/// Not important to know if solution is set.
+		/// Returns void, does not matter if solution is indeed set.
 		/// </summary>
 		public void SetSolution(ulong hash, CongoBoard board, int depth,
 			CongoMove move, int score)
@@ -183,7 +190,7 @@ namespace Congo.Core
 				/* != or null board in the cell -> eviction
 				 * better solution is found     -> eviction */
 
-				if (!board.Equals(cell.Board) || cell.Depth < depth)
+				if (board != cell.Board || cell.Depth < depth)
 				{
 					cell.Hash = hash;
 					cell.Board = board;
@@ -192,6 +199,17 @@ namespace Congo.Core
 					cell.Score = score;
 				}
 			}
+		}
+
+		public void ReportOccupancy()
+		{
+			int occupancy = 0;
+
+			foreach (var cell in table) {
+				if (cell.Board != null) { occupancy++; }
+			}
+
+			Console.WriteLine($" hash table occupancy {(double)occupancy / tableSize}");
 		}
 	}
 }

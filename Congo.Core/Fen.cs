@@ -11,9 +11,9 @@ namespace Congo.Core
 		 *   - 2 player types,
 		 *   - 1 active color,
 		 *   - 1 first monkey jump from
-		 *     rank/rank/rank/rank/rank/rank/rank/type/type/color 
+		 *	       rank/rank/rank/rank/rank/rank/rank/type/type/color/jump
 		 * Fen for standard board
-		 *     gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1
+		 *         gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1
 		 */
 
 		private static readonly string pieceSignatures = "gmelczps";
@@ -61,6 +61,11 @@ namespace Congo.Core
 			return CongoPlayer.GetByType(board, playerType, color, firstMonkeyJump);
 		}
 
+		/// <summary>
+		/// Deserialize game from Fen string. This method does not check
+		/// if amount of pieces is allowed. The conversion is straight forward
+		/// char -> piece.
+		/// </summary>
 		public static CongoGame FromFen(string fen)
 		{
 			var seps = new char[] { '/' };
@@ -127,6 +132,10 @@ namespace Congo.Core
 			return CongoGame.Unattached(board, whitePlayer, blackPlayer, activePlayer, firstMonkeyJump);
 		}
 
+		/// <summary>
+		/// Serialize current game to Fen string. The conversion is straight
+		/// forward, piece -> char.
+		/// </summary>
 		public static string ToFen(CongoGame game)
 		{
 			var result = "";

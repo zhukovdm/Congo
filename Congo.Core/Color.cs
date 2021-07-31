@@ -10,8 +10,7 @@
 			return c1.Id == c2.Id;
 		}
 
-		public static bool operator !=(CongoColor c1, CongoColor c2)
-			=> !(c1 == c2);
+		public static bool operator !=(CongoColor c1, CongoColor c2) => !(c1 == c2);
 
 		private protected enum ColorId : int
 		{
@@ -20,6 +19,9 @@
 
 		private protected abstract ColorId Id { get; }
 
+		/// <summary>
+		/// Codes shall not be visible outside .Core project.
+		/// </summary>
 		internal int Code => (int)Id;
 
 		public bool IsWhite() => Id == ColorId.White;

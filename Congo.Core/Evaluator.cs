@@ -7,13 +7,18 @@ namespace Congo.Core
 		// Shall ensure +/- Inf for all evaluation functions!
 		public static int INF => 1_000_000;
 
+		/// <summary>
+		/// Ternary evaluation either win, lose or 0.
+		/// </summary>
 		public static int WinLose(CongoGame game)
 		{
 			if (game.IsWin()) { return game.WhitePlayer.HasLion ? 1 : -1; }
 			return 0;
 		}
 
-		// max. possible score = 5 + 10 + 12 + 100 + 10 + 7 + 7*3 = 165
+		/// <summary>
+		/// Max. possible score = 5 + 10 + 12 + 100 + 10 + 7 + 7*3 = 165
+		/// </summary>
 		private static readonly ImmutableArray<int> materialValues = new int[10] {
 			0,   // ground
 			0,   // river
@@ -39,6 +44,9 @@ namespace Congo.Core
 			return color.IsWhite() ? score : -score;
 		}
 
+		/// <summary>
+		/// Count score based on material values of each piece on the board.
+		/// </summary>
 		public static int Material(CongoGame game)
 		{
 			int score = 0;
@@ -55,6 +63,9 @@ namespace Congo.Core
 			return score;
 		}
 
+		/// <summary>
+		/// Default evaluation, all algorithms should use this method.
+		/// </summary>
 		public static int Default(CongoGame game) => Material(game);
 	}
 }

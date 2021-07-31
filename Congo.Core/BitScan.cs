@@ -1,11 +1,9 @@
 ﻿using System.Collections.Immutable;
 
-namespace Congo.Core {
-
-	public static class BitScan {
-
-		// credit: https://www.chessprogramming.org/BitScan
-
+namespace Congo.Core
+{
+	public static class BitScan
+	{
 		private static readonly ulong magicNumber = 0x03F79D71B4CB0A89;
 		private static readonly ImmutableArray<int> magicHash = new int[] {
 			 0,  1, 48,  2, 57, 49, 28,  3,
@@ -18,13 +16,18 @@ namespace Congo.Core {
 			25, 14, 19,  9, 13,  8,  7,  6
 		}.ToImmutableArray();
 
-		public static int DeBruijnLsb(ulong word) {
-			return magicHash[(int)((word * magicNumber) >> 58)];
-		}
-
+		/// <summary>
+		/// Calculates index of the non-zero least significant bit.
+		/// Credit: https://www.chessprogramming.org/BitScan
+		/// </summary>
+		public static int DeBruijnLsb(ulong word)
+			=> magicHash[(int)((word * magicNumber) >> 58)];
 	}
 
-	// data structure versioning is not mandatory due to immutability
+	/// <summary>
+	/// Enumerates all non-zero bits from left to right and resets found bit.
+	/// Continues while remaining number is not equal to zero.
+	/// </summary>
 	public class BitScanEnumerator : IParametrizedEnumerator<int>
 	{
 		private ulong occupancy;

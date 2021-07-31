@@ -7,21 +7,22 @@ namespace Congo.Core
 {
 	public abstract class CongoPlayer
 	{
-		protected readonly ImmutableArray<CongoMove> moves;
-		protected readonly int lionSquare;
-		protected readonly bool hasNonLion;
-		protected readonly CongoColor color;
-
 		public static CongoPlayer GetByType(CongoBoard board, Type playerType,
 			CongoColor color, MonkeyJump firstMonkeyJump)
 		{
 			if (playerType == typeof(Ai)) {
 				return new Ai(color, board, firstMonkeyJump);
-			}
-			else {
+			} else if (playerType == typeof(Hi)) {
 				return new Hi(color, board, firstMonkeyJump);
+			} else {
+				throw new InvalidOperationException($"Type {playerType} is not supported.");
 			}
 		}
+
+		protected readonly int lionSquare;
+		protected readonly bool hasNonLion;
+		protected readonly CongoColor color;
+		protected readonly ImmutableArray<CongoMove> moves;
 
 		public CongoPlayer(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
 		{
@@ -78,11 +79,11 @@ namespace Congo.Core
 
 	public sealed class Ai : CongoPlayer
 	{
-		public Ai(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJumps)
-			: base(color, board, firstMonkeyJumps) { }
+		public Ai(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
+			: base(color, board, firstMonkeyJump) { }
 
-		public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJumps)
-			=> new Ai(color, board, firstMonkeyJumps);
+		public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
+			=> new Ai(color, board, firstMonkeyJump);
 
 		public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
 			=> Algorithm.Negamax(game);
@@ -93,7 +94,7 @@ namespace Congo.Core
 		private CongoMove find(CongoMove candidateMove)
 		{
 			var query = from validMove in Moves
-						where CongoMove.AreEqual(candidateMove, validMove)
+						where candidateMove == validMove
 						select validMove;
 
 			/* candidate move must be replaced because of the monkey jumps */
