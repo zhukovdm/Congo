@@ -231,7 +231,7 @@ public interface ICongoUserInterface
     CongoMove GetHiMove(CongoGame game)
     void ReportWrongHiMove()
 
-Move.cs ------------------------------------------------------------------------
+- Move.cs ----------------------------------------------------------------------
 
 public class CongoMove
     public static int Compare(CongoMove x, CongoMove y)
@@ -367,13 +367,13 @@ public sealed class Hi : CongoPlayer
     public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
     public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
     
-Square.cs ----------------------------------------------------------------------
+- Square.cs --------------------------------------------------------------------
 
 public enum Square : int
 
-Congo.CLI ======================================================================
+= Congo.CLI ====================================================================
 
-CommandLine.cs -----------------------------------------------------------------
+- CommandLine.cs ---------------------------------------------------------------
 
 class ExitCommandException : Exception
 
@@ -440,7 +440,7 @@ public class NetworkCommandLine : CongoCommandLine
     public override CongoGame WaitResponse(CongoGame game)
     public override void Dispose()
 
-Program.cs ---------------------------------------------------------------------
+- Program.cs -------------------------------------------------------------------
 
 class Program
     static void Main(string[] args)
