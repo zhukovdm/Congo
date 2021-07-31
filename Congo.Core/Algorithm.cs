@@ -123,8 +123,9 @@ namespace Congo.Core
 
 			/* otherwise divide moves evenly */
 
-			var div = moves.Length / cpus;
-			var rem = moves.Length % cpus;
+			// current thread plans tasks and process remainder
+			var div = moves.Length / (cpus - 1);
+			var rem = moves.Length % (cpus - 1);
 
 			// cpus > 1
 			var taskPool = new Task<(CongoMove, int)>[cpus - 1];
@@ -139,11 +140,13 @@ namespace Congo.Core
 					return negamaxSingleThread(hash, game, arr.ToImmutableArray(),
 						-CongoEvaluator.INF, CongoEvaluator.INF, depth);
 				});
+				
+				from += div;
 			}
 
 			{
-				var arr = new CongoMove[div + rem];
-				moves.CopyTo(from, arr, 0, div + rem);
+				var arr = new CongoMove[rem];
+				moves.CopyTo(from, arr, 0, rem);
 				result = negamaxSingleThread(hash, game, arr.ToImmutableArray(),
 					-CongoEvaluator.INF, CongoEvaluator.INF, depth);
 			}
@@ -153,7 +156,7 @@ namespace Congo.Core
 			return result;
 		}
 
-		private static readonly int negamaxDepth = 5;
+		private static readonly int negamaxDepth = 6;
 
 		private static CongoHashTable hT;
 		
@@ -165,7 +168,7 @@ namespace Congo.Core
 			if (game.HasEnded() || negamaxDepth <= 0) { return null; }
 
 			// forget previous table if the game is new
-			if (game.IsNew()) { hT = new CongoHashTable(); }
+			if (game.IsNew() || hT == null) { hT = new CongoHashTable(); }
 
 			var hash = CongoHashTable.InitHash(game.Board);
 

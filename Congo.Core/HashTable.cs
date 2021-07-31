@@ -128,7 +128,7 @@ namespace Congo.Core
 				var color = board.IsWhitePiece(square)
 					? White.Color : Black.Color;
 
-				addPiece(hash, piece, color, square);
+				hash = addPiece(hash, piece, color, square);
 			}
 
 			return hash;
