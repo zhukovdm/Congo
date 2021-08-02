@@ -1,18 +1,20 @@
 \section{Future development}
 
 The following extensions are considered essential for further project
-development and will be implemented in case proposed solution will not meet
-customer's requirements ($\geq 45$ kB of code).
+development and will be implemented later. Extensions are ordered based
+on a relevancy.
 
-\vspace{0.5em}
-
-\textsf{Congo.Server} will implement client-server layout via TCP/IP protocol
-over IPv4/6.
-
-\vspace{0.5em}
-
-\textsf{Congo.WFA} will implement WinForms user interface.
-
-\vspace{0.5em}
-
-\textsf{Congo.WPF} will implement WinForms user interface.
+\begin{enumerate}
+\item Migration from \textsf{.NET Framework} to \textsf{.NET Core} stack.
+      However, pros and cons are not clear.
+\item \textsf{Congo.Server} project will implement server part of a network
+      stack. Client part will be integrated into the existing \textsf{Congo.CLI}
+      project and non-existing \textsf{Congo.WFA/WPF} project, as client should
+      somehow interact with the user.
+\item Implementation of an advanced evaluation function and advanced algorithms for
+      traversing game tree. This could vary based on current knowledge. Some
+      of the ideas are mentioned in the presentation.
+\item Game integration with \textsf{SQL} database.
+\item \textsf{Congo.WFA/WPF} graphical user interface.
+\item Web application.
+\end{enumerate}

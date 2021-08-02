@@ -1,3 +1,82 @@
 \section{Gameplay}
 
-TODO
+The game has only command line interface. It starts with a text greeting the
+user. At any time during the game, the user can obtain a list of allowed
+commands via \textsf{allow}. As an example, just after fresh start the
+following is shown.
+\begin{verbatim}
+ > allow
+ Allowed commands are allow, exit, help, play.
+\end{verbatim}
+
+To start standard game against computer, type in the following.
+\begin{verbatim}
+play local
+game standard
+hi
+ai
+\end{verbatim}
+
+Once the game is created and the board is shown, active player can proceed and
+there are several possibilities how. The user could exit the game by typing in
+\textsf{exit}. The user could ask an advice from a chosen heuristic,
+\textsf{advise negamax}. At the moment, only \textsf{rnd} (random choice) and
+\textsf{negamax} are implemented. To obtain current statistics type in
+\textsf{show board $\mid$ players $\mid$ moves $\mid$ game}.
+\begin{verbatim}
+ > show board
+
+ 7   g m e l e c z
+ 6   p p p p p p p
+ 5   - - - - - - -
+ 4   + + + + + + +
+ 3   - - - - - - -
+ 2   P P P P P P P
+ 1   G M E L E C Z
+
+ /   a b c d e f g
+
+ > show players
+
+ * white 2E 1Z 1G 1C 7P 0S 1L 1M
+   black 2e 1z 1g 1c 7p 0s 1l 1m
+
+ > show moves
+
+ (a2,a3) (a2,b3) (b2,a3) (b2,b3) (b2,c3)
+ (c2,b3) (c2,c3) (c2,d3) (d2,c3) (d2,d3)
+ (d2,e3) (e2,d3) (e2,e3) (e2,f3) (f2,e3)
+ (f2,f3) (f2,g3) (g2,f3) (g2,g3) (a1,a3)
+ (a1,c3) (c1,c3) (e1,e3) (g1,f3)
+\end{verbatim}
+
+To move, the user simply types in \textsf{move} command, for example
+\textsf{move a1 c3}.
+
+\vspace{0.5em}
+
+If the user attempts to do unsupported actions, the program properly informs
+the user.
+
+\vspace{0.5em}
+
+The game can also be constructed from a string representing custom FEN-ish
+format. It describes each square rank-by-rank, then types of the players (ai
+or hi), a color of the active player and, finally, information if monkey jump
+currently happens. If monkey jump does not happen, then the last field is
+$-1$. Otherwise, there should be a square address, from which monkey started
+its jump. This will be used for deciding whether monkey is drown or not, if it
+interrupts the jump being on a river square.
+\begin{verbatim}
+gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1
+\end{verbatim}
+
+To start non-standard game, type in only two following rows after the greeting
+text is shown.
+\begin{verbatim}
+play local
+game <fen string>
+\end{verbatim}
+
+Such strings will be used for game (de-)serialization later as the project
+develops.
