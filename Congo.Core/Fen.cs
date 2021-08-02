@@ -9,7 +9,7 @@ namespace Congo.Core
 		/* Simplified Fen format
 		 *   - 7 ranks,
 		 *   - 2 player types,
-		 *   - 1 active color,
+		 *   - 1 active player color,
 		 *   - 1 first monkey jump from
 		 *	       rank/rank/rank/rank/rank/rank/rank/type/type/color/jump
 		 * Fen for standard board

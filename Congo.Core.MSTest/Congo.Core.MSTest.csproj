@@ -67,7 +67,7 @@
   <ItemGroup>
     <Compile Include="BoardTest.cs" />
     <Compile Include="ColorTest.cs" />
-    <Compile Include="DecoderTest.cs" />
+    <Compile Include="BitScanTest.cs" />
     <Compile Include="GameTest.cs" />
     <Compile Include="MoveTest.cs" />
     <Compile Include="PieceTest.cs" />

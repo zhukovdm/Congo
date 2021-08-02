@@ -1,5 +1,8 @@
 # Notes
 
+Check out the [User's manual](./assets/docs/um.pdf) to learn more about rules
+and game control.
+
 ## CLI game configurations
 
 ```console

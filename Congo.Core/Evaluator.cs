@@ -56,7 +56,7 @@ namespace Congo.Core
 
 			if (!game.HasEnded() &&
 				game.Predecessor.ActivePlayer.Color != game.ActivePlayer.Color &&
-				game.Predecessor.ActivePlayer.InCheck(game.ActivePlayer.Moves)) {
+				game.Predecessor.ActivePlayer.LionInDanger(game.ActivePlayer.Moves)) {
 				score += game.ActivePlayer.Color.IsWhite() ? 100 : -100;
 			}
 

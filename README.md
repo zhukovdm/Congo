@@ -27,11 +27,6 @@ on the target system:
 
 ## Gameplay
 
-Check out the [User's manual](./assets/docs/um.pdf) to learn more about rules
-and game control.
-
-### Console mode
-
 To start standard game against computer copy and paste the following.
 ```console
 play local
@@ -41,12 +36,3 @@ ai
 ```
 
 ![open](./assets/images/console.png)
-
-## References
-
-- [Mindsports - Interesting game - Congo](https://www.mindsports.nl/index.php/side-dishes/interesting-games?start=2)
-- [Wikipedia - Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess)
-- [Wikipedia - Congo (chess variant)](https://en.wikipedia.org/wiki/Congo_(chess_variant))
-- [Chess variants - Congo](https://www.chessvariants.com/ms.dir/congo.html)
-- [Chess Programming Wiki](https://www.chessprogramming.org/)
-- [Computer Chess Programming Theory](http://www.frayn.net/beowulf/theory.html)

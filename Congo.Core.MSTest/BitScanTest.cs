@@ -3,10 +3,10 @@
 namespace Congo.Core.MSTest {
 
 	[TestClass]
-	public class DecoderTest {
+	public class BitScanTest {
 
 		[TestMethod]
-		public void Decoder_DeBruijnLSB() {
+		public void BitScan_DeBruijnLsb() {
 			var result = true;
 			var num = 0x1UL;
 			for (int i = 0; i < 64; i++) {

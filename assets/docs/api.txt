@@ -354,7 +354,7 @@ public abstract class CongoPlayer
     public CongoColor Color
     public abstract CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
     public abstract CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
-    public bool InCheck(ImmutableArray<CongoMove> opponentMoves)
+    public bool LionInDanger(ImmutableArray<CongoMove> opponentMoves)
 
 public sealed class Ai : CongoPlayer
     public Ai(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)

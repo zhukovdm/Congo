@@ -67,7 +67,7 @@ namespace Congo.Core
 
 		public abstract CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game);
 
-		public bool InCheck(ImmutableArray<CongoMove> opponentMoves)
+		public bool LionInDanger(ImmutableArray<CongoMove> opponentMoves)
 		{
 			foreach (var move in opponentMoves) {
 				if (move.To == lionSquare) { return true; }
