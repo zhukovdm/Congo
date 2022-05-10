@@ -151,6 +151,10 @@
       <Project>{fc66bc2e-577e-487c-8c24-d201c895addd}</Project>
       <Name>Congo.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Congo.Network\Congo.Network.csproj">
+      <Project>{2a74553a-5d70-40dc-9c9a-b8cbe2ccc40f}</Project>
+      <Name>Congo.Network</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
