@@ -5,8 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Congo.GUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" MinHeight="654" Height="654" MinWidth="800" Width="800">
     <Grid>
-        
+        <StackPanel Orientation="Vertical">
+
+            <!-- Menu -->
+            <StackPanel Orientation="Horizontal">
+                <Menu Background="Transparent">
+                    <MenuItem Header="_Game">
+                        <MenuItem Header="_Local"/>
+                        <MenuItem Header="_Network"/>
+                        <Separator/>
+                        <MenuItem Name="exitMenuButton" Header="_Exit" Click="exitMenuButton_Click"/>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical" Width="600" HorizontalAlignment="Left">
+                    <StackPanel Height="10"/>
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Width="10"></StackPanel>
+                        <StackPanel Orientation="Vertical">
+                            <!-- Board -->
+                            <Border BorderBrush="Black" BorderThickness="1">
+                                <WrapPanel Width="574" Name="panelCongoBoard" Orientation="Horizontal"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+        </StackPanel>
     </Grid>
 </Window>
