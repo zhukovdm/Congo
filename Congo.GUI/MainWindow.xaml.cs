@@ -99,6 +99,16 @@ namespace Congo.GUI
             }
         }
 
+        private void localMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            new MenuLocalPopup().ShowDialog();
+        }
+
+        private void networkMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            new MenuNetworkPopup().ShowDialog();
+        }
+
         private void exitMenuButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();

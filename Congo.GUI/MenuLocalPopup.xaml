@@ -1,0 +1,19 @@
+﻿<Window x:Class="Congo.GUI.MenuLocalPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Congo.GUI"
+        mc:Ignorable="d"
+        Title="MenuLocalPopup" Height="200" Width="400">
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <DockPanel Height="10"/>
+            <GroupBox Header="Player 1"/>
+            <DockPanel Height="10"/>
+            <GroupBox Header="Player 2"/>
+            <DockPanel Height="10"/>
+            <Button>Confirm</Button>
+        </StackPanel>
+    </Grid>
+</Window>
