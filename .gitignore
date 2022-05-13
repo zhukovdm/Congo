@@ -21,3 +21,6 @@ TestResults/
 *.synctex.gz
 *.toc
 assets/docs/*.pdf
+
+# Doxygen
+assets/doxygen/
