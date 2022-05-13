@@ -1,20 +1,20 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Congo.Core
 {
     public class CongoMove
     {
+        /// <summary>
+        /// Lexicographic order.
+        /// </summary>
         public static int Compare(CongoMove x, CongoMove y)
         {
-            // lexicographic order
-            if ((x.Fr < y.Fr) || (x.Fr == y.Fr && x.To < y.To)) {
-                return -1;
-            } else if (x.Fr == y.Fr && x.To == y.To) {
-                return 0;
-            } else {
-                return 1;
-            }
+            if ((x.Fr < y.Fr) || (x.Fr == y.Fr && x.To < y.To)) { return -1; }
+
+            else if (x.Fr == y.Fr && x.To == y.To) { return 0; }
+
+            else { return 1; }
         }
 
         public static bool operator ==(CongoMove m1, CongoMove m2)
@@ -38,7 +38,8 @@ namespace Congo.Core
         /// <summary>
         /// This method is used only for testing purposes!
         /// </summary>
-        public override string ToString() => (Square)Fr + ", " + (Square)To;
+        public override string ToString()
+            => (Square)Fr + ", " + (Square)To;
     }
 
     public class MonkeyJump : CongoMove
@@ -51,7 +52,8 @@ namespace Congo.Core
         /// <summary>
         /// This method is used only for testing purposes!
         /// </summary>
-        public override string ToString() => (Square)Fr + ", " + (Square)Bt + ", " + (Square)To;
+        public override string ToString()
+            => (Square)Fr + ", " + (Square)Bt + ", " + (Square)To;
     }
 
     /// <summary>
@@ -64,6 +66,9 @@ namespace Congo.Core
             => CongoMove.Compare((CongoMove)x, (CongoMove)y);
     }
 
+    /// <summary>
+    /// Generic move comparer.
+    /// </summary>
     public class CongoMoveGenComparer : IComparer<CongoMove>
     {
         public int Compare(CongoMove x, CongoMove y)
