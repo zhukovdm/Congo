@@ -84,8 +84,15 @@ namespace Congo.GUI
                 var b = elem as Border;
                 if (b is Border)
                 {
-                    b.BorderBrush = (b.BorderBrush == Brushes.Black) ? Brushes.Red : Brushes.Black;
-                    b.BorderThickness = (b.BorderThickness == new Thickness(1)) ? new Thickness(5) : new Thickness(1);
+                    string code = "#a000cc";
+
+                    b.BorderBrush = (b.BorderBrush == Brushes.Black)
+                        ? (SolidColorBrush)new BrushConverter().ConvertFromString(code)
+                        : Brushes.Black;
+
+                    b.BorderThickness = (b.BorderThickness == new Thickness(1))
+                        ? new Thickness(5)
+                        : new Thickness(1);
                 }
             }
         }
