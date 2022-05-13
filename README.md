@@ -36,3 +36,5 @@ ai
 ```
 
 ![open](./assets/images/console.png)
+
+## Credits
