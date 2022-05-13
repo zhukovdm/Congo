@@ -2,249 +2,249 @@
 
 namespace Congo.Core
 {
-	public class CongoGame
-	{
-		public static void Initialize()
-		{
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoColor).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(White).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Black).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoPiece).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Ground).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(River).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Elephant).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Zebra).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Giraffe).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Crocodile).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Pawn).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Superpawn).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Lion).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Monkey).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoBoard).TypeHandle);
-			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoHashTable).TypeHandle);
-		}
+    public class CongoGame
+    {
+        public static void Initialize()
+        {
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoColor).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(White).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Black).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoPiece).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Ground).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(River).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Elephant).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Zebra).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Giraffe).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Crocodile).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Pawn).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Superpawn).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Lion).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Monkey).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoBoard).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CongoHashTable).TypeHandle);
+        }
 
-		#region Unattached game
+        #region Unattached game
 
-		public static CongoGame Unattached(CongoBoard board, CongoPlayer whitePlayer,
-			CongoPlayer blackPlayer, CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
-		{
-			return new CongoGame(null, null, board, whitePlayer, blackPlayer,
-				activePlayer, firstMonkeyJump);
-		}
+        public static CongoGame Unattached(CongoBoard board, CongoPlayer whitePlayer,
+            CongoPlayer blackPlayer, CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
+        {
+            return new CongoGame(null, null, board, whitePlayer, blackPlayer,
+                activePlayer, firstMonkeyJump);
+        }
 
-		#endregion
+        #endregion
 
-		#region Standard game
+        #region Standard game
 
-		private static CongoBoard setMixedRank(CongoBoard board, CongoColor color, int rank)
-		{
-			board = board.With(color, Giraffe.Piece,   rank * board.Size + 0)
-						 .With(color, Monkey.Piece,	   rank * board.Size + 1)
-						 .With(color, Elephant.Piece,  rank * board.Size + 2)
-						 .With(color, Lion.Piece,      rank * board.Size + 3)
-						 .With(color, Elephant.Piece,  rank * board.Size + 4)
-						 .With(color, Crocodile.Piece, rank * board.Size + 5)
-						 .With(color, Zebra.Piece,     rank * board.Size + 6);
-			
-			return board;
-		}
+        private static CongoBoard setMixedRank(CongoBoard board, CongoColor color, int rank)
+        {
+            board = board.With(color, Giraffe.Piece,   rank * board.Size + 0)
+                         .With(color, Monkey.Piece,    rank * board.Size + 1)
+                         .With(color, Elephant.Piece,  rank * board.Size + 2)
+                         .With(color, Lion.Piece,      rank * board.Size + 3)
+                         .With(color, Elephant.Piece,  rank * board.Size + 4)
+                         .With(color, Crocodile.Piece, rank * board.Size + 5)
+                         .With(color, Zebra.Piece,     rank * board.Size + 6);
 
-		private static CongoBoard setPawnRank(CongoBoard board, CongoColor color, int rank)
-		{
-			for (int file = 0; file < board.Size; file++) {
-				board = board.With(color, Pawn.Piece, rank * board.Size + file);
-			}
+            return board;
+        }
 
-			return board;
-		}
+        private static CongoBoard setPawnRank(CongoBoard board, CongoColor color, int rank)
+        {
+            for (int file = 0; file < board.Size; file++) {
+                board = board.With(color, Pawn.Piece, rank * board.Size + file);
+            }
 
-		public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
-		{
-			var b = CongoBoard.Empty;
-			b = setMixedRank(b, Black.Color, 0);
-			b = setPawnRank (b, Black.Color, 1);
-			b = setPawnRank (b, White.Color, 5);
-			b = setMixedRank(b, White.Color, 6);
+            return board;
+        }
 
-			var wp = CongoPlayer.GetByType(b, whitePlayerType, White.Color, null);
-			var bp = CongoPlayer.GetByType(b, blackPlayerType, Black.Color, null);
+        public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
+        {
+            var b = CongoBoard.Empty;
+            b = setMixedRank(b, Black.Color, 0);
+            b = setPawnRank (b, Black.Color, 1);
+            b = setPawnRank (b, White.Color, 5);
+            b = setMixedRank(b, White.Color, 6);
 
-			return Unattached(b, wp, bp, wp, null);
-		}
+            var wp = CongoPlayer.GetByType(b, whitePlayerType, White.Color, null);
+            var bp = CongoPlayer.GetByType(b, blackPlayerType, Black.Color, null);
 
-		#endregion
+            return Unattached(b, wp, bp, wp, null);
+        }
 
-		private readonly int distance;
-		private readonly CongoGame predecessor;
-		private readonly CongoMove transitionMove;
-		private readonly CongoBoard board;
-		private readonly CongoPlayer whitePlayer;
-		private readonly CongoPlayer blackPlayer;
-		private readonly CongoPlayer activePlayer;
-		private readonly MonkeyJump firstMonkeyJump;
+        #endregion
 
-		private bool isInterruptedMonkeyJump(CongoMove move)
-			=> board.GetPiece(move.Fr).IsMonkey() && move.Fr == move.To;
+        private readonly int distance;
+        private readonly CongoGame predecessor;
+        private readonly CongoMove transitionMove;
+        private readonly CongoBoard board;
+        private readonly CongoPlayer whitePlayer;
+        private readonly CongoPlayer blackPlayer;
+        private readonly CongoPlayer activePlayer;
+        private readonly MonkeyJump firstMonkeyJump;
 
-		private bool isPawnPromotion(CongoMove move)
-		{
-			return board.GetPiece(move.Fr).IsPawn() &&
-				board.IsUpDownBorder(activePlayer.Color, move.To);
-		}
+        private bool isInterruptedMonkeyJump(CongoMove move)
+            => board.GetPiece(move.Fr).IsMonkey() && move.Fr == move.To;
 
-		private bool isFriendlyAnimal(CongoPiece piece, CongoColor color)
-			=> piece.IsAnimal() && color == activePlayer.Color;
+        private bool isPawnPromotion(CongoMove move)
+        {
+            return board.GetPiece(move.Fr).IsPawn() &&
+                board.IsUpDownBorder(activePlayer.Color, move.To);
+        }
 
-		private CongoGame(CongoGame predecessor, CongoMove transitionMove,
-			CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer,
-			CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
-		{
-			distance = predecessor == null ? 0 : predecessor.distance + 1;
-			this.predecessor = predecessor;
-			this.transitionMove = transitionMove;
-			this.firstMonkeyJump = firstMonkeyJump; // only jump of the active player
-			this.board = board;
-			this.activePlayer = activePlayer;
-			this.whitePlayer = whitePlayer;
-			this.blackPlayer = blackPlayer;
-		}
+        private bool isFriendlyAnimal(CongoPiece piece, CongoColor color)
+            => piece.IsAnimal() && color == activePlayer.Color;
 
-		public CongoGame Predecessor => predecessor;
+        private CongoGame(CongoGame predecessor, CongoMove transitionMove,
+            CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer,
+            CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
+        {
+            distance = predecessor == null ? 0 : predecessor.distance + 1;
+            this.predecessor = predecessor;
+            this.transitionMove = transitionMove;
+            this.firstMonkeyJump = firstMonkeyJump; // only jump of the active player
+            this.board = board;
+            this.activePlayer = activePlayer;
+            this.whitePlayer = whitePlayer;
+            this.blackPlayer = blackPlayer;
+        }
 
-		public CongoMove TransitionMove => transitionMove;
+        public CongoGame Predecessor => predecessor;
 
-		public CongoBoard Board => board;
+        public CongoMove TransitionMove => transitionMove;
 
-		public CongoPlayer WhitePlayer => whitePlayer;
+        public CongoBoard Board => board;
 
-		public CongoPlayer BlackPlayer => blackPlayer;
+        public CongoPlayer WhitePlayer => whitePlayer;
 
-		public CongoPlayer ActivePlayer
-			=> activePlayer.Color.IsWhite() ? whitePlayer : blackPlayer;
+        public CongoPlayer BlackPlayer => blackPlayer;
 
-		public CongoPlayer Opponent
-			=> activePlayer.Color.IsWhite() ? blackPlayer : whitePlayer;
+        public CongoPlayer ActivePlayer
+            => activePlayer.Color.IsWhite() ? whitePlayer : blackPlayer;
 
-		public CongoMove FirstMonkeyJump => firstMonkeyJump;
+        public CongoPlayer Opponent
+            => activePlayer.Color.IsWhite() ? blackPlayer : whitePlayer;
 
-		public CongoGame Transition(CongoMove move)
-		{
-			var newBoard = board;
-			CongoPlayer newWhitePlayer;
-			CongoPlayer newBlackPlayer;
-			CongoColor newActivePlayerColor = activePlayer.Color.Invert();
-			MonkeyJump newFirstMonkeyJump = firstMonkeyJump;
+        public CongoMove FirstMonkeyJump => firstMonkeyJump;
 
-			#region Execute move. Define newBoard, newFirstMonkeyJump, newActivePlayerColor.
+        public CongoGame Transition(CongoMove move)
+        {
+            var newBoard = board;
+            CongoPlayer newWhitePlayer;
+            CongoPlayer newBlackPlayer;
+            CongoColor newActivePlayerColor = activePlayer.Color.Invert();
+            MonkeyJump newFirstMonkeyJump = firstMonkeyJump;
 
-			// first or consecutive monkey jump
-			if (move is MonkeyJump) {
-				var jump = (MonkeyJump)move;
+            #region Execute move. Define newBoard, newFirstMonkeyJump, newActivePlayerColor.
 
-				newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(jump.Fr), jump.To)
-								   .Without(jump.Bt)
-								   .Without(jump.Fr);
+            // first or consecutive monkey jump
+            if (move is MonkeyJump) {
+                var jump = (MonkeyJump)move;
 
-				if (newFirstMonkeyJump == null) { newFirstMonkeyJump = jump; }
+                newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(jump.Fr), jump.To)
+                                   .Without(jump.Bt)
+                                   .Without(jump.Fr);
 
-				// the color remains unchanged
-				newActivePlayerColor = newActivePlayerColor.Invert();
-			}
+                if (newFirstMonkeyJump == null) { newFirstMonkeyJump = jump; }
 
-			// interrupted monkey jump
-			else if (isInterruptedMonkeyJump(move)) { newFirstMonkeyJump = null; }
+                // the color remains unchanged
+                newActivePlayerColor = newActivePlayerColor.Invert();
+            }
 
-			// pawn -> superpawn promotion
-			else if (isPawnPromotion(move)) {
-				newBoard = newBoard.With(activePlayer.Color, Superpawn.Piece, move.To)
-								   .Without(move.Fr);
-			}
+            // interrupted monkey jump
+            else if (isInterruptedMonkeyJump(move)) { newFirstMonkeyJump = null; }
 
-			// ordinary move
-			else {
-				newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(move.Fr), move.To)
-								   .Without(move.Fr);
-			}
+            // pawn -> superpawn promotion
+            else if (isPawnPromotion(move)) {
+                newBoard = newBoard.With(activePlayer.Color, Superpawn.Piece, move.To)
+                                   .Without(move.Fr);
+            }
 
-			#endregion
+            // ordinary move
+            else {
+                newBoard = newBoard.With(activePlayer.Color, newBoard.GetPiece(move.Fr), move.To)
+                                   .Without(move.Fr);
+            }
 
-			#region Drowning. Define newBoard.
+            #endregion
 
-			for (int square = (int)Square.A4; square <= (int)Square.G4; square++) {
+            #region Drowning. Define newBoard.
 
-				var piece = newBoard.GetPiece(square);
-				var color = newBoard.IsWhitePiece(square) ? White.Color : Black.Color;
+            for (int square = (int)Square.A4; square <= (int)Square.G4; square++) {
 
-				// consider only friendly non-crocodiles
-				if (!isFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }
+                var piece = newBoard.GetPiece(square);
+                var color = newBoard.IsWhitePiece(square) ? White.Color : Black.Color;
 
-				// not-moved piece -> stay at the river -> drown
-				else if (move.To != square) { newBoard = newBoard.Without(square); }
+                // consider only friendly non-crocodiles
+                if (!isFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }
 
-				/* from now onwards move.To == square */
+                // not-moved piece -> stay at the river -> drown
+                else if (move.To != square) { newBoard = newBoard.Without(square); }
 
-				// ground-to-river move
-				else if (!newBoard.IsRiver(move.Fr)) { }
+                /* from now onwards move.To == square */
 
-				// ordinary non-monkey river-to-river move -> drown
-				else if (!piece.IsMonkey() && newBoard.IsRiver(move.Fr)) {
-					newBoard = newBoard.Without(square);
-				}
+                // ground-to-river move
+                else if (!newBoard.IsRiver(move.Fr)) { }
 
-				/* from now onwards monkey river-to-river move */
+                // ordinary non-monkey river-to-river move -> drown
+                else if (!piece.IsMonkey() && newBoard.IsRiver(move.Fr)) {
+                    newBoard = newBoard.Without(square);
+                }
 
-				// interrupted monkey jump
-				else if (move.Fr == move.To) {
+                /* from now onwards monkey river-to-river move */
 
-					// started from the river -> drown
-					if (newBoard.IsRiver(firstMonkeyJump.Fr)) {
-						newBoard = newBoard.Without(square);
-					}
-					
-					// otherwise, remains on the board
-					else { }
-				}
+                // interrupted monkey jump
+                else if (move.Fr == move.To) {
 
-				// continued monkey jump
-				else if (move is MonkeyJump) { }
+                    // started from the river -> drown
+                    if (newBoard.IsRiver(firstMonkeyJump.Fr)) {
+                        newBoard = newBoard.Without(square);
+                    }
+                    
+                    // otherwise, remains on the board
+                    else { }
+                }
 
-				// ordinary monkey river-to-river move -> drown
-				else { newBoard = newBoard.Without(square); }
-			}
+                // continued monkey jump
+                else if (move is MonkeyJump) { }
 
-			#endregion
+                // ordinary monkey river-to-river move -> drown
+                else { newBoard = newBoard.Without(square); }
+            }
 
-			#region Finalize. Define newWhitePlayers, newBlackPlayer, newActivePlayer.
+            #endregion
 
-			var newWhiteMonkeyJumps = newActivePlayerColor.IsWhite()
-				? newFirstMonkeyJump : null;
+            #region Finalize. Define newWhitePlayers, newBlackPlayer, newActivePlayer.
 
-			var newBlackMonkeyJumps = newActivePlayerColor.IsBlack()
-				? newFirstMonkeyJump : null;
+            var newWhiteMonkeyJumps = newActivePlayerColor.IsWhite()
+                ? newFirstMonkeyJump : null;
 
-			newWhitePlayer = whitePlayer.With(newBoard, newWhiteMonkeyJumps);
-			newBlackPlayer = blackPlayer.With(newBoard, newBlackMonkeyJumps);
+            var newBlackMonkeyJumps = newActivePlayerColor.IsBlack()
+                ? newFirstMonkeyJump : null;
 
-			var newActivePlayer = newActivePlayerColor.IsWhite()
-				? newWhitePlayer : newBlackPlayer;
+            newWhitePlayer = whitePlayer.With(newBoard, newWhiteMonkeyJumps);
+            newBlackPlayer = blackPlayer.With(newBoard, newBlackMonkeyJumps);
 
-			#endregion
+            var newActivePlayer = newActivePlayerColor.IsWhite()
+                ? newWhitePlayer : newBlackPlayer;
 
-			return new CongoGame(this, move, newBoard, newWhitePlayer,
-				newBlackPlayer, newActivePlayer, newFirstMonkeyJump);
-		}
+            #endregion
 
-		public bool IsNew() => distance == 0;
+            return new CongoGame(this, move, newBoard, newWhitePlayer,
+                newBlackPlayer, newActivePlayer, newFirstMonkeyJump);
+        }
 
-		public bool IsInvalid() => !ActivePlayer.HasLion && !Opponent.HasLion;
+        public bool IsNew() => distance == 0;
 
-		public bool IsWin()
-		{
-			return (ActivePlayer.HasLion && !Opponent.HasLion) ||
-				(!ActivePlayer.HasLion && Opponent.HasLion);
-		}
+        public bool IsInvalid() => !ActivePlayer.HasLion && !Opponent.HasLion;
 
-		public bool HasEnded() => IsInvalid() || IsWin();
-	}
+        public bool IsWin()
+        {
+            return (ActivePlayer.HasLion && !Opponent.HasLion) ||
+                (!ActivePlayer.HasLion && Opponent.HasLion);
+        }
+
+        public bool HasEnded() => IsInvalid() || IsWin();
+    }
 }

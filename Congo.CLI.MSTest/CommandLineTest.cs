@@ -2,6 +2,6 @@
 
 namespace Congo.CLI.MSTest
 {
-	[TestClass]
-	public class CommandLineTest { }
+    [TestClass]
+    public class CommandLineTest { }
 }

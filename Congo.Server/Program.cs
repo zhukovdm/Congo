@@ -1,14 +1,10 @@
 ﻿namespace Congo.Server
 {
+    class Program
+    {
+        static void Main(string[] args)
+        {
 
-	class Program
-	{
-
-		static void Main(string[] args)
-		{
-
-		}
-
-	}
-
+        }
+    }
 }
