@@ -11,7 +11,7 @@ namespace Congo.Core
         private static readonly Random rnd = new Random();
 
         /// <summary>
-        /// Rnd heuristic picks random move from available.
+        /// @b Rnd heuristic picks random move from all available.
         /// </summary>
         public static CongoMove Rnd(CongoGame game)
         {
@@ -23,20 +23,24 @@ namespace Congo.Core
 
         #region Negamax
 
+        private static readonly int negamaxDepth = 5; ///< maximum distance to a leaf of the decision tree
+
+        private static CongoHashTable hT;
+
         /// <summary>
-        /// Pick maximum out of two scores.
+        /// Picks pair with maximum out of two scores.
         /// </summary>
         private static (CongoMove, int) Max((CongoMove, int score) p1, (CongoMove, int score) p2)
             => p1.score >= p2.score ? p1 : p2;
 
         /// <summary>
-        /// Negamax heuristic traverses all possible moves recursively and
-        /// picks one with the highest reachable score. Score is obtained
-        /// either by applying default evaluator to the terminal or picking
-        /// solution from hash table if available.
+        /// @b Negamax heuristic traverses all possible moves recursively
+        /// and picks one with the highest reachable score. Score is obtained
+        /// either by applying default evaluator to the leaf node of the
+        /// decision tree or picking solution from the hash table if available.
         /// 
-        /// To simplify source code, this method combines both, searching best
-        /// score and returning best move. Constructs, such as (null, score),
+        /// @note To simplify source code, this method combines both, searching
+        /// best score and returning best move. Constructs, such as (null, score),
         /// (_, score) and (move, _), are less transparent, but essential.
         /// </summary>
         private static (CongoMove, int) negamaxSingleThread(ulong hash, CongoGame game,
@@ -61,7 +65,7 @@ namespace Congo.Core
 
             // otherwise, traverse moves
             else {
-                for (int i = 0; i < moves.Length; i++) { // lean iteration
+                for (int i = 0; i < moves.Length; ++i) { // lean iteration
                     var newMove = moves[i];
                     var newGame = game.Transition(newMove);
 
@@ -121,7 +125,7 @@ namespace Congo.Core
         {
             var moves = game.ActivePlayer.Moves;
             (CongoMove, int) result = (null, -CongoEvaluator.INF);
-            
+
             // avoid flooding the system
             var cpus = Math.Max(Environment.ProcessorCount - 2, 1);
 
@@ -164,16 +168,12 @@ namespace Congo.Core
                 result = negamaxSingleThread(hash, game, arr.ToImmutableArray(),
                     -CongoEvaluator.INF, CongoEvaluator.INF, depth);
             }
-            
+
             foreach (var task in taskPool) { result = Max(result, task.Result); }
 
             return result;
         }
 
-        private static readonly int negamaxDepth = 5;
-
-        private static CongoHashTable hT;
-        
         public static CongoMove Negamax(CongoGame game)
         {
             /* negamax recursion bottom assumes game predecessor
@@ -190,13 +190,6 @@ namespace Congo.Core
 
             return move;
         }
-
-        #endregion
-
-        #region Iterative deepening
-
-        public static CongoMove IterDeep(CongoGame game)
-            => throw new NotImplementedException();
 
         #endregion
     }
