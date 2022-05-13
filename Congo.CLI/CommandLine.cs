@@ -37,8 +37,7 @@ namespace Congo.CLI
         private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
             new Dictionary<string, AlgorithmDelegate> {
                 { "rnd",      Algorithm.Rnd      },
-                { "negamax",  Algorithm.Negamax  },
-                { "iterdeep", Algorithm.IterDeep }
+                { "negamax",  Algorithm.Negamax  }
             }.ToImmutableDictionary();
 
         private static readonly ImmutableList<string> squareViews =

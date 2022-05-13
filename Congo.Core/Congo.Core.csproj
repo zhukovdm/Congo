@@ -77,5 +77,11 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Congo.Utils\Congo.Utils.csproj">
+      <Project>{266f885a-34c0-4f04-83d1-3a7002527c4d}</Project>
+      <Name>Congo.Utils</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

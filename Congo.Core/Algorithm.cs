@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Congo.Core
 {
+    /// <summary>
+    /// Static class holds different algorithms for @b Move selection.
+    /// </summary>
     public static class Algorithm
     {
         #region Random
@@ -23,7 +26,7 @@ namespace Congo.Core
 
         #region Negamax
 
-        private static readonly int negamaxDepth = 5; ///< maximum distance to a leaf of the decision tree
+        private static readonly int negamaxDepth = 5; ///< Maximum distance from initial node in the decision tree
 
         private static CongoHashTable hT;
 

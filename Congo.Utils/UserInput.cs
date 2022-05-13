@@ -2,14 +2,24 @@
 
 namespace Congo.Utils
 {
-    public class UserInput
+    /// <summary>
+    /// Class containing supporting methods used in different parts
+    /// of the project.
+    /// </summary>
+    public static class UserInput
     {
+        /// <summary>
+        /// Verifies user name contains only alphanumeric chars.
+        /// </summary>
         public static bool IsUserNameValid(string name)
         {
             return name.Length > 0
                 && name.All(char.IsLetterOrDigit);
         }
 
+        /// <summary>
+        /// Verifies ip address holder is a number between 0 and 255.
+        /// </summary>
         public static bool IsIpAddressHolderValid(string holder)
         {
             return holder.Length > 0
@@ -20,12 +30,15 @@ namespace Congo.Utils
                 && result <= 255;
         }
 
-        public static bool IsPortAddressValid(string port)
+        /// <summary>
+        /// Verifies entered port is any number between 1024 and 65535.
+        /// </summary>
+        public static bool IsPortValid(string port)
         {
             return port.Length == 5
                 && port.All(char.IsDigit)
                 && int.TryParse(port, out var result)
-                && result >= 49152
+                && result >= 1024
                 && result <= 65535;
         }
     }

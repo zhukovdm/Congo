@@ -52,7 +52,7 @@ namespace Congo.GUI
                 }
             }
 
-            if (!Utils.UserInput.IsPortAddressValid(textBoxPort.Text)) {
+            if (!Utils.UserInput.IsPortValid(textBoxPort.Text)) {
                 spec += "Port address " + textBoxPort.Text + " is invalid." + System.Environment.NewLine;
             }
 

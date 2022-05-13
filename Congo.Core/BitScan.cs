@@ -18,7 +18,6 @@ namespace Congo.Core
 
         /// <summary>
         /// Calculates index of the non-zero least significant bit.
-        /// Credit: https://www.chessprogramming.org/BitScan
         /// </summary>
         public static int DeBruijnLsb(ulong word)
             => magicHash[(int)((word * magicNumber) >> 58)];
@@ -42,7 +41,8 @@ namespace Congo.Core
 
         public bool MoveNext()
         {
-            if (occupancy == 0) return false;
+            if (occupancy == 0) { return false; }
+
             var lsb = occupancy & (ulong.MaxValue - occupancy + 1);
             Current = BitScan.DeBruijnLsb(lsb);
             occupancy &= ~lsb;
