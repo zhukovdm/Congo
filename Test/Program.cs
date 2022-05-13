@@ -1,12 +1,10 @@
-﻿using Congo.Core;
-
-namespace Test
+﻿namespace Test
 {
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			
-		}
-	}
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+        }
+    }
 }
