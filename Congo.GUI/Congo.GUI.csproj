@@ -122,7 +122,9 @@
       <Name>Congo.Utils</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\pictures\icon.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\pictures\black-crocodile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
