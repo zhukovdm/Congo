@@ -1,39 +1,94 @@
 ﻿<Window x:Class="Congo.GUI.MenuNetworkPopup"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Congo.GUI"
-        mc:Ignorable="d"
-        Title="Network Connection" MinHeight="250" Height="250" MinWidth="450" Width="450">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Congo.GUI"
+    xmlns:System="clr-namespace:System;assembly=mscorlib"
+    mc:Ignorable="d"
+    Title="Network Connection" MinHeight="250" Height="250" MinWidth="450" Width="450">
+    <Window.Resources>
+        <System:Double x:Key="globalFontSize">40.0</System:Double>
+        <System:Double x:Key="textBoxIpWidth">80.0</System:Double>
+    </Window.Resources>
     <Grid>
         <StackPanel Orientation="Vertical">
             <StackPanel Height="10"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Width="100" FontSize="40">User:</TextBlock>
+                <TextBlock Width="100" FontSize="{StaticResource globalFontSize}">User:</TextBlock>
                 <DockPanel Width="10"/>
-                <TextBox Name="textBoxUserName" Width="300" FontSize="40"/>
+                <TextBox
+                    Name="textBoxUserName"
+                    Width="300"
+                    FontSize="{StaticResource globalFontSize}"
+                    LostKeyboardFocus="TextBox_LostKeyboardFocus"/>
             </StackPanel>
             <StackPanel Height="10"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Width="50" FontSize="40">IP:</TextBlock>
+                <TextBlock Width="50" FontSize="{StaticResource globalFontSize}">IP:</TextBlock>
                 <DockPanel Width="10"/>
-                <TextBox Width="80" FontSize="40" TextAlignment="Center">127</TextBox>
-                <TextBlock Width="10" FontSize="40" TextAlignment="Center">.</TextBlock>
-                <TextBox Width="80" FontSize="40" TextAlignment="Center">0</TextBox>
-                <TextBlock Width="10" FontSize="40" TextAlignment="Center">.</TextBlock>
-                <TextBox Width="80" FontSize="40" TextAlignment="Center">0</TextBox>
-                <TextBlock Width="10" FontSize="40" TextAlignment="Center">.</TextBlock>
-                <TextBox Width="80" FontSize="40" TextAlignment="Center">1</TextBox>
+                <TextBox
+                    Name="textBoxIp1"
+                    Width="{StaticResource textBoxIpWidth}"
+                    FontSize="{StaticResource globalFontSize}"
+                    TextAlignment="Center"
+                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                    127
+                </TextBox>
+                <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
+                <TextBox
+                    Name="textBoxIp2"
+                    Width="{StaticResource textBoxIpWidth}"
+                    FontSize="{StaticResource globalFontSize}"
+                    TextAlignment="Center"
+                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                    0
+                </TextBox>
+                <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
+                <TextBox
+                    Name="textBoxIp3"
+                    Width="{StaticResource textBoxIpWidth}"
+                    FontSize="{StaticResource globalFontSize}"
+                    TextAlignment="Center"
+                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                    0
+                </TextBox>
+                <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
+                <TextBox
+                    Name="textBoxIp4"
+                    Width="{StaticResource textBoxIpWidth}"
+                    FontSize="{StaticResource globalFontSize}"
+                    TextAlignment="Center"
+                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                    1
+                </TextBox>
             </StackPanel>
             <StackPanel Height="10"/>
             <DockPanel HorizontalAlignment="Center">
-                <TextBlock Width="90" FontSize="40">Port:</TextBlock>
+                <TextBlock
+                    Width="90"
+                    FontSize="{StaticResource globalFontSize}">
+                    Port:
+                </TextBlock>
                 <DockPanel Width="10"/>
-                <TextBox Width="100" FontSize="40" TextAlignment="Center">8080</TextBox>
-                <DockPanel Width="30"/>
-                <Button FontSize="40" Width="180">Confirm</Button>
+                <TextBox
+                    Name="textBoxPort"
+                    Width="120"
+                    FontSize="{StaticResource globalFontSize}"
+                    TextAlignment="Center"
+                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                    61374
+                </TextBox>
+                <DockPanel Width="20"/>
+                <Button
+                    Name="buttonConfirm"
+                    Width="170"
+                    FontSize="{StaticResource globalFontSize}"
+                    Click="ButtonConfirm_Click">
+                    Confirm
+                </Button>
             </DockPanel>
+            <StackPanel Height="10"/>
         </StackPanel>
     </Grid>
 </Window>

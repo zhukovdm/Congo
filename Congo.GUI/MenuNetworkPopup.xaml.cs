@@ -1,29 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Congo.GUI
 {
-    /// <summary>
-    /// Interaction logic for MenuNetworkPopup.xaml
-    /// </summary>
     public partial class MenuNetworkPopup : Window
     {
         private static void OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            var textBox = sender as TextBox;
-            if (textBox != null && !textBox.IsReadOnly && e.KeyboardDevice.IsKeyDown(Key.Tab))
-            {
+            if (sender is TextBox textBox && !textBox.IsReadOnly && e.KeyboardDevice.IsKeyDown(Key.Tab)) {
                 textBox.SelectAll();
             }
         }
@@ -33,7 +20,61 @@ namespace Congo.GUI
             EventManager.RegisterClassHandler(typeof(TextBox), GotKeyboardFocusEvent, new KeyboardFocusChangedEventHandler(OnGotKeyboardFocus));
         }
 
-        private void esc_PushButton(object sender, KeyEventArgs e)
+        private void ButtonConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            var msgBoxTitle = "Wrong input";
+
+            var boxes = new List<TextBox> {
+                textBoxUserName, textBoxIp1, textBoxIp2, textBoxIp3, textBoxIp4, textBoxPort
+            };
+
+            foreach (var b in boxes) {
+                if (b.Text == string.Empty) {
+                    var text = "Please, fill in all options.";
+                    MessageBox.Show(text, msgBoxTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            string spec = "";
+
+            if (!Utils.UserInput.IsUserNameValid(textBoxUserName.Text)) {
+                spec += "User name " + textBoxUserName.Text + " is invalid." + System.Environment.NewLine;
+            }
+
+            var ips = new List<string> {
+                textBoxIp1.Text, textBoxIp2.Text, textBoxIp3.Text, textBoxIp4.Text
+            };
+
+            for (int i = 0; i < ips.Count; i++) {
+                if (!Utils.UserInput.IsIpAddressHolderValid(ips[i])) {
+                    spec += "IP address holder " + (i + 1) + ": " + ips[i] + " is invalid." + System.Environment.NewLine;
+                }
+            }
+
+            if (!Utils.UserInput.IsPortAddressValid(textBoxPort.Text)) {
+                spec += "Port address " + textBoxPort.Text + " is invalid." + System.Environment.NewLine;
+            }
+
+            if (spec != string.Empty) {
+                MessageBox.Show(spec, msgBoxTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // TODO: socket & network connection
+        }
+
+        private void TextBox_LostKeyboardFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox != null) {
+                textBox.BorderBrush = (textBox.Text == string.Empty)
+                    ? Brushes.Red
+                    : (SolidColorBrush)new BrushConverter().ConvertFromString("#FFABADB3");
+            }
+        }
+
+        private void Esc_PushButton(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape) { Close(); }
         }
@@ -42,7 +83,7 @@ namespace Congo.GUI
         {
             InitializeComponent();
             textBoxUserName.Focus();
-            PreviewKeyDown += new KeyEventHandler(esc_PushButton);
+            PreviewKeyDown += new KeyEventHandler(Esc_PushButton);
         }
     }
 }
