@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.GUI", "Congo.GUI\Cong
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Network", "Congo.Network\Congo.Network.csproj", "{2A74553A-5D70-40DC-9C9A-B8CBE2CCC40F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Utils", "Congo.Utils\Congo.Utils.csproj", "{266F885A-34C0-4F04-83D1-3A7002527C4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{2A74553A-5D70-40DC-9C9A-B8CBE2CCC40F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A74553A-5D70-40DC-9C9A-B8CBE2CCC40F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A74553A-5D70-40DC-9C9A-B8CBE2CCC40F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{266F885A-34C0-4F04-83D1-3A7002527C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{266F885A-34C0-4F04-83D1-3A7002527C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{266F885A-34C0-4F04-83D1-3A7002527C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{266F885A-34C0-4F04-83D1-3A7002527C4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
