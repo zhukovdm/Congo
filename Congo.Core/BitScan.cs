@@ -17,7 +17,8 @@ namespace Congo.Core
         }.ToImmutableArray();
 
         /// <summary>
-        /// Calculates index of the non-zero least significant bit.
+        /// Calculates index of the non-zero least significant bit. The word
+        /// shall contain exactly one bit set!
         /// </summary>
         public static int DeBruijnLsb(ulong word)
             => magicHash[(int)((word * magicNumber) >> 58)];
