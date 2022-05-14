@@ -1,6 +1,0 @@
- NAME
-    connect
- DESCRIPTION
-    Connects to the remote server via TCP/IP.
- USAGE
-    connect 127.0.0.1:8080

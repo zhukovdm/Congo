@@ -3,4 +3,4 @@
  DESCRIPTION
     Shows help manual for a chosen command.
  USAGE
-    help advise | connect | exit | game | help | move | play | show
+    help advise | help | move | show

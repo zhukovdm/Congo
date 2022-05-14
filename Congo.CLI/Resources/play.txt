@@ -1,6 +1,0 @@
- NAME
-    play
- DESCRIPTION
-    Decides locality of the game.
- USAGE
-    play local | network

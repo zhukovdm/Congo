@@ -3,4 +3,4 @@
  DESCRIPTION
     Advises next move based on a chosen algorithm.
  USAGE
-    advise rnd | minimax | negamax | iterdeep
+    advise
