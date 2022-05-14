@@ -66,7 +66,6 @@
     <Compile Include="Algorithm.cs" />
     <Compile Include="HashTable.cs" />
     <Compile Include="IParametrizedEnum.cs" />
-    <Compile Include="IUserInterface.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="Player.cs" />
