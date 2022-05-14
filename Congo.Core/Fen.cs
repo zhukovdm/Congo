@@ -4,21 +4,22 @@ using System.Collections.Immutable;
 
 namespace Congo.Core
 {
+    /// <summary>
+    /// Simplified Fen format
+    ///  - 7x ranks,
+    ///  - 2x player types,
+    ///  - 1x active player color,
+    ///  - 1x first monkey jump from
+    /// <code>rank/rank/rank/rank/rank/rank/rank/type/type/color/jump</code>
+    /// 
+    /// Fen for standard board
+    ///     <code>gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1</code>
+    /// </summary>
     public static class CongoFen
     {
-        /* Simplified Fen format
-         *   - 7 ranks,
-         *   - 2 player types,
-         *   - 1 active player color,
-         *   - 1 first monkey jump from
-         *	       rank/rank/rank/rank/rank/rank/rank/type/type/color/jump
-         * Fen for standard board
-         *         gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1
-         */
-
         private static readonly string pieceSignatures = "gmelczps";
 
-        private static readonly ImmutableDictionary<char, CongoPiece> pieceViews =
+        private static readonly ImmutableDictionary<char, CongoPiece> view2piece =
             new Dictionary<char, CongoPiece>() {
                 { 'g', Giraffe.Piece   }, { 'm', Monkey.Piece    },
                 { 'e', Elephant.Piece  }, { 'l', Lion.Piece      },
@@ -26,16 +27,17 @@ namespace Congo.Core
                 { 'p', Pawn.Piece      }, { 's', Superpawn.Piece }
             }.ToImmutableDictionary();
 
-        private static CongoColor getActivePlayerColor(string color)
+        private static CongoColor GetActivePlayerColor(string color)
         {
             if (color != "w" && color != "b") { return null; }
 
             return color == "w" ? White.Color : Black.Color;
         }
 
-        private static MonkeyJump getFirstMonkeyJump(string input)
+        private static MonkeyJump GetFirstMonkeyJump(string input)
         {
             var upperBound = CongoBoard.Empty.Size * CongoBoard.Empty.Size;
+
             if (int.TryParse(input, out int from) && from >= -1 && from < upperBound) {
                 return new MonkeyJump(from, -1, -1);
             }
@@ -43,28 +45,28 @@ namespace Congo.Core
             return null;
         }
 
-        private static CongoBoard addPiece(CongoBoard board, CongoColor color,
+        private static CongoBoard AddPiece(CongoBoard board, CongoColor color,
             char pieceView, int square, ref int file)
         {
-            file++;
+            ++file;
 
-            return board.With(color, pieceViews[pieceView], square);
+            return board.With(color, view2piece[pieceView], square);
         }
 
-        private static CongoPlayer getPlayer(CongoBoard board,
+        private static CongoPlayer GetPlayer(CongoBoard board,
             string type, CongoColor color, MonkeyJump firstMonkeyJump)
         {
             if (type != "a" && type != "h") { return null; }
 
-            var playerType = type == "a" ? typeof(Ai) : typeof(Hi);
-
-            return CongoPlayer.GetByType(board, playerType, color, firstMonkeyJump);
+            return (type == "a")
+                ? new Ai(color, board, firstMonkeyJump)
+                : new Hi(color, board, firstMonkeyJump) as CongoPlayer;
         }
 
         /// <summary>
-        /// Deserialize game from Fen string. This method does not check
-        /// if amount of pieces is allowed. The conversion is straight forward
-        /// char -> piece.
+        /// Deserialize game from @b Fen string. This method does not check
+        /// if amount of pieces is satisfactory. The conversion is straight
+        /// forward char -> piece.
         /// </summary>
         public static CongoGame FromFen(string fen)
         {
@@ -77,20 +79,22 @@ namespace Congo.Core
 
             if (sfen.Length != 11) { return null; }
 
-            activePlayerColor = getActivePlayerColor(sfen[9]);
+            // parse color of the active player
+            activePlayerColor = GetActivePlayerColor(sfen[9]);
             if (activePlayerColor == null) { return null; }
 
-            var firstMonkeyJump = getFirstMonkeyJump(sfen[10]);
+            // parse possible position of the first monkey jump
+            var firstMonkeyJump = GetFirstMonkeyJump(sfen[10]);
             if (firstMonkeyJump == null) { return null; }
             if (firstMonkeyJump.Fr == -1) { firstMonkeyJump = null; }
 
             var board = CongoBoard.Empty;
 
             // parse board rank-by-rank
-            for (int rank = 0; rank < CongoBoard.Empty.Size; rank++) {
+            for (int rank = 0; rank < CongoBoard.Empty.Size; ++rank) {
                 int file = 0;
 
-                for (int i = 0; i < sfen[rank].Length; i++) {
+                for (int i = 0; i < sfen[rank].Length; ++i) {
 
                     // rank overflow
                     if (file >= board.Size) { return null; }
@@ -102,13 +106,13 @@ namespace Congo.Core
 
                     // white pieces
                     else if (pieceSignatures.ToUpper().IndexOf(sfen[rank][i]) >= 0) {
-                        board = addPiece(board, White.Color, (char)(sfen[rank][i] - 'A' + 'a'),
+                        board = AddPiece(board, White.Color, (char)(sfen[rank][i] - 'A' + 'a'),
                             rank * board.Size + file, ref file);
                     }
 
                     // black pieces
                     else if (pieceSignatures.ToLower().IndexOf(sfen[rank][i]) >= 0) {
-                        board = addPiece(board, Black.Color, sfen[rank][i],
+                        board = AddPiece(board, Black.Color, sfen[rank][i],
                             rank * board.Size + file, ref file);
                     }
 
@@ -123,8 +127,8 @@ namespace Congo.Core
             whiteFirstMonkeyJump = activePlayerColor.IsWhite() ? firstMonkeyJump : null;
             blackFirstMonkeyJump = activePlayerColor.IsBlack() ? firstMonkeyJump : null;
 
-            var whitePlayer = getPlayer(board, sfen[7], White.Color, whiteFirstMonkeyJump);
-            var blackPlayer = getPlayer(board, sfen[8], Black.Color, blackFirstMonkeyJump);
+            var whitePlayer = GetPlayer(board, sfen[7], White.Color, whiteFirstMonkeyJump);
+            var blackPlayer = GetPlayer(board, sfen[8], Black.Color, blackFirstMonkeyJump);
             if (whitePlayer == null || blackPlayer == null) { return null; }
 
             var activePlayer = activePlayerColor.IsWhite() ? whitePlayer : blackPlayer;
@@ -133,15 +137,15 @@ namespace Congo.Core
         }
 
         /// <summary>
-        /// Serialize current game to Fen string. The conversion is straight
-        /// forward, piece -> char.
+        /// Serialize current game to @b Fen string. The conversion is straight
+        /// forward piece -> char.
         /// </summary>
         public static string ToFen(CongoGame game)
         {
             var result = "";
             var sep = "/";
 
-            Dictionary<Type, string> typeViews = new Dictionary<Type, string>() {
+            var typeViews = new Dictionary<Type, string>() {
                 { typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
                 { typeof(Giraffe),  "g" }, { typeof(Crocodile), "c" },
                 { typeof(Pawn),     "p" }, { typeof(Superpawn), "s" },
@@ -150,9 +154,10 @@ namespace Congo.Core
                 { typeof(White),    "w" }, { typeof(Black),     "b" }
             };
 
-            for (int rank = 0; rank < game.Board.Size; rank++) {
+            for (int rank = 0; rank < game.Board.Size; ++rank) {
                 int cnt = 0;
-                for (int file = 0; file < game.Board.Size; file++) {
+
+                for (int file = 0; file < game.Board.Size; ++file) {
                     var square = rank * game.Board.Size + file;
                     var piece = game.Board.GetPiece(square);
 
