@@ -1,17 +1,44 @@
+= Congo.Utils ==================================================================
+
++ UserInput.cs
+
+- UserInput.cs -----------------------------------------------------------------
+
+public static class UserInput
+    public static bool IsUserNameValid(string name)
+    public static bool IsIpAddressHolderValid(string holder)
+    public static bool IsPortValid(string port)
+
 = Congo.Core ===================================================================
 
-- Algorithm.cs -----------------------------------------------------------------
++ IParametrizedEnum.cs
++ BitScan.cs
++ Square.cs
++ Color.cs
++ Move.cs
++ Piece.cs
++ Board.cs
++ Player.cs
++ Fen.cs
++ Game.cs
++ HashTable.cs
++ Evaluator.cs
++ Algorithm.cs
 
-public static class Algorithm
-    private static readonly Random rnd
-    public static CongoMove Rnd(CongoGame game)
-    private static (CongoMove, int) Max((CongoMove, int score) p1, (CongoMove, int score) p2)
-    private static (CongoMove, int) negamaxSingleThread(ulong hash, CongoGame game, ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
-    private static (CongoMove, int) negamaxMultiThread(ulong hash, CongoGame game, int depth)
-    private static readonly int negamaxDepth
-    private static CongoHashTable hT
-    public static CongoMove NegaMax(CongoGame game)
-    public static CongoMove IterDeep(CongoGame game)
+- IParametrizedEnum.cs ---------------------------------------------------------
+
+public interface IParametrizedEnumerator<out T>
+    T Current
+    bool MoveNext()
+
+public interface IParametrizedEnumerable<in T, out U>
+    IParametrizedEnumerator<U> GetEnumerator(T param)
+
+- IUserInterface.cs ------------------------------------------------------------
+
+public interface ICongoUserInterface
+    CongoMove GetHiMove(CongoGame game)
+    void ReportWrongHiMove()
 
 - BitScan.cs -------------------------------------------------------------------
 
@@ -26,94 +53,9 @@ public class BitScanEnumerator : IParametrizedEnumerator<int>
     public int Current
     public bool MoveNext()
 
-- Board.cs ---------------------------------------------------------------------
+- Square.cs --------------------------------------------------------------------
 
-public interface IParametrizedEnumerator<T>
-    T Current
-    bool MoveNext()
-
-public interface IParametrizedEnumerable<T, U>
-    IParametrizedEnumerator<T> GetEnumerator(U param)
-
-public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>
-    private static readonly int size
-    private static readonly CongoBoard empty
-    private static readonly ImmutableArray<CongoPiece> pieceSample
-    private static bool getBit(ulong word, int position)
-    private static ulong setBitToValue(ulong current, int position, bool value)
-    private static bool isJungle(int rank, int file)
-    private static bool isJungle(int square)
-    private static bool isAboveRiver(int square)
-    private static bool isRiver(int square)
-    private static bool isBelowRiver(int square)
-    private static uint setPieceCode(uint rank, CongoPiece piece, int file)
-    public static CongoBoard Empty
-    public static ImmutableArray<CongoPiece> PieceSample
-    public static bool operator ==(CongoBoard b1, CongoBoard b2)
-    public static bool operator !=(CongoBoard b1, CongoBoard b2)
-    private delegate ImmutableArray<int> LeapGenerator(int rank, int file)
-    private delegate ImmutableArray<int> ColoredLeapGenerator(CongoColor color, int rank, int file)
-    private static bool addLeap(List<int> leaps, int rank, int file)
-    private static ImmutableArray<int> circleLeapGenerator(Func<int, int, bool> predicate, int rank, int file, int radius)
-    private static ImmutableArray<int> kingLeapGenerator(int rank, int file)
-    private static ImmutableArray<int> knightLeapGenerator(int rank, int file)
-    private static ImmutableArray<int> elephantLeapGenerator(int rank, int file)
-    private static ImmutableArray<int> capturingGiraffeLeapGenerator(int rank, int file)
-    private static ImmutableArray<int> crocodileLeapGenerator(int rank, int file)
-    private static HashSet<int> whiteLionCastle
-    private static HashSet<int> blackLionCastle
-    private static ImmutableArray<int> lionLeapGenerator(CongoColor color, int rank, int file)
-    private static ImmutableArray<int> pawnLeapGenerator(CongoColor color, int rank, int file)
-    private static ImmutableArray<int> superpawnLeapGenerator(CongoColor color, int rank, int file)
-    private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(LeapGenerator gen)
-    private static ImmutableArray<ImmutableArray<int>> precalculateLeaps(ColoredLeapGenerator gen, CongoColor color)
-    private static readonly ImmutableArray<ImmutableArray<int>> kingLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> knightLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> elephantLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> capturingGiraffeLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> crocodileLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> whiteLionLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> blackLionLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> whitePawnLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> blackPawnLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> whiteSuperpawnLeaps
-    private static readonly ImmutableArray<ImmutableArray<int>> blackSuperpawnLeaps
-    static CongoBoard()
-    private readonly ulong whiteOccupied
-    private readonly ulong blackOccupied
-    private readonly ImmutableArray<int> pieces
-    private CongoBoard(ulong whiteOccupied, ulong blackOccupied, ImmutableArray<uint> pieces)
-    private uint getPieceCode(int square)
-    public int Size
-    public bool IsJungle(int rank, int file)
-    public bool IsJungle(int square)
-    public bool IsAboveRiver(int square)
-    public bool IsRiver(int square)
-    public bool IsBelowRiver(int square)
-    public bool IsUpDownBorder(CongoColor color, int square)
-    public bool IsOccupied(int square)
-    public bool IsWhitePiece(int square)
-    public bool IsBlackPiece(int square)
-    public bool IsFirstMovePiece(int square)
-    public bool IsFriendlyPiece(CongoColor color, int square)
-    public bool IsOpponentPiece(CongoColor color, int square)
-    public CongoPiece GetPiece(int square)
-    public CongoBoard With(CongoColor color, CongoPiece piece, int square)
-    public CongoBoard Without(int square)
-    public ImmutableArray<int> LeapsAsKing(int square)
-    public ImmutableArray<int> LeapsAsKnight(int square)
-    public ImmutableArray<int> LeapsAsElephant(int square)
-    public ImmutableArray<int> LeapsAsCapturingGiraffe(int square)
-    public ImmutableArray<int> LeapsAsCrocodile(int square)
-    public ImmutableArray<int> LeapsAsLion(CongoColor color, int square)
-    public ImmutableArray<int> LeapsAsPawn(CongoColor color, int square)
-    public ImmutableArray<int> LeapsAsSuperpawn(CongoColor color, int square)
-    public bool TryDiagonalJump(CongoColor color, int square, out int target)
-    public bool IsLionCastle(CongoColor color, int square)
-    public IParametrizedEnumerator<int> GetEnumerator(CongoColor color)
-    public override bool Equals(object obj)
-    public override int GetHashCode()
-    public override string ToString()
+public enum Square : int
 
 - Color.cs ---------------------------------------------------------------------
 
@@ -123,7 +65,6 @@ public abstract class CongoColor
     private protected enum ColorId : int
     private protected abstract ColorId Id
     internal int Code
-    public static bool operator ==(CongoColor c1, CongoColor c2)
     public bool IsWhite()
     public bool IsBlack()
     public CongoColor Invert()
@@ -139,97 +80,6 @@ public sealed class Black : CongoColor
     public static CongoColor Color
     private Black()
     private protected override ColorId Id
-
-- Evaluator.cs -----------------------------------------------------------------
-
-public static class Evaluator
-    public static int INF
-    public static int WinLose(CongoGame game)
-    private static readonly ImmutableArray<int> materialValues
-    private static int scoreByColor(CongoColor color, CongoBoard board)
-    public static int Material(CongoGame game)
-    public static int Default(CongoGame game)
-
-- Fen.cs -----------------------------------------------------------------------
-
-public static class CongoFen
-    private static readonly string pieceSignatures
-    private static readonly ImmutableDictionary<char, CongoPiece> pieceViews
-    private static CongoColor getActivePlayerColor(string color)
-    private static MonkeyJump getFirstMonkeyJump(string input)
-    private static CongoBoard addPiece(CongoBoard board, CongoColor color, char pieceView, int square, ref int file)
-    private static CongoPlayer getPlayer(CongoBoard board, string type, CongoColor color, MonkeyJump firstMonkeyJump)
-    public static CongoGame FromFen(string fen)
-    public static string ToFen(CongoGame game)
-
-- Game.cs ----------------------------------------------------------------------
-
-public class Game
-    public static void Initialize()
-    public static CongoGame Unattached(CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer, CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
-    private static CongoBoard setMixedRank(CongoBoard board, CongoColor color, int rank)
-    private static CongoBoard setPawnRank(CongoBoard board, CongoColor color, int rank)
-    public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
-    private readonly int distance
-    private readonly CongoGame predecessor
-    private readonly CongoMove transitionMove
-    private readonly CongoBoard board
-    private readonly CongoPlayer whitePlayer
-    private readonly CongoPlayer blackPlayer
-    private readonly CongoPlayer activePlayer
-    private readonly MonkeyJump firstMonkeyJump
-    private bool isInterruptedMonkeyJump(CongoMove move)
-    private bool isPawnPromotion(CongoMove move)
-    private bool isFriendlyAnimal(CongoPiece piece, CongoColor color)
-    private CongoGame(CongoGame predecessor, CongoMove transitionMove, CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer, CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
-    public CongoGame Predecessor
-    public CongoMove TransitionMove
-    public CongoBoard Board
-    public CongoPlayer WhitePlayer
-    public CongoPlayer BlackPlayer
-    public CongoPlayer ActivePlayer
-    public CongoPlayer Opponent
-    public CongoMove FirstMonkeyJump
-    public CongoGame Transition(CongoMove move)
-    public bool IsNew()
-    public bool IsInvalid()
-    public bool IsWin()
-    public bool HasEnded()
-
-- HashTable.cs -----------------------------------------------------------------
-
-class CongoHashCell
-    public ulong Hash
-	public CongoBoard Board
-	public CongoMove Move
-	public int Depth
-	public int Score
-
-class CongoHashTable
-    private static readonly int colorFactor
-    private static readonly int pieceFactor
-    private static readonly int boardFactor
-    private static readonly int colorSpan
-    private static readonly ImmutableArray<ulong> hashValues
-    private static readonly int tableSize
-    private static readonly ulong mask
-    static CongoHashTable()
-    private static ulong addPiece(ulong hash, CongoPiece piece, CongoColor color, int square)
-    private static ulong removePiece(ulong hash, CongoPiece piece, CongoColor color, int square)
-    public static ulong ApplyMove(ulong hash, CongoBoard board, CongoMove move)
-    public static ulong ApplyBetween(ulong hash, CongoBoard board, MonkeyJump jump)
-    public static ulong InitHash(CongoBoard board)
-    private CongoHashCell[] table
-    public CongoHashTable()
-    public bool TryGetSolution(ulong hash, CongoBoard board, int depth, out CongoMove move, out int score)
-    public void SetSolution(ulong hash, CongoBoard board, int depth, CongoMove move, int score)
-    public void ReportOccupancy()
-
-- IUserInterface.cs ------------------------------------------------------------
-
-public interface ICongoUserInterface
-    CongoMove GetHiMove(CongoGame game)
-    void ReportWrongHiMove()
 
 - Move.cs ----------------------------------------------------------------------
 
@@ -261,8 +111,8 @@ public abstract class CongoPiece
     private protected enum PieceId : uint
     private protected abstract PieceId Id
     internal uint Code
-    protected List<CongoMove> getValidCapturingLeaps(List<CongoMove> moves, ImmutableArray<int> capturingLeaps, CongoColor color, CongoBoard board, int square)
-    protected List<CongoMove> getValidNonCapturingLeaps(List<CongoMove> moves, ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int square)
+    protected List<CongoMove> GetValidCapturingLeaps(List<CongoMove> moves, ImmutableArray<int> capturingLeaps, CongoColor color, CongoBoard board, int square)
+    protected List<CongoMove> GetValidNonCapturingLeaps(List<CongoMove> moves, ImmutableArray<int> nonCapturingLeaps, CongoBoard board, int square)
     public bool IsAnimal()
     public bool IsCrocodile()
     public bool IsPawn()
@@ -305,71 +155,238 @@ public sealed class Crocodile : CongoPiece
     public static CongoPiece Piece
     private Crocodile()
     private protected override PieceId Id
-    private List<CongoMove> capturingRiverSlide(List<CongoMove> moves, CongoColor color, CongoBoard board, int square, int direction)
-    private List<CongoMove> capturingGroundSlide(List<CongoMove> moves, CongoColor color, CongoBoard board, int square)
+    private List<CongoMove> CapturingRiverSlide(List<CongoMove> moves, CongoColor color, CongoBoard board, int square, int direction)
+    private List<CongoMove> CapturingGroundSlide(List<CongoMove> moves, CongoColor color, CongoBoard board, int square)
     public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 
 public sealed class Pawn : CongoPiece
     public static CongoPiece Piece
     private Pawn()
     private protected override PieceId Id
-    protected List<CongoMove> nonCapturingVerticalSlide(List<CongoMove> moves, CongoColor color, CongoBoard board, int square, bool s)
+    protected List<CongoMove> NonCapturingVerticalSlide(List<CongoMove> moves, CongoColor color, CongoBoard board, int square, bool s)
     public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 
 public sealed class Superpawn : Pawn
     public static CongoPiece Piece
     private Superpawn()
     private protected override PieceId Id
-    private List<CongoMove> nonCapturingDiagonalSlide(List<CongoMove> moves, CongoBoard board, int square, int rdir, int fdir)
+    private List<CongoMove> NonCapturingDiagonalSlide(List<CongoMove> moves, CongoBoard board, int square, int rdir, int fdir)
     public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 
 public sealed class Lion : CongoPiece
     public static CongoPiece Piece
     private Lion()
     private protected override PieceId Id
-    private List<CongoMove> verticalJump(List<CongoMove> moves, CongoColor color, CongoBoard board, int square)
-    private List<CongoMove> diagonalJump(List<CongoMove> moves, CongoColor color, CongoBoard board, int square)
+    private List<CongoMove> VerticalJump(List<CongoMove> moves, CongoColor color, CongoBoard board, int square)
+    private List<CongoMove> DiagonalJump(List<CongoMove> moves, CongoColor color, CongoBoard board, int square)
     public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
 
 public sealed class Monkey : CongoPiece
     public static CongoPiece Piece
     private Monkey()
     private protected override PieceId Id
-    private List<CongoMove> addMonkeyJump(List<CongoMove> moves, CongoBoard board, int square, int leap)
+    private List<CongoMove> AddMonkeyJump(List<CongoMove> moves, CongoBoard board, int square, int leap)
     public List<CongoMove> ContinueJump(CongoColor color, CongoBoard board, int square)
     public override List<CongoMove> GetMoves(CongoColor color, CongoBoard board, int square)
+
+- Board.cs ---------------------------------------------------------------------
+
+public sealed class CongoBoard : IParametrizedEnumerable<CongoColor, int>
+    private static readonly int size
+    private static readonly CongoBoard empty
+    private static readonly ImmutableArray<CongoPiece> pieceSample
+    private static bool GetBit(ulong word, int position)
+    private static ulong SetBitToValue(ulong current, int position, bool value)
+    private static bool IsJungleImpl(int rank, int file)
+    private static bool IsJungleImpl(int square)
+    private static bool IsAboveRiverImpl(int square)
+    private static bool IsRiverImpl(int square)
+    private static bool IsBelowRiverImpl(int square)
+    private static uint SetPieceCode(uint rank, CongoPiece piece, int file)
+    public static CongoBoard Empty
+    public static ImmutableArray<CongoPiece> PieceSample
+    public static bool operator ==(CongoBoard b1, CongoBoard b2)
+    public static bool operator !=(CongoBoard b1, CongoBoard b2)
+    private delegate ImmutableArray<int> LeapGenerator(int rank, int file)
+    private delegate ImmutableArray<int> ColoredLeapGenerator(CongoColor color, int rank, int file)
+    private static bool AddLeap(List<int> leaps, int rank, int file)
+    private static ImmutableArray<int> CircleLeapGenerator(Func<int, int, bool> predicate, int rank, int file, int radius)
+    private static ImmutableArray<int> KingLeapGenerator(int rank, int file)
+    private static ImmutableArray<int> KnightLeapGenerator(int rank, int file)
+    private static ImmutableArray<int> ElephantLeapGenerator(int rank, int file)
+    private static ImmutableArray<int> CapturingGiraffeLeapGenerator(int rank, int file)
+    private static ImmutableArray<int> CrocodileLeapGenerator(int rank, int file)
+    private static readonly ImmutableHashSet<int> whiteLionCastle
+    private static readonly ImmutableHashSet<int> blackLionCastle
+    private static ImmutableArray<int> LionLeapGenerator(CongoColor color, int rank, int file)
+    private static ImmutableArray<int> PawnLeapGenerator(CongoColor color, int rank, int file)
+    private static ImmutableArray<int> SuperpawnLeapGenerator(CongoColor color, int rank, int file)
+    private static ImmutableArray<ImmutableArray<int>> PrecalculateLeaps(LeapGenerator gen)
+    private static ImmutableArray<ImmutableArray<int>> PrecalculateLeaps(ColoredLeapGenerator gen, CongoColor color)
+    private static readonly ImmutableArray<ImmutableArray<int>> kingLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> knightLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> elephantLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> capturingGiraffeLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> crocodileLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> whiteLionLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> blackLionLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> whitePawnLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> blackPawnLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> whiteSuperpawnLeaps
+    private static readonly ImmutableArray<ImmutableArray<int>> blackSuperpawnLeaps
+    static CongoBoard()
+    private readonly ulong whiteOccupied
+    private readonly ulong blackOccupied
+    private readonly ImmutableArray<int> pieces
+    private CongoBoard(ulong whiteOccupied, ulong blackOccupied, ImmutableArray<uint> pieces)
+    private uint GetPieceCode(int square)
+    public int Size
+    public bool IsJungle(int rank, int file)
+    public bool IsJungle(int square)
+    public bool IsAboveRiver(int square)
+    public bool IsRiver(int square)
+    public bool IsBelowRiver(int square)
+    public bool IsUpDownBorder(CongoColor color, int square)
+    public bool IsOccupied(int square)
+    public bool IsWhitePiece(int square)
+    public bool IsBlackPiece(int square)
+    public bool IsFirstMovePiece(int square)
+    public bool IsFriendlyPiece(CongoColor color, int square)
+    public bool IsOpponentPiece(CongoColor color, int square)
+    public CongoPiece GetPiece(int square)
+    public CongoBoard With(CongoColor color, CongoPiece piece, int square)
+    public CongoBoard Without(int square)
+    public ImmutableArray<int> LeapsAsKing(int square)
+    public ImmutableArray<int> LeapsAsKnight(int square)
+    public ImmutableArray<int> LeapsAsElephant(int square)
+    public ImmutableArray<int> LeapsAsCapturingGiraffe(int square)
+    public ImmutableArray<int> LeapsAsCrocodile(int square)
+    public ImmutableArray<int> LeapsAsLion(CongoColor color, int square)
+    public ImmutableArray<int> LeapsAsPawn(CongoColor color, int square)
+    public ImmutableArray<int> LeapsAsSuperpawn(CongoColor color, int square)
+    public bool TryDiagonalJump(CongoColor color, int square, out int target)
+    public bool IsLionCastle(CongoColor color, int square)
+    public IParametrizedEnumerator<int> GetEnumerator(CongoColor color)
+    public override bool Equals(object obj)
+    public override int GetHashCode()
 
 - Player.cs --------------------------------------------------------------------
 
 public abstract class CongoPlayer
     protected readonly int lionSquare
-    protected readonly bool hasNonLion
     protected readonly CongoColor color
     protected readonly ImmutableArray<CongoMove> moves
-    public static CongoPlayer GetByType(CongoBoard board, Type playerType, CongoColor color, MonkeyJump firstMonkeyJump)
     public CongoPlayer(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
     public ImmutableArray<CongoMove> Moves
     public bool HasLion
-    public bool HasNonLion
     public CongoColor Color
     public abstract CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
-    public abstract CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
     public bool LionInDanger(ImmutableArray<CongoMove> opponentMoves)
+    public CongoMove Accept(CongoMove candidateMove)
 
-public sealed class Ai : CongoPlayer
+public class Ai : CongoPlayer
     public Ai(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
     public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
-    public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
 
-public sealed class Hi : CongoPlayer
-    private CongoMove find(CongoMove candidateMove)
+public class Hi : CongoPlayer
     public Hi(CongoColor color, CongoBoard board, MonkeyJump firstMonkeyJump)
     public override CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
-    public override CongoMove GetValidMove(ICongoUserInterface ui, CongoGame game)
-    
-- Square.cs --------------------------------------------------------------------
 
-public enum Square : int
+- Fen.cs -----------------------------------------------------------------------
+
+public static class CongoFen
+    private static readonly string pieceSignatures
+    private static readonly ImmutableDictionary<char, CongoPiece> view2piece
+    private static CongoColor GetActivePlayerColor(string color)
+    private static MonkeyJump GetFirstMonkeyJump(string input)
+    private static CongoBoard AddPiece(CongoBoard board, CongoColor color, char pieceView, int square, ref int file)
+    private static CongoPlayer GetPlayer(CongoBoard board, string type, CongoColor color, MonkeyJump firstMonkeyJump)
+    public static CongoGame FromFen(string fen)
+    public static string ToFen(CongoGame game)
+
+- Game.cs ----------------------------------------------------------------------
+
+public class Game
+    public static void Initialize()
+    public static CongoGame Unattached(CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer, CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
+    private static CongoBoard SetMixedRank(CongoBoard board, CongoColor color, int rank)
+    private static CongoBoard SetPawnRank(CongoBoard board, CongoColor color, int rank)
+    public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
+    private readonly int distance
+    private readonly CongoGame predecessor
+    private readonly CongoMove transitionMove
+    private readonly CongoBoard board
+    private readonly CongoPlayer whitePlayer
+    private readonly CongoPlayer blackPlayer
+    private readonly CongoPlayer activePlayer
+    private readonly MonkeyJump firstMonkeyJump
+    private bool IsInterruptedMonkeyJump(CongoMove move)
+    private bool IsPawnPromotion(CongoMove move)
+    private bool IsFriendlyAnimal(CongoPiece piece, CongoColor color)
+    private CongoGame(CongoGame predecessor, CongoMove transitionMove, CongoBoard board, CongoPlayer whitePlayer, CongoPlayer blackPlayer, CongoPlayer activePlayer, MonkeyJump firstMonkeyJump)
+    public CongoGame Predecessor
+    public CongoMove TransitionMove
+    public CongoBoard Board
+    public CongoPlayer WhitePlayer
+    public CongoPlayer BlackPlayer
+    public CongoPlayer ActivePlayer
+    public CongoPlayer Opponent
+    public CongoMove FirstMonkeyJump
+    public CongoGame Transition(CongoMove move)
+    public bool IsNew()
+    public bool IsInvalid()
+    public bool IsWin()
+    public bool HasEnded()
+
+- HashTable.cs -----------------------------------------------------------------
+
+class CongoHashCell
+    public ulong Hash
+    public CongoBoard Board
+    public CongoMove Move
+    public int Depth
+    public int Score
+
+class CongoHashTable
+    private static readonly int colorFactor
+    private static readonly int pieceFactor
+    private static readonly int boardFactor
+    private static readonly int colorSpan
+    private static readonly ImmutableArray<ulong> hashValues
+    private static readonly int tableSize
+    private static readonly ulong mask
+    static CongoHashTable()
+    private static ulong AddPiece(ulong hash, CongoPiece piece, CongoColor color, int square)
+    private static ulong RemovePiece(ulong hash, CongoPiece piece, CongoColor color, int square)
+    public static ulong ApplyMove(ulong hash, CongoBoard board, CongoMove move)
+    public static ulong ApplyBetween(ulong hash, CongoBoard board, MonkeyJump jump)
+    public static ulong InitHash(CongoBoard board)
+    private CongoHashCell[] table
+    public CongoHashTable()
+    public bool TryGetSolution(ulong hash, CongoBoard board, int depth, out CongoMove move, out int score)
+    public void SetSolution(ulong hash, CongoBoard board, int depth, CongoMove move, int score)
+
+- Evaluator.cs -----------------------------------------------------------------
+
+public static class Evaluator
+    public static int INF
+    public static int WinLose(CongoGame game)
+    private static readonly ImmutableArray<int> materialValues
+    private static int ScoreByColor(CongoColor color, CongoBoard board)
+    public static int Material(CongoGame game)
+    public static int Default(CongoGame game)
+
+- Algorithm.cs -----------------------------------------------------------------
+
+public static class Algorithm
+    private static readonly Random rnd
+    public static CongoMove Rnd(CongoGame game)
+    private static readonly int negamaxDepth
+    private static CongoHashTable hT
+    private static (CongoMove, int) Max((CongoMove, int score) p1, (CongoMove, int score) p2)
+    private static (CongoMove, int) NegamaxSingleThread(ulong hash, CongoGame game, ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
+    private static (CongoMove, int) NegamaxMultiThread(ulong hash, CongoGame game, int depth)
+    public static CongoMove NegaMax(CongoGame game)
 
 = Congo.CLI ====================================================================
 
@@ -377,7 +394,7 @@ public enum Square : int
 
 class ExitCommandException : Exception
 
-public abstract class CongoCommandLine : ICongoUserInterface, IDisposable
+public abstract class CongoCommandLine : IDisposable
     private static readonly string resourcesPrefix
     private static readonly string textFileExt
     private static readonly char[] separators
@@ -392,35 +409,35 @@ public abstract class CongoCommandLine : ICongoUserInterface, IDisposable
     private static readonly ImmutableDictionary<Type, string> pieceViews
     private delegate void ShowDelegate(CongoGame game)
     private static readonly ImmutableDictionary<string, ShowDelegate> supportedShows
-    private static string getMoveRepr(CongoMove move)
-    private static string readTextFile(string filename)
-    protected static void reportAllowedCommands(List<string> allowedCommands)
-    private static void reportHelpFile(string helpFile)
-    private static void reportEmptyCommand()
-    private static void reportNotSupportedCommand(string command)
-    private static void reportWrongCommandFormat(string command)
-    private static void reportNotAllowedCommand(string command)
-    private static void reportAdvisedMove(CongoMove move, string algorithm)
-    private static int[] countPieces(CongoBoard board, CongoColor color)
-    private static void showTransition(CongoMove game)
-    private static void showBoard(CongoGame game)
-    private static void showPlayer(CongoBoard board, CongoColor color, CongoColor activeColor)
-    private static void showPlayers(CongoGame game)
-    private static void showMoves(CongoGame game)
-    private static void showGame(CongoGame game)
-    private static string[] verifyCommand(Func<string[], bool> predicate, string[] input)
-    private static string[] verifyAdviseCommand(string[] input)
-    private static string[] verifyAllowCommand(string[] input)
-    private static string[] verifyConnectCommand(string[] input)
-    private static string[] verifyExitCommand(string[] input)
-    private static string[] verifyGameCommand(string[] input)
-    private static string[] verifyHelpCommand(string[] input)
-    private static string[] verifyMoveCommand(string[] input)
-    private static string[] verifyPlayCommand(string[] input)
-    private static string[] verifyShowCommand(string[] input)
+    private static string GetMoveView(CongoMove move)
+    private static string ReadTextFile(string filename)
+    protected static void ReportAllowedCommands(List<string> allowedCommands)
+    private static void ReportHelpFile(string helpFile)
+    private static void ReportEmptyCommand()
+    private static void ReportNotSupportedCommand(string command)
+    private static void ReportWrongCommandFormat(string command)
+    private static void ReportNotAllowedCommand(string command)
+    private static void ReportAdvisedMove(CongoMove move, string algorithm)
+    private static int[] CountPieces(CongoBoard board, CongoColor color)
+    private static void ShowTransition(CongoMove game)
+    private static void ShowBoardImpl(CongoGame game)
+    private static void ShowPlayer(CongoBoard board, CongoColor color, CongoColor activeColor)
+    private static void ShowPlayers(CongoGame game)
+    private static void ShowMoves(CongoGame game)
+    private static void ShowGame(CongoGame game)
+    private static string[] VerifyCommand(Func<string[], bool> predicate, string[] input)
+    private static string[] VerifyAdviseCommand(string[] input)
+    private static string[] VerifyAllowCommand(string[] input)
+    private static string[] VerifyConnectCommand(string[] input)
+    private static string[] VerifyExitCommand(string[] input)
+    private static string[] VerifyGameCommand(string[] input)
+    private static string[] VerifyHelpCommand(string[] input)
+    private static string[] VerifyMoveCommand(string[] input)
+    private static string[] VerifyPlayCommand(string[] input)
+    private static string[] VerifyShowCommand(string[] input)
     private static void Greet()
-    protected static string[] getUserCommand(List<string> allowedCommands)
-    protected static Type getPlayerType(CongoColor color)
+    protected static string[] GetUserCommand(List<string> allowedCommands)
+    protected static Type GetPlayerType(CongoColor color)
     public static CongoCommandLine SetCommandLine()
     public CongoMove GetHiMove(CongoGame game)
     public void ReportWrongHiMove()
