@@ -38,3 +38,5 @@ ai
 ![open](./assets/images/console.png)
 
 ## Credits
+
+- [BitScan](https://www.chessprogramming.org/BitScan)

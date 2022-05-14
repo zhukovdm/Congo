@@ -66,8 +66,7 @@ namespace Congo.GUI
 
         private void TextBox_LostKeyboardFocus(object sender, RoutedEventArgs e)
         {
-            var textBox = sender as TextBox;
-            if (textBox != null) {
+            if (sender is TextBox textBox) {
                 textBox.BorderBrush = (textBox.Text == string.Empty)
                     ? Brushes.Red
                     : (SolidColorBrush)new BrushConverter().ConvertFromString("#FFABADB3");

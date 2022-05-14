@@ -112,7 +112,7 @@ values are generated for each (color, piece, square) triple. Consider moving
 white pawn from \textsf{A1} to \textsf{A3}. First we remove hash of triple
 (white, pawn, A1) from the current board hash. Then we add no-piece to the
 board hash (?, no-piece, A1). Then we remove no-piece from the board hash (?,
-no-piece, A3). Finally, we add (white, pawn, A3) th the board hash. Initial
+no-piece, A3). Finally, we add (white, pawn, A3) to the board hash. Initial
 board hash is calculated via calling method \textsf{.InitHash(CongoBoard
 board)} on the table instance. Initial hash will contain only hash addition
 operations. All no-pieces (ground and river) are considered black. For each
