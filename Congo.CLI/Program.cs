@@ -4,7 +4,7 @@ namespace Congo.CLI
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main(string[] _)
         {
             CongoGame.Initialize();
 
