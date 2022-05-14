@@ -7,8 +7,6 @@ using Congo.Core;
 
 namespace Congo.CLI
 {
-    class ExitCommandException : Exception { }
-
     /// <summary>
     /// The class implements terminal-based user interface for both local
     /// and network games.
@@ -330,7 +328,7 @@ namespace Congo.CLI
         /// <summary>
         /// Decides local or network mode.
         /// </summary>
-        public static CongoCommandLine SetCommandLine()
+        public static CongoCommandLine SetCommandLine(string[] args)
         {
             Greet();
             var allowedCommands = new List<string>() {
@@ -349,7 +347,7 @@ namespace Congo.CLI
                         break;
 
                     case "exit":
-                        throw new ExitCommandException();
+                        throw new ArgumentException();
 
                     case "help":
                         ReportHelpFile(ReadTextFile(command[1]));
@@ -391,7 +389,7 @@ namespace Congo.CLI
                         break;
 
                     case "exit":
-                        throw new ExitCommandException();
+                        throw new ArgumentException("The program is terminated...");
 
                     case "help":
                         ReportHelpFile(ReadTextFile(command[1]));

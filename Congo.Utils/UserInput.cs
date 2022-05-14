@@ -18,7 +18,7 @@ namespace Congo.Utils
         }
 
         /// <summary>
-        /// Verifies ip address holder is a number between 0 and 255.
+        /// Verifies IPv4 address holder is a number between 0 and 255.
         /// </summary>
         public static bool IsIpAddressHolderValid(string holder)
         {
@@ -31,6 +31,19 @@ namespace Congo.Utils
         }
 
         /// <summary>
+        /// Verifies the input is a valid IPv4 address.
+        /// </summary>
+        public static bool IsIpAddressValid(string ip)
+        {
+            var spl = ip.Split(new char[] { '.' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+            var result = spl.Length == 4;
+            foreach (var s in spl) { result &= IsIpAddressHolderValid(s); }
+
+            return result;
+        }
+
+        /// <summary>
         /// Verifies entered port is any number between 1024 and 65535.
         /// </summary>
         public static bool IsPortValid(string port)
@@ -40,6 +53,14 @@ namespace Congo.Utils
                 && int.TryParse(port, out var result)
                 && result >= 1024
                 && result <= 65535;
+        }
+
+        /// <summary>
+        /// Verifies entered game id, pattern [0-9]+
+        /// </summary>
+        public static bool IsGameIdValid(string id)
+        {
+            return id.All(char.IsDigit);
         }
     }
 }
