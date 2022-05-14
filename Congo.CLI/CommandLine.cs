@@ -128,7 +128,7 @@ namespace Congo.CLI
             writer.WriteLine($" transition {GetMoveView(game.TransitionMove)}");
         }
 
-        private static void ShowBoardImpl(CongoGame game)
+        protected static void ShowBoardImpl(CongoGame game)
         {
             writer.WriteLine();
             var upperBound = game.Board.Size * game.Board.Size;

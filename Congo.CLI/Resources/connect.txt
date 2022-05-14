@@ -1,4 +1,4 @@
-﻿ NAME
+ NAME
     connect
  DESCRIPTION
     Connects to the remote server via TCP/IP.

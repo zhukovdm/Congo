@@ -1,1 +1,3 @@
-* text eol=crlf
+﻿* text working-tree-encoding=UTF-8 eol=crlf
+*.png binary
+*.txt binary

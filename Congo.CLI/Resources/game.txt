@@ -1,4 +1,4 @@
-﻿ NAME
+ NAME
     game
  DESCRIPTION
     Restores the existing game or starts new. The command has different
