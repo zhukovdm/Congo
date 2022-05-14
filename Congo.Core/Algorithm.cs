@@ -14,7 +14,7 @@ namespace Congo.Core
         private static readonly Random rnd = new Random();
 
         /// <summary>
-        /// @b Rnd heuristic picks random move from all available.
+        /// Rnd heuristic picks random move from all available.
         /// </summary>
         public static CongoMove Rnd(CongoGame game)
         {
@@ -26,7 +26,7 @@ namespace Congo.Core
 
         #region Negamax
 
-        private static readonly int negamaxDepth = 5; ///< Maximum distance from initial node in the decision tree
+        private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
         private static CongoHashTable hT;
 
@@ -46,7 +46,7 @@ namespace Congo.Core
         /// best score and returning best move. Constructs, such as (null, score),
         /// (_, score) and (move, _), are less transparent, but essential.
         /// </summary>
-        private static (CongoMove, int) negamaxSingleThread(ulong hash, CongoGame game,
+        private static (CongoMove, int) NegamaxSingleThread(ulong hash, CongoGame game,
             ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
         {
             CongoMove move = null;
@@ -78,8 +78,8 @@ namespace Congo.Core
                     ulong newHash = CongoHashTable.ApplyMove(hash, game.Board, newMove);
 
                     // monkey jump also has piece Between
-                    if (newMove is MonkeyJump) {
-                        newHash = CongoHashTable.ApplyBetween(newHash, game.Board, (MonkeyJump)newMove);
+                    if (newMove is MonkeyJump jump) {
+                        newHash = CongoHashTable.ApplyBetween(newHash, game.Board, jump);
                     }
 
                     /* Negamax recursive call */
@@ -98,7 +98,7 @@ namespace Congo.Core
                         newBeta = -alpha;
                     }
 
-                    (_, score) = Max((null, score), negamaxSingleThread(newHash, newGame,
+                    (_, score) = Max((null, score), NegamaxSingleThread(newHash, newGame,
                         newGame.ActivePlayer.Moves, newAlpha, newBeta, depth - 1));
 
                     /* evaluate negamax results */
@@ -128,7 +128,7 @@ namespace Congo.Core
         /// segment of possible moves and schedule it. Do/undo is not necessary
         /// due to the game immutability.
         /// </summary>
-        private static (CongoMove, int) negamaxMultiThread(ulong hash, CongoGame game, int depth)
+        private static (CongoMove, int) NegamaxMultiThread(ulong hash, CongoGame game, int depth)
         {
             var moves = game.ActivePlayer.Moves;
             (CongoMove, int) result = (null, -CongoEvaluator.INF);
@@ -142,7 +142,7 @@ namespace Congo.Core
             /* one move -> one thread */
 
             if (cpus == 1) {
-                return negamaxSingleThread(hash, game, game.ActivePlayer.Moves,
+                return NegamaxSingleThread(hash, game, game.ActivePlayer.Moves,
                     -CongoEvaluator.INF, CongoEvaluator.INF, depth);
             }
 
@@ -162,7 +162,7 @@ namespace Congo.Core
                 moves.CopyTo(from, arr, 0, div);
 
                 taskPool[i] = Task.Run(() => {
-                    return negamaxSingleThread(hash, game, arr.ToImmutableArray(),
+                    return NegamaxSingleThread(hash, game, arr.ToImmutableArray(),
                         -CongoEvaluator.INF, CongoEvaluator.INF, depth);
                 });
                 
@@ -172,7 +172,7 @@ namespace Congo.Core
             if (rem > 0) {
                 var arr = new CongoMove[rem];
                 moves.CopyTo(from, arr, 0, rem);
-                result = negamaxSingleThread(hash, game, arr.ToImmutableArray(),
+                result = NegamaxSingleThread(hash, game, arr.ToImmutableArray(),
                     -CongoEvaluator.INF, CongoEvaluator.INF, depth);
             }
 
@@ -193,7 +193,7 @@ namespace Congo.Core
 
             var hash = CongoHashTable.InitHash(game.Board);
 
-            var (move, _) = negamaxMultiThread(hash, game, negamaxDepth);
+            var (move, _) = NegamaxMultiThread(hash, game, negamaxDepth);
 
             return move;
         }

@@ -401,17 +401,19 @@ namespace Congo.Core
         }
 
         /// <summary>
-        /// TODO: ?
+        /// Generate only possible monkey capturing jumps from a given position.
+        /// Other ordinary moves are not considered.
         /// </summary>
         public List<CongoMove> ContinueJump(CongoColor color, CongoBoard board, int square)
         {
             var moves = new List<CongoMove>
             {
-                new CongoMove(square, square)
+                new CongoMove(square, square) // jump can be interrupted
             };
 
             var leaps = board.LeapsAsKing(square);
 
+            // look for opponent's pieces around and try to jump over
             foreach (var leap in leaps) {
                 if (board.IsOpponentPiece(color, leap)) {
                     moves = AddMonkeyJump(moves, board, square, leap);

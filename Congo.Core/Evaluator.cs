@@ -4,7 +4,9 @@ namespace Congo.Core
 {
     public static class CongoEvaluator
     {
-        // Shall ensure +/- Inf for all evaluation functions!
+        /// <summary>
+        /// Shall ensure <b>-/+ Inf</b> for all evaluation functions!
+        /// </summary>
         public static int INF => 1_000_000;
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace Congo.Core
             10   // monkey
         }.ToImmutableArray();
 
-        private static int scoreByColor(CongoColor color, CongoBoard board)
+        private static int ScoreByColor(CongoColor color, CongoBoard board)
         {
             int score = 0;
             var e = board.GetEnumerator(color);
@@ -51,8 +53,8 @@ namespace Congo.Core
         {
             int score = 0;
 
-            score += scoreByColor(White.Color, game.Board);
-            score += scoreByColor(Black.Color, game.Board);
+            score += ScoreByColor(White.Color, game.Board);
+            score += ScoreByColor(Black.Color, game.Board);
 
             if (!game.HasEnded() &&
                 game.Predecessor.ActivePlayer.Color != game.ActivePlayer.Color &&
@@ -64,7 +66,7 @@ namespace Congo.Core
         }
 
         /// <summary>
-        /// Default evaluation, all algorithms should use this method.
+        /// Default game evaluation, all algorithms should use this method.
         /// </summary>
         public static int Default(CongoGame game) => Material(game);
     }

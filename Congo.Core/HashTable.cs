@@ -3,6 +3,9 @@ using System.Collections.Immutable;
 
 namespace Congo.Core
 {
+    /// <summary>
+    /// Supporting structure for representing CongoHashTable cell with entities.
+    /// </summary>
     class CongoHashCell
     {
         public ulong Hash;
@@ -12,6 +15,10 @@ namespace Congo.Core
         public int Score;
     }
 
+    /// <summary>
+    /// Thread-safe hash table for storing intermediate results of the search
+    /// through game decision tree. Extensively used by <b>Algorithm.Negamax</b>.
+    /// </summary>
     public class CongoHashTable
     {
         private static readonly int colorFactor = 2;
@@ -19,17 +26,17 @@ namespace Congo.Core
         private static readonly int boardFactor = CongoBoard.Empty.Size * CongoBoard.Empty.Size;
         private static readonly int colorSpan = pieceFactor * boardFactor;
 
-        /**
-         *                     hashValues Scheme
-         * 
-         *     2  colors  -> {White, Black}        -> {0, 1}
-         *     10 pieces  -> {Ground, ..., Monkey} -> {0, ..., 9}
-         *     49 squares -> {A7, ..., G1}         -> {0, ..., 48}
-         * 
-         * hashValues contains a randomly generated UInt64 value for each
-         * possible combination of <b>(color, piece, square)</b> and has
-         * length of 2 * 10 * 49 = 980 values.
-        **/
+        /// <summary>
+        ///                    hashValues Scheme
+        ///
+        ///    2  colors  -> {White, Black}        -> {0, 1}
+        ///    10 pieces  -> {Ground, ..., Monkey} -> {0, ..., 9}
+        ///    49 squares -> {A7, ..., G1}         -> {0, ..., 48}
+        ///
+        /// hashValues contains a randomly generated UInt64 value for each
+        /// possible combination of <b>(color, piece, square)</b> and has
+        /// length of 2 * 10 * 49 = 980 values.
+        /// </summary>
         private static readonly ImmutableArray<ulong> hashValues;
 
         private static readonly int tableSize = 262_144; // 2^18 positions
@@ -56,7 +63,8 @@ namespace Congo.Core
         }
 
         /// <summary>
-        /// XOR-in triple (color, piece, square) into input @b hash number.
+        /// Add (~ XOR-in) triple (color, piece, square) into input @b hash
+        /// number.
         /// </summary>
         private static ulong AddPiece(ulong hash, CongoPiece piece, CongoColor color, int square)
         {
@@ -68,8 +76,8 @@ namespace Congo.Core
         }
 
         /// <summary>
-        /// XOR-out triple (color, piece, square) from input @b hash number
-        /// via repeated addition application.
+        /// Remove (~ XOR-out) triple (color, piece, square) from input @b hash
+        /// number via repeated addition application.
         /// </summary>
         private static ulong RemovePiece(ulong hash, CongoPiece piece, CongoColor color, int square)
             => AddPiece(hash, piece, color, square);
