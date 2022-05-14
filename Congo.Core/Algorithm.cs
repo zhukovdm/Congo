@@ -82,13 +82,17 @@ namespace Congo.Core
                         newHash = CongoHashTable.ApplyBetween(newHash, game.Board, (MonkeyJump)newMove);
                     }
 
-                    /* negamax recursive call */
+                    /* Negamax recursive call */
 
-                    // multiple monkey jump, no color change
+                    /* Speculatively keep alpha-beta interval the same.
+                     * Works for multiple monkey jump, when player color does
+                     * not change. */
                     var newAlpha = alpha;
                     var newBeta  = beta;
 
-                    // ordinary move, active player changes the color
+                    /* Ordinary move is detected (opposite to multiple monkey 
+                     * jump), because active player changes the color -> set
+                     * new ab-interval */
                     if (newGame.ActivePlayer.Color != game.ActivePlayer.Color) {
                         newAlpha = -beta;
                         newBeta = -alpha;
@@ -113,8 +117,8 @@ namespace Congo.Core
              * player and current active player are of the same color) ->
              * no score inversion. */
 
-            var condition = depth == negamaxDepth ||
-                game.Predecessor.ActivePlayer.Color == game.ActivePlayer.Color;
+            var condition = (depth == negamaxDepth) ||
+                (game.Predecessor.ActivePlayer.Color == game.ActivePlayer.Color);
 
             return condition ? (move, score) : (move, -score);
         }
@@ -133,7 +137,7 @@ namespace Congo.Core
             var cpus = Math.Max(Environment.ProcessorCount - 2, 1);
 
             // adjust number of tasks, >= 1 move per task
-            while (moves.Length / cpus == 0) cpus--;
+            while (moves.Length / cpus == 0) { --cpus; }
 
             /* one move -> one thread */
 
@@ -153,7 +157,7 @@ namespace Congo.Core
 
             int from = 0;
 
-            for (int i = 0; i < cpus - 1; i++) {
+            for (int i = 0; i < cpus - 1; ++i) {
                 var arr = new CongoMove[div];
                 moves.CopyTo(from, arr, 0, div);
 
