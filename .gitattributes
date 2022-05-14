@@ -1,3 +1,8 @@
-﻿* text working-tree-encoding=UTF-8 eol=crlf
-*.png binary
-*.txt binary
+﻿*.cs        text eol=crlf
+*.sln       text eol=crlf
+*.csproj    text eol=crlf
+
+*.md        binary
+*.png       binary
+*.tex       binary
+*.txt       binary
