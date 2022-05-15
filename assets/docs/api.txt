@@ -390,14 +390,28 @@ public static class Algorithm
 
 = Congo.CLI ====================================================================
 
+- ArgumentParser.cs
+- CommandLine.cs
+- Program.cs
+
+- ArgumentParser.cs ------------------------------------------------------------
+
+public static class ArgumentParser
+    private static string[] AcceptLocalPlace(string arg)
+    private static string[] AcceptLocalBoard(string arg)
+    private static string[] AcceptNetworkPlace(string arg)
+    private static string[] AcceptNetworkBoard(string arg)
+    private static string[] AcceptNetworkHost(string arg)
+    private static string[] AcceptNetworkPort(string arg)
+    private static string[] AcceptPlayer(string arg)
+    private static ImmutableDictionary<string, string[]> TryParse(string[] args, Dictionary<string, Func<string, string[]>> acceptors, int cnt)
+    public static ImmutableDictionary<string, string[]> Parse(string[] args)
+
 - CommandLine.cs ---------------------------------------------------------------
 
-class ExitCommandException : Exception
-
 public abstract class CongoCommandLine : IDisposable
-    private static readonly string resourcesPrefix
+    private static readonly string resourcesFolder
     private static readonly string textFileExt
-    private static readonly char[] separators
     private static readonly TextReader reader
     private static readonly TextWriter writer
     private delegate string[] VerifyCommandDelegate(string[] input)
@@ -418,6 +432,7 @@ public abstract class CongoCommandLine : IDisposable
     private static void ReportWrongCommandFormat(string command)
     private static void ReportNotAllowedCommand(string command)
     private static void ReportAdvisedMove(CongoMove move, string algorithm)
+
     private static int[] CountPieces(CongoBoard board, CongoColor color)
     private static void ShowTransition(CongoMove game)
     private static void ShowBoardImpl(CongoGame game)
