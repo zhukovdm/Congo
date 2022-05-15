@@ -8,10 +8,10 @@
     mc:Ignorable="d"
     Icon="Resources/pictures/icon.png"
     Title="Congo"
-    MinHeight="654"
-    Height="654"
-    MinWidth="800"
-    Width="800">
+    MinHeight="710"
+    Height="710"
+    MinWidth="900"
+    Width="900">
     <Grid>
         <StackPanel Orientation="Vertical">
 
@@ -26,22 +26,89 @@
                     </MenuItem>
                 </Menu>
             </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-                <StackPanel Orientation="Vertical" Width="600" HorizontalAlignment="Left">
-                    <StackPanel Height="10"/>
-                    <StackPanel Orientation="Horizontal">
-                        <StackPanel Width="10"></StackPanel>
-                        <StackPanel Orientation="Vertical">
-                            <!-- Board -->
-                            <Border BorderBrush="Black" BorderThickness="1">
-                                <WrapPanel Width="574" Name="panelCongoBoard" Orientation="Horizontal"/>
-                            </Border>
+            <DockPanel Height="10"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="3.0*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="1.0*"/>
+                    <ColumnDefinition Width="10"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <DockPanel Height="83">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="7"/>
+                    </DockPanel>
+                    <DockPanel Height="82">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="6"/>
+                    </DockPanel>
+                    <DockPanel Height="82">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="5"/>
+                    </DockPanel>
+                    <DockPanel Height="82">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="4"/>
+                    </DockPanel>
+                    <DockPanel Height="82">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="3"/>
+                    </DockPanel>
+                    <DockPanel Height="82">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="2"/>
+                    </DockPanel>
+                    <DockPanel Height="83">
+                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="1"/>
+                    </DockPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Vertical">
+                                <!-- Board -->
+                                <Border BorderBrush="Black" BorderThickness="1">
+                                    <WrapPanel Width="574" Name="panelCongoBoard" Orientation="Horizontal"/>
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
+                <DockPanel Grid.Column="2" Width="10"/>
+                <StackPanel Grid.Column="3" Orientation="Vertical">
+                    <DockPanel Height="50" Background="Orange">
+                        <Border Name="borderWhitePlayer" BorderBrush="Cyan" BorderThickness="5"/>
+                    </DockPanel>
+                    <DockPanel Height="10"/>
+                    <DockPanel Height="50" Background="Black">
+                        <Border Name="borderBlackPlayer" BorderBrush="Cyan" BorderThickness="5"/>
+                    </DockPanel>
+                    <DockPanel Height="10"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.0*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="1.0*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" VerticalAlignment="Center" Name="buttonAdvice" FontSize="25" BorderThickness="3" Click="buttonAdvice_Click">Advice</Button>
+                        <DockPanel Grid.Column="1" Width="10"/>
+                        <DockPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="25" TextAlignment="Center" Text="(a1, b2)"/>
+                        </DockPanel>
+                    </Grid>
+                    <DockPanel Height="10"/>
+                    <ListBox x:Name="listBoxMoves" Height="355"/>
+                    <DockPanel Height="10"/>
+                    <TextBlock Name="textBlockNetwork" Background="LightGray" FontSize="30" TextAlignment="Center" Text="Network"/>
+                </StackPanel>
+                <DockPanel Grid.Column="4" Width="10"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal">
+                <DockPanel Width="50"/>
+                <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="a"/>
+                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="b"/>
+                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="c"/>
+                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="d"/>
+                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="e"/>
+                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="f"/>
+                <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="g"/>
             </StackPanel>
-
         </StackPanel>
     </Grid>
 </Window>

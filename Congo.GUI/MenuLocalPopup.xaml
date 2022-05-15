@@ -4,20 +4,90 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:System="clr-namespace:System;assembly=mscorlib"
     xmlns:local="clr-namespace:Congo.GUI"
     mc:Ignorable="d"
     Icon="Resources/pictures/icon.png"
-    Title="Local Game"
-    Height="200"
-    Width="400">
+    Title="Local Game" MinHeight="500" Height="500" MinWidth="600" Width="600">
+    <Window.Resources>
+        <System:Double x:Key="viewboxHeight">40.0</System:Double>
+        <System:Double x:Key="textBoxIpWidth">80.0</System:Double>
+    </Window.Resources>
     <Grid>
         <StackPanel Orientation="Vertical">
             <DockPanel Height="10"/>
-            <GroupBox Header="Player 1"/>
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="Board" FontSize="20"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                        <RadioButton GroupName="board" Content="Standard" IsChecked="True"/>
+                    </Viewbox>
+                    <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                        <RadioButton GroupName="board" Content="Fen"/>
+                    </Viewbox>
+                    <DockPanel Height="10"/>
+                    <TextBox FontFamily="Courier New" FontSize="20" Visibility="Visible"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="White" FontSize="20"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.0*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Vertical">
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="white_type" Content="Hi" IsChecked="True"/>
+                        </Viewbox>
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="white_type" Content="Ai"/>
+                        </Viewbox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="white_algo" Content="Negamax" IsChecked="True"/>
+                        </Viewbox>
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="white_algo" Content="Random"/>
+                        </Viewbox>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
             <DockPanel Height="10"/>
-            <GroupBox Header="Player 2"/>
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="Black" FontSize="20"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.0*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Vertical">
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="black_type" Content="Hi"/>
+                        </Viewbox>
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="black_type" Content="Ai" IsChecked="True"/>
+                        </Viewbox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="black_algo" Content="Negamax" IsChecked="True"/>
+                        </Viewbox>
+                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                            <RadioButton GroupName="black_algo" Content="Random"/>
+                        </Viewbox>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
             <DockPanel Height="10"/>
-            <Button>Confirm</Button>
+            <Button Width="200" FontSize="30">Confirm</Button>
         </StackPanel>
     </Grid>
 </Window>

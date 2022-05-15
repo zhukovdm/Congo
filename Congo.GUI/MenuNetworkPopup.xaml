@@ -9,66 +9,122 @@
     mc:Ignorable="d"
     Icon="Resources/pictures/icon.png"
     Title="Network Game"
-    MinHeight="250"
-    Height="250"
-    MinWidth="450"
-    Width="450">
+    MinHeight="370"
+    Height="370"
+    MinWidth="500"
+    Width="500">
     <Window.Resources>
         <System:Double x:Key="globalFontSize">40.0</System:Double>
         <System:Double x:Key="textBoxIpWidth">80.0</System:Double>
     </Window.Resources>
     <Grid>
         <StackPanel Orientation="Vertical">
-            <StackPanel Height="10"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Width="100" FontSize="{StaticResource globalFontSize}">User:</TextBlock>
-                <DockPanel Width="10"/>
-                <TextBox
+            <DockPanel Height="10"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="1.0*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="2.5*"/>
+                    <ColumnDefinition Width="10"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="0" Width="10"/>
+                <TextBlock Grid.Column="1" FontSize="{StaticResource globalFontSize}">Board:</TextBlock>
+                <DockPanel Grid.Column="2" Width="10"/>
+                <TextBox 
+                    Grid.Column="3"
                     Name="textBoxUserName"
-                    Width="300"
                     FontSize="{StaticResource globalFontSize}"
                     LostKeyboardFocus="TextBox_LostKeyboardFocus"/>
-            </StackPanel>
+                <DockPanel Grid.Column="4" Width="10"/>
+            </Grid>
             <StackPanel Height="10"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Width="50" FontSize="{StaticResource globalFontSize}">IP:</TextBlock>
-                <DockPanel Width="10"/>
-                <TextBox
-                    Name="textBoxIp1"
-                    Width="{StaticResource textBoxIpWidth}"
-                    FontSize="{StaticResource globalFontSize}"
-                    TextAlignment="Center"
-                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                    127
-                </TextBox>
-                <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
-                <TextBox
-                    Name="textBoxIp2"
-                    Width="{StaticResource textBoxIpWidth}"
-                    FontSize="{StaticResource globalFontSize}"
-                    TextAlignment="Center"
-                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                    0
-                </TextBox>
-                <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
-                <TextBox
-                    Name="textBoxIp3"
-                    Width="{StaticResource textBoxIpWidth}"
-                    FontSize="{StaticResource globalFontSize}"
-                    TextAlignment="Center"
-                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                    0
-                </TextBox>
-                <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
-                <TextBox
-                    Name="textBoxIp4"
-                    Width="{StaticResource textBoxIpWidth}"
-                    FontSize="{StaticResource globalFontSize}"
-                    TextAlignment="Center"
-                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                    1
-                </TextBox>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="9"/>
+                    <ColumnDefinition Width="1.0*"/>
+                    <ColumnDefinition Width="9"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="0" Width="9"/>
+                <GroupBox Grid.Column="1">
+                    <GroupBox.Header>
+                        <TextBlock Text="Player" FontSize="20"/>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1.5*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Vertical">
+                            <Viewbox Height="40" HorizontalAlignment="Left">
+                                <RadioButton GroupName="player_type" Content="Hi" IsChecked="True"/>
+                            </Viewbox>
+                            <Viewbox Height="40" HorizontalAlignment="Left">
+                                <RadioButton GroupName="player_type" Content="Ai"/>
+                            </Viewbox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                            <Viewbox Height="40" HorizontalAlignment="Left">
+                                <RadioButton GroupName="player_algo" Content="Negamax" IsChecked="True"/>
+                            </Viewbox>
+                            <Viewbox Height="40" HorizontalAlignment="Left">
+                                <RadioButton GroupName="player_algo" Content="Random"/>
+                            </Viewbox>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+                <DockPanel Grid.Column="0" Width="9"/>
+            </Grid>
+            <StackPanel Height="10"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="1.0*"/>
+                    <ColumnDefinition Width="4.0*"/>
+                    <ColumnDefinition Width="10"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="0" Width="10"/>
+                <TextBlock Grid.Column="1" FontSize="{StaticResource globalFontSize}">IP:</TextBlock>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <DockPanel Width="10"/>
+                    <TextBox
+                        Name="textBoxIp1"
+                        Width="{StaticResource textBoxIpWidth}"
+                        FontSize="{StaticResource globalFontSize}"
+                        TextAlignment="Center"
+                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                        127
+                    </TextBox>
+                    <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
+                    <TextBox
+                        Name="textBoxIp2"
+                        Width="{StaticResource textBoxIpWidth}"
+                        FontSize="{StaticResource globalFontSize}"
+                        TextAlignment="Center"
+                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                        0
+                    </TextBox>
+                    <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
+                    <TextBox
+                        Name="textBoxIp3"
+                        Width="{StaticResource textBoxIpWidth}"
+                        FontSize="{StaticResource globalFontSize}"
+                        TextAlignment="Center"
+                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                        0
+                    </TextBox>
+                    <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
+                    <TextBox
+                        Name="textBoxIp4"
+                        Width="{StaticResource textBoxIpWidth}"
+                        FontSize="{StaticResource globalFontSize}"
+                        TextAlignment="Center"
+                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
+                        1
+                    </TextBox>
+                </StackPanel>
+                <DockPanel Grid.Column="0" Width="10"/>
+            </Grid>
             <StackPanel Height="10"/>
             <DockPanel HorizontalAlignment="Center">
                 <TextBlock

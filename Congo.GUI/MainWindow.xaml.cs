@@ -111,5 +111,10 @@ namespace Congo.GUI
         {
             Application.Current.Shutdown();
         }
+
+        private void buttonAdvice_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
