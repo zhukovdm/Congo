@@ -385,7 +385,8 @@ namespace Congo.Core
         private protected override PieceId Id => PieceId.Monkey;
 
         /// <summary>
-        /// Capturing jump over enemy animal if tile behind is a ground or a river.
+        /// Capturing jump over enemy animal if square behind exists and
+        /// is a Ground or a River.
         /// </summary>
         private List<CongoMove> AddMonkeyJump(List<CongoMove> moves,
             CongoBoard board, int square, int leap)

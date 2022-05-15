@@ -83,7 +83,7 @@ namespace Congo.Core
             => AddPiece(hash, piece, color, square);
 
         /// <summary>
-        /// Apply standard move from one tile to another. Monkey jump shall
+        /// Apply standard move from one square to another. Monkey jump shall
         /// additionally call ApplyBetween().
         /// </summary>
         public static ulong ApplyMove(ulong hash, CongoBoard board, CongoMove move)
