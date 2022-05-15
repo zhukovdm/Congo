@@ -61,8 +61,14 @@ namespace Congo.Core
             return false;
         }
 
+        /// <summary>
+        /// Verifies if candidate move (from, to) exists and possibly replaces
+        /// with MonkeyJump. Otherwise, returns null.
+        /// </summary>
         public CongoMove Accept(CongoMove candidateMove)
         {
+            if (candidateMove == null) { return null; }
+
             var query = from validMove in Moves
                         where candidateMove == validMove
                         select validMove;
