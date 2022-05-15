@@ -77,7 +77,7 @@
             b = SetMixedRank(b, White.Color, 6);
 
             var wp = new CongoPlayer(White.Color, b, null);
-            var bp = new CongoPlayer(White.Color, b, null);
+            var bp = new CongoPlayer(Black.Color, b, null);
 
             return Unattached(b, wp, bp, wp, null);
         }
