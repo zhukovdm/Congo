@@ -9,7 +9,7 @@ namespace Congo.Utils
     public static class UserInput
     {
         /// <summary>
-        /// Verifies user name contains only alphanumeric chars.
+        /// Verifies user name contains only alphanumeric chars, [A-Za-z0-9]+
         /// </summary>
         public static bool IsUserNameValid(string name)
         {
@@ -18,7 +18,7 @@ namespace Congo.Utils
         }
 
         /// <summary>
-        /// Verifies IPv4 address holder is a number between 0 and 255.
+        /// Verifies IPv4 address holder is an integer number between 0 and 255.
         /// </summary>
         public static bool IsIpAddressHolderValid(string holder)
         {
@@ -31,7 +31,7 @@ namespace Congo.Utils
         }
 
         /// <summary>
-        /// Verifies the input is a valid IPv4 address.
+        /// Verifies the input is a valid IPv4 address in "127.0.0.0" format.
         /// </summary>
         public static bool IsIpAddressValid(string ip)
         {
@@ -56,11 +56,12 @@ namespace Congo.Utils
         }
 
         /// <summary>
-        /// Verifies entered game id, pattern [0-9]+
+        /// Verifies entered game id, [0-9]+
         /// </summary>
-        public static bool IsGameIdValid(string id)
+        public static bool IsBoardIdValid(string id)
         {
-            return id.All(char.IsDigit);
+            return id.Length > 0
+                && id.All(char.IsDigit);
         }
     }
 }
