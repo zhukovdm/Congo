@@ -123,8 +123,8 @@ namespace Congo.Core.MSTest
         [TestMethod]
         public void EqualStandardBoards()
         {
-            CongoBoard b1 = CongoGame.Standard(typeof(Hi), typeof(Hi)).Board;
-            CongoBoard b2 = CongoGame.Standard(typeof(Hi), typeof(Hi)).Board;
+            CongoBoard b1 = CongoGame.Standard().Board;
+            CongoBoard b2 = CongoGame.Standard().Board;
 
             Assert.IsTrue(b1 == b2);
         }

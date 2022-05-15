@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Congo.Core
+﻿namespace Congo.Core
 {
     /// <summary>
     /// Central object defines the current game.
@@ -71,26 +68,16 @@ namespace Congo.Core
         /// Standard game is the starting position with full animal packs of
         /// both, White and Black, colors.
         /// </summary>
-        public static CongoGame Standard(Type whitePlayerType, Type blackPlayerType)
+        public static CongoGame Standard()
         {
-            if ((whitePlayerType != typeof(Ai) && whitePlayerType != typeof(Hi)) ||
-                (blackPlayerType != typeof(Ai) && blackPlayerType != typeof(Hi))) { return null; }
-
             var b = CongoBoard.Empty;
             b = SetMixedRank(b, Black.Color, 0);
             b = SetPawnRank (b, Black.Color, 1);
             b = SetPawnRank (b, White.Color, 5);
             b = SetMixedRank(b, White.Color, 6);
 
-            var playerFactory = new Dictionary<Type, Func<CongoColor, CongoPlayer>>
-            {
-                { typeof(Ai), (CongoColor color) => { return new Ai(color, b, null); } },
-                { typeof(Hi), (CongoColor color) => { return new Hi(color, b, null); } }
-            };
-
-            // proper indexing is ensured above
-            var wp = playerFactory[whitePlayerType](White.Color);
-            var bp = playerFactory[blackPlayerType](Black.Color);
+            var wp = new CongoPlayer(White.Color, b, null);
+            var bp = new CongoPlayer(White.Color, b, null);
 
             return Unattached(b, wp, bp, wp, null);
         }
@@ -271,7 +258,8 @@ namespace Congo.Core
 
         public bool IsWin()
         {
-            return (ActivePlayer.HasLion && !Opponent.HasLion) ||
+            return
+                (ActivePlayer.HasLion && !Opponent.HasLion) ||
                 (!ActivePlayer.HasLion && Opponent.HasLion);
         }
 

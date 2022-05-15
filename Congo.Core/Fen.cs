@@ -7,16 +7,18 @@ namespace Congo.Core
     /// <summary>
     /// Simplified Fen format
     ///  - 7x ranks,
-    ///  - 2x player types,
     ///  - 1x active player color,
     ///  - 1x first monkey jump from
-    /// <code>rank/rank/rank/rank/rank/rank/rank/type/type/color/jump</code>
+    ///     <code>rank/rank/rank/rank/rank/rank/rank/color/jump</code>
     /// 
     /// Fen for standard board
-    ///     <code>gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/h/a/w/-1</code>
+    ///     <code>gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1</code>
     /// </summary>
     public static class CongoFen
     {
+        private static readonly int fenLength = 9;
+        private static readonly int activePlayerIdx = 7;
+        private static readonly int monkeyJumpIdx = 8;
         private static readonly string pieceSignatures = "gmelczps";
 
         private static readonly ImmutableDictionary<char, CongoPiece> view2piece =
@@ -53,18 +55,8 @@ namespace Congo.Core
             return board.With(color, view2piece[pieceView], square);
         }
 
-        private static CongoPlayer GetPlayer(CongoBoard board,
-            string type, CongoColor color, MonkeyJump firstMonkeyJump)
-        {
-            if (type != "a" && type != "h") { return null; }
-
-            return (type == "a")
-                ? new Ai(color, board, firstMonkeyJump)
-                : new Hi(color, board, firstMonkeyJump) as CongoPlayer;
-        }
-
         /// <summary>
-        /// Deserialize game from @b Fen string. This method does not check
+        /// Deserialize game from <b>Fen</b> string. This method does not check
         /// if amount of pieces is satisfactory. The conversion is straight
         /// forward char -> piece.
         /// </summary>
@@ -77,14 +69,14 @@ namespace Congo.Core
             MonkeyJump whiteFirstMonkeyJump;
             MonkeyJump blackFirstMonkeyJump;
 
-            if (sfen.Length != 11) { return null; }
+            if (sfen.Length != fenLength) { return null; }
 
             // parse color of the active player
-            activePlayerColor = GetActivePlayerColor(sfen[9]);
+            activePlayerColor = GetActivePlayerColor(sfen[activePlayerIdx]);
             if (activePlayerColor == null) { return null; }
 
             // parse possible position of the first monkey jump
-            var firstMonkeyJump = GetFirstMonkeyJump(sfen[10]);
+            var firstMonkeyJump = GetFirstMonkeyJump(sfen[monkeyJumpIdx]);
             if (firstMonkeyJump == null) { return null; }
             if (firstMonkeyJump.Fr == -1) { firstMonkeyJump = null; }
 
@@ -127,8 +119,8 @@ namespace Congo.Core
             whiteFirstMonkeyJump = activePlayerColor.IsWhite() ? firstMonkeyJump : null;
             blackFirstMonkeyJump = activePlayerColor.IsBlack() ? firstMonkeyJump : null;
 
-            var whitePlayer = GetPlayer(board, sfen[7], White.Color, whiteFirstMonkeyJump);
-            var blackPlayer = GetPlayer(board, sfen[8], Black.Color, blackFirstMonkeyJump);
+            var whitePlayer = new CongoPlayer(White.Color, board, whiteFirstMonkeyJump);
+            var blackPlayer = new CongoPlayer(Black.Color, board, blackFirstMonkeyJump);
             if (whitePlayer == null || blackPlayer == null) { return null; }
 
             var activePlayer = activePlayerColor.IsWhite() ? whitePlayer : blackPlayer;
@@ -150,7 +142,6 @@ namespace Congo.Core
                 { typeof(Giraffe),  "g" }, { typeof(Crocodile), "c" },
                 { typeof(Pawn),     "p" }, { typeof(Superpawn), "s" },
                 { typeof(Lion),     "l" }, { typeof(Monkey),    "m" },
-                { typeof(Ai),       "a" }, { typeof(Hi),        "h" },
                 { typeof(White),    "w" }, { typeof(Black),     "b" }
             };
 
@@ -182,8 +173,6 @@ namespace Congo.Core
                 result += sep;
             }
 
-            result += typeViews[game.WhitePlayer.GetType()] + sep;
-            result += typeViews[game.BlackPlayer.GetType()] + sep;
             result += typeViews[game.ActivePlayer.Color.GetType()] + sep;
 
             result += game.FirstMonkeyJump == null
