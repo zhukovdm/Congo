@@ -67,8 +67,15 @@ namespace TileExtensions
 namespace Congo.GUI
 {
     using TileExtensions;
-    using EmptyTiles = ImmutableArray<Canvas>;
-    using ImageTiles = ImmutableDictionary<Type, ImmutableArray<Canvas>>;
+    using Tiles = ImmutableArray<Canvas>;
+    using TypedTiles = ImmutableDictionary<Type, ImmutableArray<Canvas>>;
+
+    enum State : int
+    {
+        INIT,
+        FR,
+        TO
+    }
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -83,18 +90,49 @@ namespace Congo.GUI
         private static readonly string groundColorCode = "#67de79";
         private static readonly string castleColorCode = "#f2d377";
 
-        private readonly EmptyTiles emptyTiles;
-        private readonly ImageTiles activeWhiteTiles;
-        private readonly ImageTiles activeBlackTiles;
-        private readonly ImageTiles passiveWhiteTiles;
-        private readonly ImageTiles passiveBlackTiles;
+        private readonly Tiles emptyTiles;
+        private readonly TypedTiles activeWhiteTiles;
+        private readonly TypedTiles activeBlackTiles;
+        private readonly TypedTiles passiveWhiteTiles;
+        private readonly TypedTiles passiveBlackTiles;
 
         private CongoGame game;
         private CongoUser white;
         private CongoUser black;
+        private State state;
 
         private void tile_Click(object sender, RoutedEventArgs e)
         {
+            switch (state) {
+                case State.INIT:
+                    break;
+                case State.FR:
+                    if (sender is Canvas canvas) {
+                        var idx = int.Parse((string)canvas.Tag);
+                        if (game.Board.IsOccupied(idx) && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, idx)) {
+                            var type = game.Board.GetPiece(idx).GetType();
+                            var tiles = game.ActivePlayer.Color == White.Color
+                                ? activeWhiteTiles
+                                : activeBlackTiles;
+
+                            wrapPanelCongoBoard.Children.RemoveAt(idx);
+                            wrapPanelCongoBoard.Children.Insert(idx, tiles[type][idx]);
+
+                            // TODO: find all available moves from selected position
+
+                            state = State.TO;
+                        }
+                    }
+                    break;
+                case State.TO:
+
+                    // TODO: apply move if valid, otherwise reset selection.
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
             /*
             var canvas = (Canvas)sender;
             foreach (var elem in canvas.Children)
@@ -171,6 +209,7 @@ namespace Congo.GUI
 
         private void init()
         {
+            state = State.FR;
             localMenuButton.IsEnabled = false;
             networkMenuButton.IsEnabled = false;
             drawBoard();
@@ -217,39 +256,48 @@ namespace Congo.GUI
             return canvas;
         }
 
-        private EmptyTiles generateEmptyPassiveTiles()
+        private Tiles generateEmptyPassiveTiles()
         {
             var tiles = new Canvas[boardSize];
             for (int i = 0; i < boardSize; ++i) { tiles[i] = getEmptyTile(i).addPassiveBorder(); }
             return tiles.ToImmutableArray();
         }
 
-        private ImageTiles generatePassiveImageTiles(CongoColor color)
+        private (TypedTiles, TypedTiles) generateImageTiles(CongoColor color)
         {
-            var result = new Dictionary<Type, EmptyTiles>();
+            var active = new Dictionary<Type, Tiles>();
+            var passive = new Dictionary<Type, Tiles>();
 
             var types = TileExtensions.type2suffix.Keys;
             foreach (var type in types) {
-                var set = new List<Canvas>();
+                var set_active = new List<Canvas>();
+                var set_passive = new List<Canvas>();
+
                 for (int i = 0; i < boardSize; ++i) {
-                    set.Add(getEmptyTile(i).addImage(color, type).addPassiveBorder());
+                    set_active.Add(getEmptyTile(i).addImage(color, type).addActiveBorder());
+                    set_passive.Add(getEmptyTile(i).addImage(color, type).addPassiveBorder());
                 }
-                result[type] = set.ToImmutableArray();
+
+                active[type] = set_active.ToImmutableArray();
+                passive[type] = set_passive.ToImmutableArray();
             }
 
-            return result.ToImmutableDictionary();
+            return (active.ToImmutableDictionary(), passive.ToImmutableDictionary());
         }
 
         public MainWindow()
         {
             InitializeComponent();
 
+            state = State.INIT;
+
             dockPanelWhiteColor.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
             dockPanelBlackColor.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);
 
             emptyTiles = generateEmptyPassiveTiles();
-            passiveWhiteTiles = generatePassiveImageTiles(White.Color);
-            passiveBlackTiles = generatePassiveImageTiles(Black.Color);
+
+            (activeWhiteTiles, passiveWhiteTiles) = generateImageTiles(White.Color);
+            (activeBlackTiles, passiveBlackTiles) = generateImageTiles(Black.Color);
 
             foreach (var tile in emptyTiles) { wrapPanelCongoBoard.Children.Add(tile); }
         }
