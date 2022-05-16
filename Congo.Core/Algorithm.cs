@@ -200,4 +200,6 @@ namespace Congo.Core
 
         #endregion
     }
+
+    public delegate CongoMove AlgorithmDelegate(CongoGame game);
 }

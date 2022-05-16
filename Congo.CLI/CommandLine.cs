@@ -31,8 +31,6 @@ namespace Congo.CLI
                 { "show",   VerifyShowCommand   }
             }.ToImmutableDictionary();
 
-        private delegate CongoMove AlgorithmDelegate(CongoGame game);
-
         private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
             new Dictionary<string, AlgorithmDelegate> {
                 { "rnd",      Algorithm.Rnd      },
