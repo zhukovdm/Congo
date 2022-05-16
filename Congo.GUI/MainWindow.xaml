@@ -72,12 +72,12 @@
                 </StackPanel>
                 <DockPanel Grid.Column="2" Width="10"/>
                 <StackPanel Grid.Column="3" Orientation="Vertical">
-                    <DockPanel Name="dockPanelWhiteColor" Height="50">
-                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="3"/>
+                    <DockPanel Name="dockPanelBlackColor" Height="50">
+                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="5"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
-                    <DockPanel Name="dockPanelBlackColor" Height="50">
-                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="3"/>
+                    <DockPanel Name="dockPanelWhiteColor" Height="50">
+                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="5"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
                     <Grid>
@@ -93,7 +93,7 @@
                         </DockPanel>
                     </Grid>
                     <DockPanel Height="10"/>
-                    <ListBox x:Name="listBoxMoves" Height="355"/>
+                    <ListBox Name="listBoxMoves" FontSize="40" Height="355"/>
                     <DockPanel Height="10"/>
                     <TextBlock Name="textBlockStatus" Background="LightGray" FontSize="30" TextAlignment="Center"/>
                 </StackPanel>

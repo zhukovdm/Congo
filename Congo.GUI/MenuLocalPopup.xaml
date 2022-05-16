@@ -12,7 +12,7 @@
     <Window.Resources>
         <System:Double x:Key="viewboxHeight">40.0</System:Double>
     </Window.Resources>
-    <Grid>
+    <Grid FocusManager.FocusedElement="{Binding ElementName=buttonConfirm}">
         <StackPanel Orientation="Vertical">
             <DockPanel Height="10"/>
             <Grid>

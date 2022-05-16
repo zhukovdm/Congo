@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Input;
 using Congo.Core;
 
 namespace Congo.GUI
@@ -14,9 +15,14 @@ namespace Congo.GUI
         public CongoUser white;
         public CongoUser black;
 
-        public MenuLocalPopup()
+        private void Esc_PushButton(object sender, KeyEventArgs e)
         {
-            InitializeComponent();
+            if (e.Key == Key.Escape) { Close(); }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Keyboard.Focus(buttonConfirm);
         }
 
         private void radioButtonFen_Checked(object sender, RoutedEventArgs e)
@@ -60,6 +66,11 @@ namespace Congo.GUI
 
             DialogResult = true;
             Close();
+        }
+        public MenuLocalPopup()
+        {
+            InitializeComponent();
+            PreviewKeyDown += new KeyEventHandler(Esc_PushButton);
         }
     }
 }
