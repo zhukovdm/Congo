@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Linq;
 using Congo.Core;
 
 namespace TileExtensions
@@ -90,7 +91,8 @@ namespace Congo.GUI
         private static readonly string groundColorCode = "#67de79";
         private static readonly string castleColorCode = "#f2d377";
 
-        private readonly Tiles emptyTiles;
+        private readonly Tiles emptyActiveTiles;
+        private readonly Tiles emptyPassiveTiles;
         private readonly TypedTiles activeWhiteTiles;
         private readonly TypedTiles activeBlackTiles;
         private readonly TypedTiles passiveWhiteTiles;
@@ -100,6 +102,14 @@ namespace Congo.GUI
         private CongoUser white;
         private CongoUser black;
         private State state;
+        private int idx;
+        private IEnumerable<CongoMove> moves;
+
+        private void replaceTile(int idx, Canvas tile)
+        {
+            wrapPanelCongoBoard.Children.RemoveAt(idx);
+            wrapPanelCongoBoard.Children.Insert(idx, tile);
+        }
 
         private void tile_Click(object sender, RoutedEventArgs e)
         {
@@ -108,17 +118,33 @@ namespace Congo.GUI
                     break;
                 case State.FR:
                     if (sender is Canvas canvas) {
-                        var idx = int.Parse((string)canvas.Tag);
+                        idx = int.Parse((string)canvas.Tag);
                         if (game.Board.IsOccupied(idx) && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, idx)) {
                             var type = game.Board.GetPiece(idx).GetType();
                             var tiles = game.ActivePlayer.Color == White.Color
                                 ? activeWhiteTiles
                                 : activeBlackTiles;
 
-                            wrapPanelCongoBoard.Children.RemoveAt(idx);
-                            wrapPanelCongoBoard.Children.Insert(idx, tiles[type][idx]);
+                            replaceTile(idx, tiles[type][idx]);
 
-                            // TODO: find all available moves from selected position
+                            moves = game.ActivePlayer.Moves.Select(x => x).Where(x => x.Fr == idx);
+
+                            // passive tiles to be replaced by active counterparts
+                            foreach (var move in moves) {
+                                type = game.Board.GetPiece(move.To).GetType();
+                                tiles = game.ActivePlayer.Color == White.Color
+                                    ? activeBlackTiles
+                                    : activeWhiteTiles;
+
+                                // opponent piece
+                                if (game.Board.IsOccupied(move.To)) {
+                                    replaceTile(move.To, tiles[type][move.To]);
+                                }
+
+                                else {
+                                    replaceTile(move.To, emptyActiveTiles[move.To]);
+                                }
+                            }
 
                             state = State.TO;
                         }
@@ -256,6 +282,13 @@ namespace Congo.GUI
             return canvas;
         }
 
+        private Tiles generateEmptyActiveTiles()
+        {
+            var tiles = new Canvas[boardSize];
+            for (int i = 0; i < boardSize; ++i) { tiles[i] = getEmptyTile(i).addActiveBorder(); }
+            return tiles.ToImmutableArray();
+        }
+
         private Tiles generateEmptyPassiveTiles()
         {
             var tiles = new Canvas[boardSize];
@@ -294,12 +327,12 @@ namespace Congo.GUI
             dockPanelWhiteColor.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
             dockPanelBlackColor.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);
 
-            emptyTiles = generateEmptyPassiveTiles();
-
+            emptyActiveTiles = generateEmptyActiveTiles();
+            emptyPassiveTiles = generateEmptyPassiveTiles();
             (activeWhiteTiles, passiveWhiteTiles) = generateImageTiles(White.Color);
             (activeBlackTiles, passiveBlackTiles) = generateImageTiles(Black.Color);
 
-            foreach (var tile in emptyTiles) { wrapPanelCongoBoard.Children.Add(tile); }
+            foreach (var tile in emptyPassiveTiles) { wrapPanelCongoBoard.Children.Add(tile); }
         }
     }
 }
