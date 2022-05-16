@@ -84,5 +84,10 @@ namespace Congo.GUI
             textBoxUserName.Focus();
             PreviewKeyDown += new KeyEventHandler(Esc_PushButton);
         }
+
+        private void TextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+
+        }
     }
 }

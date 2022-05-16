@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:Congo.GUI"
     mc:Ignorable="d"
-    Icon="Resources/pictures/icon.png"
+    Icon="Resources/icon.png"
     Title="Congo"
     MinHeight="710"
     Height="710"
@@ -64,7 +64,7 @@
                             <StackPanel Orientation="Vertical">
                                 <!-- Board -->
                                 <Border BorderBrush="Black" BorderThickness="1">
-                                    <WrapPanel Width="574" Name="panelCongoBoard" Orientation="Horizontal"/>
+                                    <WrapPanel Width="574" Name="wrapPanelCongoBoard" Orientation="Horizontal"/>
                                 </Border>
                             </StackPanel>
                         </StackPanel>
@@ -72,12 +72,12 @@
                 </StackPanel>
                 <DockPanel Grid.Column="2" Width="10"/>
                 <StackPanel Grid.Column="3" Orientation="Vertical">
-                    <DockPanel Height="50" Background="Orange">
-                        <Border Name="borderWhitePlayer" BorderBrush="Cyan" BorderThickness="5"/>
+                    <DockPanel Name="dockPanelWhiteColor" Height="50">
+                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="3"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
-                    <DockPanel Height="50" Background="Black">
-                        <Border Name="borderBlackPlayer" BorderBrush="Cyan" BorderThickness="5"/>
+                    <DockPanel Name="dockPanelBlackColor" Height="50">
+                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="3"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
                     <Grid>
@@ -95,7 +95,7 @@
                     <DockPanel Height="10"/>
                     <ListBox x:Name="listBoxMoves" Height="355"/>
                     <DockPanel Height="10"/>
-                    <TextBlock Name="textBlockNetwork" Background="LightGray" FontSize="30" TextAlignment="Center" Text="Network"/>
+                    <TextBlock Name="textBlockStatus" Background="LightGray" FontSize="30" TextAlignment="Center"/>
                 </StackPanel>
                 <DockPanel Grid.Column="4" Width="10"/>
             </Grid>
@@ -109,6 +109,7 @@
                 <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="f"/>
                 <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="g"/>
             </StackPanel>
+            <Button Name="buttonAiMove" Visibility="Hidden" Click="buttonAiMove_Click"/>
         </StackPanel>
     </Grid>
 </Window>

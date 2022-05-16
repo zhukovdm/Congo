@@ -7,87 +7,108 @@
     xmlns:System="clr-namespace:System;assembly=mscorlib"
     xmlns:local="clr-namespace:Congo.GUI"
     mc:Ignorable="d"
-    Icon="Resources/pictures/icon.png"
+    Icon="Resources/icon.png"
     Title="Local Game" MinHeight="500" Height="500" MinWidth="600" Width="600">
     <Window.Resources>
         <System:Double x:Key="viewboxHeight">40.0</System:Double>
-        <System:Double x:Key="textBoxIpWidth">80.0</System:Double>
     </Window.Resources>
     <Grid>
         <StackPanel Orientation="Vertical">
             <DockPanel Height="10"/>
-            <GroupBox>
-                <GroupBox.Header>
-                    <TextBlock Text="Board" FontSize="20"/>
-                </GroupBox.Header>
-                <StackPanel Orientation="Vertical">
-                    <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                        <RadioButton GroupName="board" Content="Standard" IsChecked="True"/>
-                    </Viewbox>
-                    <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                        <RadioButton GroupName="board" Content="Fen"/>
-                    </Viewbox>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="1.0*"/>
+                    <ColumnDefinition Width="10"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <TextBlock Text="Board" FontSize="20"/>
+                        </GroupBox.Header>
+                        <StackPanel Orientation="Vertical">
+                            <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                <RadioButton
+                                    Name="radioButtonStandardGame"
+                                    GroupName="board"
+                                    Content="Standard"
+                                    IsChecked="True"/>
+                            </Viewbox>
+                            <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                <RadioButton
+                                    Name="radioButtonFen"
+                                    GroupName="board"
+                                    Content="Fen"
+                                    Checked="radioButtonFen_Checked"
+                                    Unchecked="radioButtonFen_Unchecked"/>
+                            </Viewbox>
+                            <DockPanel Height="10"/>
+                            <TextBox
+                                Name="textBoxFen"
+                                FontFamily="Courier New"
+                                FontSize="20"
+                                Visibility="Hidden"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <TextBlock Text="White" FontSize="20"/>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.0*"/>
+                                <ColumnDefinition Width="1.5*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Vertical">
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton Name="radioButtonWhiteHi" GroupName="white_type" Content="Hi" IsChecked="True"/>
+                                </Viewbox>
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton GroupName="white_type" Content="Ai"/>
+                                </Viewbox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton Name="radioButtonWhiteNegamax" GroupName="white_algo" Content="Negamax" IsChecked="True"/>
+                                </Viewbox>
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton GroupName="white_algo" Content="Random"/>
+                                </Viewbox>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
                     <DockPanel Height="10"/>
-                    <TextBox FontFamily="Courier New" FontSize="20" Visibility="Visible"/>
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <TextBlock Text="Black" FontSize="20"/>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.0*"/>
+                                <ColumnDefinition Width="1.5*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Vertical">
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton Name="radioButtonBlackHi" GroupName="black_type" Content="Hi"/>
+                                </Viewbox>
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton GroupName="black_type" Content="Ai" IsChecked="True"/>
+                                </Viewbox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton Name="radioButtonBlackNegamax" GroupName="black_algo" Content="Negamax" IsChecked="True"/>
+                                </Viewbox>
+                                <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
+                                    <RadioButton GroupName="black_algo" Content="Random"/>
+                                </Viewbox>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                    <DockPanel Height="10"/>
+                    <Button Name="buttonConfirm" Width="200" FontSize="30" Content="Confirm" Click="buttonConfirm_Click"/>
                 </StackPanel>
-            </GroupBox>
-            <GroupBox>
-                <GroupBox.Header>
-                    <TextBlock Text="White" FontSize="20"/>
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.0*"/>
-                        <ColumnDefinition Width="1.5*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Vertical">
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="white_type" Content="Hi" IsChecked="True"/>
-                        </Viewbox>
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="white_type" Content="Ai"/>
-                        </Viewbox>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Vertical">
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="white_algo" Content="Negamax" IsChecked="True"/>
-                        </Viewbox>
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="white_algo" Content="Random"/>
-                        </Viewbox>
-                    </StackPanel>
-                </Grid>
-            </GroupBox>
-            <DockPanel Height="10"/>
-            <GroupBox>
-                <GroupBox.Header>
-                    <TextBlock Text="Black" FontSize="20"/>
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.0*"/>
-                        <ColumnDefinition Width="1.5*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Vertical">
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="black_type" Content="Hi"/>
-                        </Viewbox>
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="black_type" Content="Ai" IsChecked="True"/>
-                        </Viewbox>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Vertical">
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="black_algo" Content="Negamax" IsChecked="True"/>
-                        </Viewbox>
-                        <Viewbox Height="{StaticResource viewboxHeight}" HorizontalAlignment="Left">
-                            <RadioButton GroupName="black_algo" Content="Random"/>
-                        </Viewbox>
-                    </StackPanel>
-                </Grid>
-            </GroupBox>
-            <DockPanel Height="10"/>
-            <Button Width="200" FontSize="30">Confirm</Button>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>

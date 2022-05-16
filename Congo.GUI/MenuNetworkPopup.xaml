@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:Congo.GUI"
     xmlns:System="clr-namespace:System;assembly=mscorlib"
     mc:Ignorable="d"
-    Icon="Resources/pictures/icon.png"
+    Icon="Resources/icon.png"
     Title="Network Game"
     MinHeight="370"
     Height="370"
