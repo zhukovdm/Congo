@@ -243,9 +243,10 @@ namespace Congo.GUI
                             var option = (move is MonkeyJump) ? State.TO : State.FR;
                             state = game.HasEnded() ? State.END : option;
 
-                            // very dangerous row
+                            // very dangerous row! transfering state
                             if (move is MonkeyJump) { moveFr = moveTo; }
 
+                            textBlockAdvice.Text = "";
                             appendMove(move);
                             drawGame();
                         }
@@ -268,7 +269,7 @@ namespace Congo.GUI
             }
         }
 
-        private void localMenuButton_Click(object sender, RoutedEventArgs e)
+        private void buttonMenuLocal_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new MenuLocalPopup();
             if (dialog.ShowDialog() == true) {
@@ -279,18 +280,26 @@ namespace Congo.GUI
             }
         }
 
-        private void networkMenuButton_Click(object sender, RoutedEventArgs e)
+        private void buttonMenuNetwork_Click(object sender, RoutedEventArgs e)
         {
             new MenuNetworkPopup().ShowDialog();
         }
 
-        private void pauseMenuButton_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+        private void buttonMenuPause_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
 
-        private void resetMenuButton_Click(object sender, RoutedEventArgs e) => resetGame();
+        private void buttonMenuReset_Click(object sender, RoutedEventArgs e) => resetGame();
 
-        private void exitMenuButton_Click(object sender, RoutedEventArgs e) => exitGame();
+        private void buttonMenuExit_Click(object sender, RoutedEventArgs e) => exitGame();
 
-        private void buttonAdvice_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+        private void buttonAdvice_Click(object sender, RoutedEventArgs e)
+        {
+            textBlockAdvice.Text = "";
+            var user = game.ActivePlayer.Color.IsWhite() ? white : black;
+
+            Dispatcher.BeginInvoke(new Action(() => {
+                textBlockAdvice.Text = getMoveView(user.Advice(game));
+            }));
+        }
 
         private void buttonAiMove_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
 
@@ -345,12 +354,15 @@ namespace Congo.GUI
             drawSelect();
         }
 
-        private void setPlayerBorder()
+        private void setPlayerInfo()
         {
             var w = game.ActivePlayer.Color.IsWhite();
 
             borderWhitePlayer.BorderBrush = w ? Brushes.Red : Brushes.Transparent;
             borderBlackPlayer.BorderBrush = w ? Brushes.Transparent : Brushes.Red;
+
+            var u = w ? (white is Hi) : (black is Hi);
+            buttonAdvice.IsEnabled = u;
         }
 
         /// <summary>
@@ -359,7 +371,7 @@ namespace Congo.GUI
         private void drawGame()
         {
             drawBoard();
-            setPlayerBorder();
+            setPlayerInfo();
 
             if (state == State.END) {
                 borderWhitePlayer.BorderBrush = Brushes.Transparent;
@@ -367,15 +379,15 @@ namespace Congo.GUI
 
                 var c = game.Opponent.Color.IsWhite() ? "White" : "Black";
                 MessageBox.Show($"{c} wins.");
-                localMenuButton.IsEnabled = true;
-                networkMenuButton.IsEnabled = true;
+                buttonMenuLocal.IsEnabled = true;
+                buttonMenuNetwork.IsEnabled = true;
             }
         }
 
         private void initGame()
         {
-            localMenuButton.IsEnabled = false;
-            networkMenuButton.IsEnabled = false;
+            buttonMenuLocal.IsEnabled = false;
+            buttonMenuNetwork.IsEnabled = false;
 
             if (game.HasEnded()) { state = State.END; }
 
@@ -394,8 +406,9 @@ namespace Congo.GUI
             listBoxMoves.Items.Clear();
             textBlockStatus.Text = "";
             textBlockAdvice.Text = "";
-            localMenuButton.IsEnabled = true;
-            networkMenuButton.IsEnabled = true;
+            buttonMenuLocal.IsEnabled = true;
+            buttonMenuNetwork.IsEnabled = true;
+            buttonAdvice.IsEnabled = false;
         }
 
         private void resetGame()

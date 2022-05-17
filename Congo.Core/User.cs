@@ -3,7 +3,7 @@
     public abstract class CongoUser
     {
         protected AlgorithmDelegate algo;
-        public CongoMove Advise(CongoGame game) => algo.Invoke(game);
+        public CongoMove Advice(CongoGame game) => algo.Invoke(game);
     }
 
     public class Ai : CongoUser

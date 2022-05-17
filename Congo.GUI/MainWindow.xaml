@@ -19,13 +19,13 @@
             <StackPanel Orientation="Horizontal">
                 <Menu Background="Transparent">
                     <MenuItem Header="_Game">
-                        <MenuItem Name="localMenuButton" Header="_Local" Click="localMenuButton_Click"/>
-                        <MenuItem Name="networkMenuButton" Header="_Network" Click="networkMenuButton_Click"/>
+                        <MenuItem Name="buttonMenuLocal" Header="_Local" Click="buttonMenuLocal_Click"/>
+                        <MenuItem Name="buttonMenuNetwork" Header="_Network" Click="buttonMenuNetwork_Click"/>
                         <Separator/>
-                        <MenuItem Name="pauseMenuButton" Header="_Pause" Click="pauseMenuButton_Click"/>
+                        <MenuItem Name="buttonMenuPause" Header="_Pause" Click="buttonMenuPause_Click"/>
                         <Separator/>
-                        <MenuItem Name="resetMenuButton" Header="_Reset" Click="resetMenuButton_Click"/>
-                        <MenuItem Name="exitMenuButton" Header="_Exit" Click="exitMenuButton_Click"/>
+                        <MenuItem Name="buttonMenuReset" Header="_Reset" Click="buttonMenuReset_Click"/>
+                        <MenuItem Name="buttonMenuExit" Header="_Exit" Click="buttonMenuExit_Click"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
