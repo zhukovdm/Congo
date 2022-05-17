@@ -60,7 +60,7 @@ namespace Congo.GUI
             var white_algo = radioButtonWhiteNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
             white = (radioButtonWhiteHi.IsChecked == true) ? new Hi(white_algo) : new Ai(white_algo) as CongoUser;
             var black_algo = radioButtonBlackNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
-            black = (radioButtonWhiteHi.IsChecked == true) ? new Hi(black_algo) : new Ai(black_algo) as CongoUser;
+            black = (radioButtonBlackHi.IsChecked == true) ? new Hi(black_algo) : new Ai(black_algo) as CongoUser;
 
             // end of weird piece of code
 

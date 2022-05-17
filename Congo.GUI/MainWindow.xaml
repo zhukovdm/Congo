@@ -12,6 +12,12 @@
     Height="710"
     MinWidth="900"
     Width="900">
+    <Window.CommandBindings>
+        <CommandBinding Command="Pause" Executed="buttonMenuPause_Click"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="Pause" Modifiers="" Command="Pause"/>
+    </Window.InputBindings>
     <Grid>
         <StackPanel Orientation="Vertical">
 
@@ -24,7 +30,7 @@
                         <Separator/>
                         <MenuItem Name="buttonMenuSave" Header="_Save" Click="buttonMenuSave_Click"/>
                         <Separator/>
-                        <MenuItem Name="buttonMenuPause" Header="_Pause" Click="buttonMenuPause_Click"/>
+                        <MenuItem Name="buttonMenuPause" Header="Pause" Command="Pause" InputGestureText="Pause"/>
                         <Separator/>
                         <MenuItem Name="buttonMenuReset" Header="_Reset" Click="buttonMenuReset_Click"/>
                         <MenuItem Name="buttonMenuExit" Header="_Exit" Click="buttonMenuExit_Click"/>
@@ -120,7 +126,6 @@
                 <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="f"/>
                 <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="g"/>
             </StackPanel>
-            <Button Name="buttonAiMove" Visibility="Hidden" Click="buttonAiMove_Click"/>
         </StackPanel>
     </Grid>
 </Window>

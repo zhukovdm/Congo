@@ -2,10 +2,12 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using System.Linq;
 using Congo.Core;
 
@@ -17,10 +19,10 @@ namespace TileExtensions
 
         private static readonly ImmutableDictionary<Type, string> type2suffix = new Dictionary<Type, string>
         {
-            { typeof(Giraffe), "giraffe" }, { typeof(Monkey), "monkey" },
-            { typeof(Crocodile), "crocodile" }, { typeof(Zebra), "zebra" },
-            { typeof(Lion), "lion" }, { typeof(Elephant), "elephant" },
-            { typeof(Pawn), "pawn" }, { typeof(Superpawn), "super-pawn" }, 
+            { typeof(Giraffe),   "giraffe"    }, { typeof(Monkey), "monkey" },
+            { typeof(Crocodile), "crocodile"  }, { typeof(Zebra),  "zebra"  },
+            { typeof(Elephant),  "elephant"   }, { typeof(Lion),   "lion"   },
+            { typeof(Superpawn), "super-pawn" }, { typeof(Pawn),   "pawn"   }
         }.ToImmutableDictionary();
 
         public static Canvas WithMoveFrBorder(this Canvas tile)
@@ -125,13 +127,18 @@ namespace Congo.GUI
         private CongoUser white;
         private CongoUser black;
         private State state;
-        private BackgroundWorker adviceWorker;
+
+        // NOTE: r/w operations on bool are atomic
+        private bool ai;
+
+        private readonly DispatcherTimer aiTimer;
+        private readonly BackgroundWorker aiWorker;
+        private readonly ManualResetEventSlim pauseEvent;
+
+        private readonly BackgroundWorker adviceWorker;
 
         // TODO: move position should be abstracted away
         private int moveFr;
-
-        // NOTE: atomic r/w on bool
-        private bool ai;
 
         private IEnumerable<CongoMove> getMovesFr(int fr)
         {
@@ -200,7 +207,8 @@ namespace Congo.GUI
             }
         }
 
-        private void cleanAdvice() => textBlockAdvice.Text = "";
+        private void cleanAdvice()
+            => textBlockAdvice.Text = "";
 
         private void appendMove(CongoMove move)
         {
@@ -273,6 +281,13 @@ namespace Congo.GUI
             }
         }
 
+        private void aiTimer_Tick(object sender, EventArgs e)
+        {
+            aiTimer.Stop();
+            ai = true;
+            aiWorker.RunWorkerAsync(argument: game);
+        }
+
         private void buttonMenuLocal_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new MenuLocalPopup();
@@ -290,9 +305,20 @@ namespace Congo.GUI
         }
 
         /// <summary>
-        /// Pause timer generating Ai moves.
+        /// Toggle timer generating Ai moves.
         /// </summary>
-        private void buttonMenuPause_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+        private void buttonMenuPause_Click(object sender, RoutedEventArgs e)
+        {
+            if (pauseEvent.IsSet) {
+                pauseEvent.Reset();
+                buttonMenuPause.Header = "Resume";
+            }
+
+            else {
+                pauseEvent.Set();
+                buttonMenuPause.Header = "Pause";
+            }
+        }
 
         private void buttonMenuSave_Click(object sender, RoutedEventArgs e)
         {
@@ -300,9 +326,11 @@ namespace Congo.GUI
             if (g != null) { Clipboard.SetText(CongoFen.ToFen(g)); }
         }
 
-        private void buttonMenuReset_Click(object sender, RoutedEventArgs e) => resetGame();
+        private void buttonMenuReset_Click(object sender, RoutedEventArgs e)
+            => resetGame();
 
-        private void buttonMenuExit_Click(object sender, RoutedEventArgs e) => exitGame();
+        private void buttonMenuExit_Click(object sender, RoutedEventArgs e)
+            => exitGame();
 
         private void adviceWorker_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -319,6 +347,23 @@ namespace Congo.GUI
             }
         }
 
+        private void aiWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            pauseEvent.Wait();
+
+            var g = (CongoGame)e.Argument;
+            var user = g.ActivePlayer.Color.IsWhite() ? white : black;
+            e.Result = user.Advice(g);
+        }
+
+        private void aiWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            var move = (CongoMove)e.Result;
+            game = game.Transition(move);
+            appendMove(move);
+            drawGame();
+        }
+
         /// <summary>
         /// Use <b>Advice</b> button with caution as possibility to cancel
         /// the calculation is not yet implemented.
@@ -328,8 +373,6 @@ namespace Congo.GUI
             buttonAdviceBegin.Visibility = Visibility.Hidden;
             adviceWorker.RunWorkerAsync(argument: game);
         }
-
-        private void buttonAiMove_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
 
         private void initEmptyBoard()
         {
@@ -410,6 +453,20 @@ namespace Congo.GUI
                 buttonMenuLocal.IsEnabled = true;
                 buttonMenuNetwork.IsEnabled = true;
             }
+
+            else {
+                var user = game.ActivePlayer.Color.IsWhite() ? white : black;
+
+                if (user is Ai) {
+                    ai = true;
+                    aiTimer.Start();
+                }
+
+                else {
+                    ai = false;
+                    aiTimer.Stop();
+                }
+            }
         }
 
         private void initGame()
@@ -460,11 +517,20 @@ namespace Congo.GUI
             InitializeComponent();
 
             ai = false;
-
-            adviceWorker = new BackgroundWorker
+            aiTimer = new DispatcherTimer
             {
-                WorkerSupportsCancellation = true
+                Interval = new TimeSpan(0, 0, 1)
             };
+            aiTimer.Tick += aiTimer_Tick;
+            aiTimer.Stop();
+
+            aiWorker = new BackgroundWorker();
+            aiWorker.DoWork += aiWorker_DoWork;
+            aiWorker.RunWorkerCompleted += aiWorker_RunWorkerCompleted;
+
+            pauseEvent = new ManualResetEventSlim(true);
+
+            adviceWorker = new BackgroundWorker();
             adviceWorker.DoWork += adviceWorker_DoWork;
             adviceWorker.RunWorkerCompleted += adviceWorker_RunWorkerCompleted;
 
