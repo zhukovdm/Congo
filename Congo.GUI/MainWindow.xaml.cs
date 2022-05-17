@@ -13,14 +13,16 @@ namespace TileExtensions
     public static class TileExtensions
     {
         private static readonly double tileSize = Congo.GUI.MainWindow.tileSize;
-        public static readonly ImmutableDictionary<Type, string> type2suffix = new Dictionary<Type, string>
+
+        private static readonly ImmutableDictionary<Type, string> type2suffix = new Dictionary<Type, string>
         {
-            { typeof(Crocodile), "crocodile" }, { typeof(Elephant), "elephant" },
-            { typeof(Giraffe), "giraffe" }, { typeof(Lion), "lion" }, { typeof(Monkey), "monkey" },
-            { typeof(Pawn), "pawn" }, { typeof(Superpawn), "super-pawn" }, { typeof(Zebra), "zebra" }
+            { typeof(Giraffe), "giraffe" }, { typeof(Monkey), "monkey" },
+            { typeof(Crocodile), "crocodile" }, { typeof(Zebra), "zebra" },
+            { typeof(Lion), "lion" }, { typeof(Elephant), "elephant" },
+            { typeof(Pawn), "pawn" }, { typeof(Superpawn), "super-pawn" }, 
         }.ToImmutableDictionary();
 
-        public static Canvas addMoveFrBorder(this Canvas tile)
+        public static Canvas WithMoveFrBorder(this Canvas tile)
         {
             var border = new Border
             {
@@ -30,10 +32,11 @@ namespace TileExtensions
                 BorderThickness = new Thickness(3)
             };
             tile.Children.Add(border);
+
             return tile;
         }
 
-        public static Canvas addMoveToBorder(this Canvas tile)
+        public static Canvas WithMoveToBorder(this Canvas tile)
         {
             var border = new Border
             {
@@ -43,10 +46,11 @@ namespace TileExtensions
                 BorderThickness = new Thickness(3)
             };
             tile.Children.Add(border);
+
             return tile;
         }
 
-        public static Canvas addStandardBorder(this Canvas tile)
+        public static Canvas WithStandardBorder(this Canvas tile)
         {
             var border = new Border
             {
@@ -56,12 +60,13 @@ namespace TileExtensions
                 BorderThickness = new Thickness(1)
             };
             tile.Children.Add(border);
+
             return tile;
         }
 
-        public static Canvas addImage(this Canvas tile, CongoColor color, Type type)
+        public static Canvas WithPiece(this Canvas tile, CongoColor color, Type type)
         {
-            var pfx = (color == White.Color) ? "white" : "black";
+            var pfx = color.IsWhite() ? "white" : "black";
             var sfx = type2suffix[type];
             var ext = ".png";
 
@@ -73,6 +78,7 @@ namespace TileExtensions
             };
 
             tile.Children.Add(image);
+
             return tile;
         }
     }
@@ -118,20 +124,24 @@ namespace Congo.GUI
         private CongoUser white;
         private CongoUser black;
         private State state;
-        private int moveFrom;
-        private bool ai; // atomic read/write
+
+        // TODO: move position should be abstracted away
+        private int moveFr;
+
+        // NOTE: atomic r/w on bool
+        private bool ai;
+
+        private IEnumerable<CongoMove> getMovesFr(int fr)
+        {
+            return from move in game.ActivePlayer.Moves
+                   where move.Fr == fr
+                   select move;
+        }
 
         private void replaceTile(int idx, Canvas tile)
         {
-            wrapPanelCongoBoard.Children.RemoveAt(idx);
-            wrapPanelCongoBoard.Children.Insert(idx, tile);
-        }
-
-        private IEnumerable<CongoMove> getMovesFrom()
-        {
-            return from move in game.ActivePlayer.Moves
-                   where move.Fr == moveFrom
-                   select move;
+            panelCongoBoard.Children.RemoveAt(idx);
+            panelCongoBoard.Children.Insert(idx, tile);
         }
 
         /// <summary>
@@ -170,65 +180,32 @@ namespace Congo.GUI
             return canvas;
         }
 
-        private Canvas selectEmptyTile(int idx)
-            => getEmptyTile(idx).addMoveToBorder();
-
-        private Canvas unselectEmptyTile(int idx)
-            => getEmptyTile(idx).addStandardBorder();
-
         private Canvas createImageTile(CongoColor color, int idx)
         {
             return getEmptyTile(idx)
-                .addImage(color, game.Board.GetPiece(idx).GetType())
-                .addStandardBorder();
+                .WithPiece(color, game.Board.GetPiece(idx).GetType())
+                .WithStandardBorder();
         }
 
-        private Canvas selectImageTile(CongoColor color, int idx)
+        private string getMoveView(CongoMove move)
         {
-            var tile = getEmptyTile(idx).addImage(color, game.Board.GetPiece(idx).GetType());
-            return game.ActivePlayer.Color == color
-                ? tile.addMoveFrBorder()
-                : tile.addMoveToBorder();
-        }
+            if (move is MonkeyJump jump) {
+                return "(" + moveViews[jump.Fr] + ", " + moveViews[jump.Bt] + ", " + moveViews[jump.To] + ")";
+            }
 
-        private Canvas unselectImageTile(CongoColor color, int idx)
-            => createImageTile(color, idx);
-
-        private void selectTilesPossibleMoves()
-        {
-            foreach (var move in getMovesFrom()) {
-
-                Canvas newTile = game.Board.IsOccupied(move.To)
-                    ? selectImageTile(game.Opponent.Color, move.To)
-                    : selectEmptyTile(move.To);
-
-                replaceTile(move.To, newTile);
+            else {
+                return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")";
             }
         }
 
-        private void unselectTilesPossibleMoves()
+        private void appendMove(CongoMove move)
         {
-            foreach (var move in getMovesFrom()) {
-
-                Canvas newTile = game.Board.IsOccupied(move.To)
-                    ? unselectImageTile(game.Opponent.Color, move.To)
-                    : unselectEmptyTile(move.To);
-
-                replaceTile(move.To, newTile);
-            }
-        }
-
-        private void moveTile(int Fr, int To)
-        {
-            var newTile = getEmptyTile(To)
-                .addImage(game.ActivePlayer.Color, game.Board.GetPiece(Fr).GetType())
-                .addStandardBorder();
-            replaceTile(Fr, getEmptyTile(Fr).addStandardBorder());
-            replaceTile(To, newTile);
+            listBoxMoves.Items.Add(getMoveView(move));
+            listBoxMoves.ScrollIntoView(listBoxMoves.Items[listBoxMoves.Items.Count - 1]);
         }
 
         /// <summary>
-        /// Handler for clicks on all game graphical tiles.
+        /// Event handler for clicks on all board tiles.
         /// </summary>
         private void tile_Click(object sender, RoutedEventArgs e)
         {
@@ -241,79 +218,49 @@ namespace Congo.GUI
 
                 case State.FR:
 
-                    if (sender is Canvas oldTileFrom) {
-
-                        moveFrom = int.Parse((string)oldTileFrom.Tag);
-
-                        // act on non-empty tiles with friendly piece
-                        if (game.Board.IsOccupied(moveFrom) && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFrom)) {
-
-                            // activate tile
-                            replaceTile(moveFrom, selectImageTile(game.ActivePlayer.Color, moveFrom));
-
-                            // possible move ~ empty tile or opponent's piece
-                            selectTilesPossibleMoves();
-
+                    if (sender is Canvas tileFrom) {
+                        moveFr = int.Parse((string)tileFrom.Tag);
+                        if (game.Board.IsOccupied(moveFr) &&
+                            game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFr)) {
                             state = State.TO;
+                            drawGame();
                         }
                     }
                     break;
 
                 case State.TO:
 
-                    if (sender is Canvas oldTileTo) {
+                    if (sender is Canvas tileTo) {
 
-                        var moveTo = int.Parse((string)oldTileTo.Tag);
+                        var moveTo = int.Parse((string)tileTo.Tag);
+                        var move = game.ActivePlayer.Accept(new CongoMove(moveFr, moveTo));
 
-                        // reset
-                        if (moveFrom == moveTo) {
+                        /* Move exists, also includes monkey jump interrupt,
+                         * when Fr == To! */
+                        if (move != null) {
+                            game = game.Transition(move);
 
-                            replaceTile(moveFrom, unselectImageTile(game.ActivePlayer.Color, moveFrom));
-                            unselectTilesPossibleMoves();
+                            var option = (move is MonkeyJump) ? State.TO : State.FR;
+                            state = game.HasEnded() ? State.END : option;
 
+                            // very dangerous row
+                            if (move is MonkeyJump) { moveFr = moveTo; }
+
+                            appendMove(move);
+                            drawGame();
+                        }
+
+                        // no move, but reset
+                        else if (moveFr == moveTo) {
                             state = State.FR;
+                            drawGame();
                         }
 
-                        // move is valid ~> move
-                        else {
-                            var result = false;
-                            foreach (var move in getMovesFrom()) { result |= move.To == moveTo; }
-
-                            if (result) {
-
-                                unselectTilesPossibleMoves();
-
-                                // replace target tile with moved
-                                moveTile(moveFrom, moveTo);
-
-                                if (game.ActivePlayer.Color == White.Color) {
-                                    borderWhitePlayer.BorderBrush = Brushes.Transparent;
-                                    borderBlackPlayer.BorderBrush = Brushes.Red;
-                                } else {
-                                    borderWhitePlayer.BorderBrush = Brushes.Red;
-                                    borderBlackPlayer.BorderBrush = Brushes.Transparent;
-                                }
-                                game = game.Transition(game.ActivePlayer.Accept(new CongoMove(moveFrom, moveTo)));
-
-                                listBoxMoves.Items.Add("(" + moveViews[moveFrom] + ", " + moveViews[moveTo] + ")");
-                                listBoxMoves.ScrollIntoView(listBoxMoves.Items[listBoxMoves.Items.Count - 1]);
-
-                                state = game.HasEnded() ? State.END : State.FR;
-
-                                if (state == State.END) {
-                                    MessageBox.Show($"{game.Opponent.Color} wins.");
-                                    localMenuButton.IsEnabled = true;
-                                    networkMenuButton.IsEnabled = true;
-                                }
-                            }
-
-                            // otherwise, do nothing
-                        }
+                        else { /* do nothing */ }
                     }
                     break;
 
                 case State.END:
-
                     break;
 
                 default:
@@ -337,65 +284,144 @@ namespace Congo.GUI
             new MenuNetworkPopup().ShowDialog();
         }
 
-        private void exitMenuButton_Click(object sender, RoutedEventArgs e)
+        private void pauseMenuButton_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+
+        private void resetMenuButton_Click(object sender, RoutedEventArgs e) => resetGame();
+
+        private void exitMenuButton_Click(object sender, RoutedEventArgs e) => exitGame();
+
+        private void buttonAdvice_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+
+        private void buttonAiMove_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+
+        private void initEmptyBoard()
         {
-            Application.Current.Shutdown();
+            panelCongoBoard.Children.RemoveRange(0, panelCongoBoard.Children.Count);
+
+            for (int i = 0; i < boardSize; ++i) {
+                panelCongoBoard.Children
+                    .Add(getEmptyTile(i)
+                    .WithStandardBorder());
+            }
         }
 
-        private void buttonAdvice_Click(object sender, RoutedEventArgs e)
-        {
+        private void resetBoard()
+            => initEmptyBoard();
 
-        }
-
-        private void buttonAiMove_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        /// <summary>
-        /// Draws pieces of a certain color via replacing prepared tiles.
-        /// </summary>
         private void drawPieces(CongoColor color)
         {
             var e = game.Board.GetEnumerator(color);
-            while (e.MoveNext()) { replaceTile(e.Current, createImageTile(color, e.Current)); }
+            while (e.MoveNext()) {
+                replaceTile(e.Current, createImageTile(color, e.Current));
+            }
         }
 
-        private void initBoard()
+        /// <summary>
+        /// TODO: drawSelect()
+        /// @note Selections are possible only if <b>state == State.TO</b>!
+        /// </summary>
+        private void drawSelect()
         {
-            wrapPanelCongoBoard.Children.RemoveRange(0, wrapPanelCongoBoard.Children.Count);
+            if (state == State.TO) {
+                foreach (var move in getMovesFr(moveFr)) {
 
-            for (int i = 0; i < boardSize; ++i) {
-                wrapPanelCongoBoard.Children.Add(getEmptyTile(i).addStandardBorder());
+                    // excludes monkey interrupt vs. ordinary selection
+                    if (move.Fr != move.To) {
+                        panelCongoBoard.Children[move.To] = ((Canvas)panelCongoBoard.Children[move.To]).WithMoveToBorder();
+                    }
+                }
+
+                panelCongoBoard.Children[moveFr] = (game.FirstMonkeyJump == null)
+                    ? ((Canvas)panelCongoBoard.Children[moveFr]).WithMoveFrBorder()
+                    : ((Canvas)panelCongoBoard.Children[moveFr]).WithMoveToBorder();
+            }
+        }
+
+        private void drawBoard()
+        {
+            initEmptyBoard();
+            drawPieces(White.Color);
+            drawPieces(Black.Color);
+            drawSelect();
+        }
+
+        private void setPlayerBorder()
+        {
+            var w = game.ActivePlayer.Color.IsWhite();
+
+            borderWhitePlayer.BorderBrush = w ? Brushes.Red : Brushes.Transparent;
+            borderBlackPlayer.BorderBrush = w ? Brushes.Transparent : Brushes.Red;
+        }
+
+        /// <summary>
+        /// Draw user interface based on @b game and @b state class members.
+        /// </summary>
+        private void drawGame()
+        {
+            drawBoard();
+            setPlayerBorder();
+
+            if (state == State.END) {
+                borderWhitePlayer.BorderBrush = Brushes.Transparent;
+                borderBlackPlayer.BorderBrush = Brushes.Transparent;
+
+                var c = game.Opponent.Color.IsWhite() ? "White" : "Black";
+                MessageBox.Show($"{c} wins.");
+                localMenuButton.IsEnabled = true;
+                networkMenuButton.IsEnabled = true;
             }
         }
 
         private void initGame()
         {
-            state = State.FR;
             localMenuButton.IsEnabled = false;
             networkMenuButton.IsEnabled = false;
 
-            initBoard();
-            drawPieces(White.Color);
-            drawPieces(Black.Color);
+            if (game.HasEnded()) { state = State.END; }
 
-            var border = game.ActivePlayer.Color == White.Color
-                ? borderWhitePlayer
-                : borderBlackPlayer;
-            border.BorderBrush = Brushes.Red;
+            else if (game.FirstMonkeyJump != null) { state = State.TO; }
+
+            else { state = State.FR; }
+
+            drawGame();
         }
+
+        private void resetGui()
+        {
+            resetBoard();
+            borderWhitePlayer.BorderBrush = Brushes.Transparent;
+            borderBlackPlayer.BorderBrush = Brushes.Transparent;
+            listBoxMoves.Items.Clear();
+            textBlockStatus.Text = "";
+            textBlockAdvice.Text = "";
+            localMenuButton.IsEnabled = true;
+            networkMenuButton.IsEnabled = true;
+        }
+
+        private void resetGame()
+        {
+            // code entities
+            game = null;
+            white = null;
+            black = null;
+            state = State.INIT;
+
+            resetGui();
+        }
+
+        private void exitGame()
+            => Application.Current.Shutdown(); // TODO: Congo.Gui.WainWindow.exitGame() shall be smarter for network games!
 
         public MainWindow()
         {
             InitializeComponent();
 
-            state = State.INIT;
+            ai = false;
 
-            dockPanelWhiteColor.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
-            dockPanelBlackColor.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);
+            panelWhitePlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
+            panelBlackPlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);
 
-            initBoard();
+            resetGame();
         }
     }
 }

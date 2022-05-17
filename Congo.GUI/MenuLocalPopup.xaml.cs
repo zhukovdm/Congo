@@ -67,6 +67,7 @@ namespace Congo.GUI
             DialogResult = true;
             Close();
         }
+
         public MenuLocalPopup()
         {
             InitializeComponent();

@@ -22,6 +22,9 @@
                         <MenuItem Name="localMenuButton" Header="_Local" Click="localMenuButton_Click"/>
                         <MenuItem Name="networkMenuButton" Header="_Network" Click="networkMenuButton_Click"/>
                         <Separator/>
+                        <MenuItem Name="pauseMenuButton" Header="_Pause" Click="pauseMenuButton_Click"/>
+                        <Separator/>
+                        <MenuItem Name="resetMenuButton" Header="_Reset" Click="resetMenuButton_Click"/>
                         <MenuItem Name="exitMenuButton" Header="_Exit" Click="exitMenuButton_Click"/>
                     </MenuItem>
                 </Menu>
@@ -30,7 +33,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="50"/>
-                    <ColumnDefinition Width="3.0*"/>
+                    <ColumnDefinition Width="576"/>
                     <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="1.0*"/>
                     <ColumnDefinition Width="10"/>
@@ -64,7 +67,7 @@
                             <StackPanel Orientation="Vertical">
                                 <!-- Board -->
                                 <Border BorderBrush="Black" BorderThickness="1">
-                                    <WrapPanel Width="574" Name="wrapPanelCongoBoard" Orientation="Horizontal"/>
+                                    <WrapPanel Width="574" Name="panelCongoBoard" Orientation="Horizontal"/>
                                 </Border>
                             </StackPanel>
                         </StackPanel>
@@ -72,11 +75,11 @@
                 </StackPanel>
                 <DockPanel Grid.Column="2" Width="10"/>
                 <StackPanel Grid.Column="3" Orientation="Vertical">
-                    <DockPanel Name="dockPanelBlackColor" Height="50">
+                    <DockPanel Name="panelBlackPlayer" Height="50">
                         <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="5"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
-                    <DockPanel Name="dockPanelWhiteColor" Height="50">
+                    <DockPanel Name="panelWhitePlayer" Height="50">
                         <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="5"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
@@ -89,11 +92,11 @@
                         <Button Grid.Column="0" VerticalAlignment="Center" Name="buttonAdvice" FontSize="25" BorderThickness="3" Click="buttonAdvice_Click">Advice</Button>
                         <DockPanel Grid.Column="1" Width="10"/>
                         <DockPanel Grid.Column="2" VerticalAlignment="Center">
-                            <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="25" TextAlignment="Center" Text="(a1, b2)"/>
+                            <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="20" TextAlignment="Center" Text=""/>
                         </DockPanel>
                     </Grid>
                     <DockPanel Height="10"/>
-                    <ListBox Name="listBoxMoves" FontSize="40" Height="355"/>
+                    <ListBox Name="listBoxMoves" FontSize="20" Height="355"/>
                     <DockPanel Height="10"/>
                     <TextBlock Name="textBlockStatus" Background="LightGray" FontSize="30" TextAlignment="Center"/>
                 </StackPanel>
