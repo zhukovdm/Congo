@@ -319,6 +319,10 @@ namespace Congo.GUI
             }
         }
 
+        /// <summary>
+        /// Use <b>Advice</b> button with caution as possibility to cancel
+        /// the calculation is not yet implemented.
+        /// </summary>
         private void buttonAdviceBegin_Click(object sender, RoutedEventArgs e)
         {
             buttonAdviceBegin.Visibility = Visibility.Hidden;
