@@ -49,3 +49,13 @@ Long (3x) white monkey jump and white wins
 ```txt
 7/4l2/7/4c2/7/2p4/1M1L3/w/-1
 ```
+
+Board without pawns.
+```txt
+gmelecz/2ppp2/7/7/7/2PPP2/GMELECZ/w/-1
+```
+
+Board with plenty of moves.
+```txt
+1melec1/ppppp1p/2g2zp/5C1/2G2ZP/PPPPP1P/1MELE2/b/-1
+```
