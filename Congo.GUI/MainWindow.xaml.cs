@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Windows;
@@ -124,6 +125,7 @@ namespace Congo.GUI
         private CongoUser white;
         private CongoUser black;
         private State state;
+        private BackgroundWorker adviceWorker;
 
         // TODO: move position should be abstracted away
         private int moveFr;
@@ -198,6 +200,8 @@ namespace Congo.GUI
             }
         }
 
+        private void cleanAdvice() => textBlockAdvice.Text = "";
+
         private void appendMove(CongoMove move)
         {
             listBoxMoves.Items.Add(getMoveView(move));
@@ -246,7 +250,7 @@ namespace Congo.GUI
                             // very dangerous row! transfering state
                             if (move is MonkeyJump) { moveFr = moveTo; }
 
-                            textBlockAdvice.Text = "";
+                            cleanAdvice();
                             appendMove(move);
                             drawGame();
                         }
@@ -285,20 +289,40 @@ namespace Congo.GUI
             new MenuNetworkPopup().ShowDialog();
         }
 
+        /// <summary>
+        /// Pause timer generating Ai moves.
+        /// </summary>
         private void buttonMenuPause_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
+
+        private void buttonMenuSave_Click(object sender, RoutedEventArgs e)
+        {
+            var g = game;
+            if (g != null) { Clipboard.SetText(CongoFen.ToFen(g)); }
+        }
 
         private void buttonMenuReset_Click(object sender, RoutedEventArgs e) => resetGame();
 
         private void buttonMenuExit_Click(object sender, RoutedEventArgs e) => exitGame();
 
-        private void buttonAdvice_Click(object sender, RoutedEventArgs e)
+        private void adviceWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            textBlockAdvice.Text = "";
-            var user = game.ActivePlayer.Color.IsWhite() ? white : black;
+            var g = (CongoGame)e.Argument;
+            var user = g.ActivePlayer.Color.IsWhite() ? white : black;
+            e.Result = getMoveView(user.Advice(g));
+        }
 
-            Dispatcher.BeginInvoke(new Action(() => {
-                textBlockAdvice.Text = getMoveView(user.Advice(game));
-            }));
+        private void adviceWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            buttonAdviceBegin.Visibility = Visibility.Visible;
+            if (e.Result != null) {
+                textBlockAdvice.Text = e.Result.ToString();
+            }
+        }
+
+        private void buttonAdviceBegin_Click(object sender, RoutedEventArgs e)
+        {
+            buttonAdviceBegin.Visibility = Visibility.Hidden;
+            adviceWorker.RunWorkerAsync(argument: game);
         }
 
         private void buttonAiMove_Click(object sender, RoutedEventArgs e) => throw new NotImplementedException();
@@ -326,7 +350,7 @@ namespace Congo.GUI
         }
 
         /// <summary>
-        /// TODO: drawSelect()
+        /// Draw selections on the tiles based on game state.
         /// @note Selections are possible only if <b>state == State.TO</b>!
         /// </summary>
         private void drawSelect()
@@ -362,7 +386,7 @@ namespace Congo.GUI
             borderBlackPlayer.BorderBrush = w ? Brushes.Transparent : Brushes.Red;
 
             var u = w ? (white is Hi) : (black is Hi);
-            buttonAdvice.IsEnabled = u;
+            buttonAdviceBegin.IsEnabled = u;
         }
 
         /// <summary>
@@ -403,12 +427,14 @@ namespace Congo.GUI
             resetBoard();
             borderWhitePlayer.BorderBrush = Brushes.Transparent;
             borderBlackPlayer.BorderBrush = Brushes.Transparent;
-            listBoxMoves.Items.Clear();
-            textBlockStatus.Text = "";
-            textBlockAdvice.Text = "";
+
             buttonMenuLocal.IsEnabled = true;
             buttonMenuNetwork.IsEnabled = true;
-            buttonAdvice.IsEnabled = false;
+
+            buttonAdviceBegin.IsEnabled = false;
+            cleanAdvice();
+            listBoxMoves.Items.Clear();
+            textBlockStatus.Text = "";
         }
 
         private void resetGame()
@@ -430,6 +456,13 @@ namespace Congo.GUI
             InitializeComponent();
 
             ai = false;
+
+            adviceWorker = new BackgroundWorker
+            {
+                WorkerSupportsCancellation = true
+            };
+            adviceWorker.DoWork += adviceWorker_DoWork;
+            adviceWorker.RunWorkerCompleted += adviceWorker_RunWorkerCompleted;
 
             panelWhitePlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
             panelBlackPlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);

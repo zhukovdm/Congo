@@ -22,6 +22,8 @@
                         <MenuItem Name="buttonMenuLocal" Header="_Local" Click="buttonMenuLocal_Click"/>
                         <MenuItem Name="buttonMenuNetwork" Header="_Network" Click="buttonMenuNetwork_Click"/>
                         <Separator/>
+                        <MenuItem Name="buttonMenuSave" Header="_Save" Click="buttonMenuSave_Click"/>
+                        <Separator/>
                         <MenuItem Name="buttonMenuPause" Header="_Pause" Click="buttonMenuPause_Click"/>
                         <Separator/>
                         <MenuItem Name="buttonMenuReset" Header="_Reset" Click="buttonMenuReset_Click"/>
@@ -89,7 +91,13 @@
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="1.0*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" VerticalAlignment="Center" Name="buttonAdvice" FontSize="25" BorderThickness="3" Click="buttonAdvice_Click">Advice</Button>
+                        <Button
+                            Grid.Column="0"
+                            Name="buttonAdviceBegin"
+                            FontSize="25"
+                            BorderThickness="3"
+                            VerticalAlignment="Center"
+                            Click="buttonAdviceBegin_Click">Advice</Button>
                         <DockPanel Grid.Column="1" Width="10"/>
                         <DockPanel Grid.Column="2" VerticalAlignment="Center">
                             <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="20" TextAlignment="Center" Text=""/>
