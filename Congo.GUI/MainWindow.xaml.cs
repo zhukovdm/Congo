@@ -198,13 +198,13 @@ namespace Congo.GUI
 
         private string getMoveView(CongoMove move)
         {
-            if (move is MonkeyJump jump) {
+            if (move == null) { return null; }
+
+            else if (move is MonkeyJump jump) {
                 return "(" + moveViews[jump.Fr] + ", " + moveViews[jump.Bt] + ", " + moveViews[jump.To] + ")";
             }
 
-            else {
-                return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")";
-            }
+            else { return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")"; }
         }
 
         private void cleanAdvice()
@@ -260,6 +260,7 @@ namespace Congo.GUI
 
                             cleanAdvice();
                             appendMove(move);
+                            Algorithm.Stop = true; // maybe running advice
                             drawGame();
                         }
 

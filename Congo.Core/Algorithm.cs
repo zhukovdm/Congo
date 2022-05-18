@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Congo.Core
@@ -25,6 +26,14 @@ namespace Congo.Core
         #endregion
 
         #region Negamax
+
+        private static bool stop = false;
+        private static ManualResetEventSlim stopEvent = new ManualResetEventSlim(true);
+
+        public static bool Stop
+        {
+            set { stop = true; stopEvent.Wait(); }
+        }
 
         private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
@@ -52,8 +61,10 @@ namespace Congo.Core
             CongoMove move = null;
             int score = -CongoEvaluator.INF;
 
+            if (stop) { /* do nothing */ }
+
             // recursion bottom
-            if (game.HasEnded() || depth <= 0) {
+            else if (game.HasEnded() || depth <= 0) {
                 score = game.Predecessor.ActivePlayer.Color.IsWhite()
                     ? CongoEvaluator.Default(game)
                     : -CongoEvaluator.Default(game);
@@ -183,6 +194,9 @@ namespace Congo.Core
 
         public static CongoMove Negamax(CongoGame game)
         {
+            stop = false;
+            stopEvent.Reset();
+
             /* negamax recursion bottom assumes game predecessor
              * and non-zero depth at first call */
 
@@ -194,6 +208,8 @@ namespace Congo.Core
             var hash = CongoHashTable.InitHash(game.Board);
 
             var (move, _) = NegamaxMultiThread(hash, game, negamaxDepth);
+
+            stopEvent.Set();
 
             return move;
         }
