@@ -134,6 +134,7 @@ namespace Congo.GUI
         private readonly DispatcherTimer aiTimer;
         private readonly BackgroundWorker aiWorker;
         private readonly ManualResetEventSlim pauseEvent;
+        private readonly ManualResetEventSlim workerEvent;
 
         private readonly BackgroundWorker adviceWorker;
 
@@ -286,6 +287,7 @@ namespace Congo.GUI
         {
             aiTimer.Stop();
             ai = true;
+            workerEvent.Reset();
             aiWorker.RunWorkerAsync(argument: game);
         }
 
@@ -355,14 +357,18 @@ namespace Congo.GUI
             var g = (CongoGame)e.Argument;
             var user = g.ActivePlayer.Color.IsWhite() ? white : black;
             e.Result = user.Advice(g);
+
+            workerEvent.Set();
         }
 
         private void aiWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            var move = (CongoMove)e.Result;
-            game = game.Transition(move);
-            appendMove(move);
-            drawGame();
+            if (e.Result != null && game != null) {
+                var move = (CongoMove)e.Result;
+                game = game.Transition(move);
+                appendMove(move);
+                drawGame();
+            }
         }
 
         /// <summary>
@@ -497,10 +503,15 @@ namespace Congo.GUI
             cleanAdvice();
             listBoxMoves.Items.Clear();
             textBlockStatus.Text = "";
+
+            aiTimer.Stop();
         }
 
         private void resetGame()
         {
+            Algorithm.Stop = true;
+            workerEvent.Wait();
+
             // code entities
             game = null;
             white = null;
@@ -530,6 +541,7 @@ namespace Congo.GUI
             aiWorker.RunWorkerCompleted += aiWorker_RunWorkerCompleted;
 
             pauseEvent = new ManualResetEventSlim(true);
+            workerEvent = new ManualResetEventSlim(true);
 
             adviceWorker = new BackgroundWorker();
             adviceWorker.DoWork += adviceWorker_DoWork;
