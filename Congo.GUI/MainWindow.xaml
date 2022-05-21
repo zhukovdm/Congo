@@ -12,12 +12,6 @@
     Height="710"
     MinWidth="900"
     Width="900">
-    <Window.CommandBindings>
-        <CommandBinding Command="Pause" Executed="buttonMenuPause_Click"/>
-    </Window.CommandBindings>
-    <Window.InputBindings>
-        <KeyBinding Key="Pause" Modifiers="" Command="Pause"/>
-    </Window.InputBindings>
     <Grid>
         <StackPanel Orientation="Vertical">
 
@@ -30,7 +24,8 @@
                         <Separator/>
                         <MenuItem Name="buttonMenuSave" Header="_Save" Click="buttonMenuSave_Click"/>
                         <Separator/>
-                        <MenuItem Name="buttonMenuPause" Header="Pause" Command="Pause" InputGestureText="Pause"/>
+                        <MenuItem Name="buttonMenuPause" Header="_Pause" Click="buttonMenuPause_Click"/>
+                        <MenuItem Name="buttonMenuCancel" Header="_Cancel" Click="buttonMenuCancel_Click"/>
                         <Separator/>
                         <MenuItem Name="buttonMenuReset" Header="_Reset" Click="buttonMenuReset_Click"/>
                         <MenuItem Name="buttonMenuExit" Header="_Exit" Click="buttonMenuExit_Click"/>
@@ -99,11 +94,11 @@
                         </Grid.ColumnDefinitions>
                         <Button
                             Grid.Column="0"
-                            Name="buttonAdviceBegin"
+                            Name="buttonAdvice"
                             FontSize="25"
                             BorderThickness="3"
                             VerticalAlignment="Center"
-                            Click="buttonAdviceBegin_Click">Advice</Button>
+                            Click="buttonAdvice_Click">Advice</Button>
                         <DockPanel Grid.Column="1" Width="10"/>
                         <DockPanel Grid.Column="2" VerticalAlignment="Center">
                             <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="20" TextAlignment="Center" Text=""/>
@@ -126,6 +121,7 @@
                 <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="f"/>
                 <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="g"/>
             </StackPanel>
+            <Button Name="buttonMoveGenerator" Visibility="Hidden" Click="buttonMoveGenerator_Click"/>
         </StackPanel>
     </Grid>
 </Window>

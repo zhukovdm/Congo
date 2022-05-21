@@ -3,11 +3,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Congo.Core;
 
 namespace Congo.GUI
 {
-    public partial class MenuNetworkPopup : Window
+    public partial class MenuNetworkPopup : Window, IPlayable
     {
+        public CongoGame Game { get; private set; }
+        public CongoUser White { get; private set; }
+        public CongoUser Black { get; private set; }
+
         private static void OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             if (sender is TextBox textBox && !textBox.IsReadOnly && e.KeyboardDevice.IsKeyDown(Key.Tab)) {

@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Threading;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Congo.Core
 {
+    public delegate CongoMove AlgorithmDelegate(CongoGame game);
+
     /// <summary>
     /// Static class holds different algorithms for @b Move selection.
     /// </summary>
     public static class Algorithm
     {
+        private enum State { OK, CANCEL, BLOCKED };
+
+        private static volatile State state;
+
+        static Algorithm() { state = State.OK; }
+
         #region Random
 
         private static readonly Random rnd = new Random();
@@ -27,13 +35,20 @@ namespace Congo.Core
 
         #region Negamax
 
-        private static bool stop = false;
-        private static ManualResetEventSlim stopEvent = new ManualResetEventSlim(true);
+        public static void Cancel()
+            => state = State.CANCEL;
 
-        public static bool Stop
+        public static void Block()
         {
-            set { stop = true; stopEvent.Wait(); }
+            Debug.WriteLine("x");
+            state = State.BLOCKED;
         }
+
+        public static void Unblock()
+            => state = State.OK;
+
+        public static bool IsBlocked()
+            => state == State.BLOCKED;
 
         private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
@@ -61,7 +76,7 @@ namespace Congo.Core
             CongoMove move = null;
             int score = -CongoEvaluator.INF;
 
-            if (stop) { /* do nothing */ }
+            if (state != State.OK) { /* do nothing, cancel or invalidate */ }
 
             // recursion bottom
             else if (game.HasEnded() || depth <= 0) {
@@ -194,8 +209,9 @@ namespace Congo.Core
 
         public static CongoMove Negamax(CongoGame game)
         {
-            stop = false;
-            stopEvent.Reset();
+            if (state == State.BLOCKED) { return null; }
+
+            if (state != State.BLOCKED) { state = State.OK; }
 
             /* negamax recursion bottom assumes game predecessor
              * and non-zero depth at first call */
@@ -209,13 +225,9 @@ namespace Congo.Core
 
             var (move, _) = NegamaxMultiThread(hash, game, negamaxDepth);
 
-            stopEvent.Set();
-
             return move;
         }
 
         #endregion
     }
-
-    public delegate CongoMove AlgorithmDelegate(CongoGame game);
 }

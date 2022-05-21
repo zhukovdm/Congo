@@ -9,11 +9,11 @@ namespace Congo.GUI
     /// <summary>
     /// Interaction logic for MenuLocalPopup.xaml
     /// </summary>
-    public partial class MenuLocalPopup : Window
+    public partial class MenuLocalPopup : Window, IPlayable
     {
-        public CongoGame game;
-        public CongoUser white;
-        public CongoUser black;
+        public CongoGame Game { get; private set; }
+        public CongoUser White { get; private set; }
+        public CongoUser Black { get; private set; }
 
         private void Esc_PushButton(object sender, KeyEventArgs e)
         {
@@ -45,7 +45,7 @@ namespace Congo.GUI
 
             textBoxFen.BorderBrush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFABADB3");
 
-            game = radioButtonStandardGame.IsChecked == true
+            Game = radioButtonStandardGame.IsChecked == true
                 ? CongoGame.Standard()
                 : CongoFen.FromFen(textBoxFen.Text);
 
@@ -58,9 +58,9 @@ namespace Congo.GUI
                 { "rnd", Algorithm.Negamax }
             };
             var white_algo = radioButtonWhiteNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
-            white = (radioButtonWhiteHi.IsChecked == true) ? new Hi(white_algo) : new Ai(white_algo) as CongoUser;
+            White = (radioButtonWhiteHi.IsChecked == true) ? new Hi(white_algo) : new Ai(white_algo) as CongoUser;
             var black_algo = radioButtonBlackNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
-            black = (radioButtonBlackHi.IsChecked == true) ? new Hi(black_algo) : new Ai(black_algo) as CongoUser;
+            Black = (radioButtonBlackHi.IsChecked == true) ? new Hi(black_algo) : new Ai(black_algo) as CongoUser;
 
             // end of weird piece of code
 

@@ -2,70 +2,53 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using System.Linq;
 using Congo.Core;
 
-namespace TileExtensions
+namespace Congo.GUI
 {
     public static class TileExtensions
     {
         private static readonly double tileSize = Congo.GUI.MainWindow.tileSize;
+        private static readonly double accentBoardThickness = 5.0;
+        private static readonly double standardBoardThickness = 1.0;
 
         private static readonly ImmutableDictionary<Type, string> type2suffix = new Dictionary<Type, string>
         {
-            { typeof(Giraffe),   "giraffe"    }, { typeof(Monkey), "monkey" },
+            { typeof(Superpawn), "super-pawn" }, { typeof(Monkey), "monkey" },
             { typeof(Crocodile), "crocodile"  }, { typeof(Zebra),  "zebra"  },
             { typeof(Elephant),  "elephant"   }, { typeof(Lion),   "lion"   },
-            { typeof(Superpawn), "super-pawn" }, { typeof(Pawn),   "pawn"   }
+            { typeof(Giraffe),   "giraffe"    }, { typeof(Pawn),   "pawn"   }
         }.ToImmutableDictionary();
 
-        public static Canvas WithMoveFrBorder(this Canvas tile)
+        private static Canvas WithBoard(this Canvas tile, Brush brush, double thickness)
         {
             var border = new Border
             {
                 Width = tileSize,
                 Height = tileSize,
-                BorderBrush = Brushes.White,
-                BorderThickness = new Thickness(3)
+                BorderBrush = brush,
+                BorderThickness = new Thickness(thickness)
             };
-            tile.Children.Add(border);
+            _ = tile.Children.Add(border);
 
             return tile;
         }
+
+        public static Canvas WithMoveFrBorder(this Canvas tile)
+            => tile.WithBoard(Brushes.White, accentBoardThickness);
 
         public static Canvas WithMoveToBorder(this Canvas tile)
-        {
-            var border = new Border
-            {
-                Width = tileSize,
-                Height = tileSize,
-                BorderBrush = Brushes.Red,
-                BorderThickness = new Thickness(3)
-            };
-            tile.Children.Add(border);
-
-            return tile;
-        }
+            => tile.WithBoard(Brushes.Red, accentBoardThickness);
 
         public static Canvas WithStandardBorder(this Canvas tile)
-        {
-            var border = new Border
-            {
-                Width = tileSize,
-                Height = tileSize,
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(1)
-            };
-            tile.Children.Add(border);
-
-            return tile;
-        }
+            => tile.WithBoard(Brushes.Black, standardBoardThickness);
 
         public static Canvas WithPiece(this Canvas tile, CongoColor color, Type type)
         {
@@ -79,24 +62,16 @@ namespace TileExtensions
                 Height = tileSize,
                 Source = new BitmapImage(new Uri("/Congo.GUI;component/Resources/" + pfx + "-" + sfx + ext, UriKind.Relative))
             };
-
-            tile.Children.Add(image);
+            _ = tile.Children.Add(image);
 
             return tile;
         }
     }
-}
 
-namespace Congo.GUI
-{
-    using TileExtensions;
-
-    enum State : int
+    public static class ButtonExtensions
     {
-        INIT,
-        FR,
-        TO,
-        END
+        public static void PerformClick(this Button button)
+            => button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
     }
 
     /// <summary>
@@ -106,40 +81,38 @@ namespace Congo.GUI
     {
         public static readonly double tileSize = 82.0;
         private static readonly int boardSize = CongoBoard.Empty.Size * CongoBoard.Empty.Size;
-        private static readonly string whiteColorCode  = "#914800";
-        private static readonly string blackColorCode  = "#000000";
-        private static readonly string riverColorCode  = "#65b9f8";
+
+        private static readonly string whiteColorCode = "#914800";
+        private static readonly string blackColorCode = "#000000";
+        private static readonly string riverColorCode = "#65b9f8";
         private static readonly string groundColorCode = "#67de79";
         private static readonly string castleColorCode = "#f2d377";
 
-        private static readonly ImmutableList<string> moveViews =
-            new List<string> {
-                "a7", "b7", "c7", "d7", "e7", "f7", "g7",
-                "a6", "b6", "c6", "d6", "e6", "f6", "g6",
-                "a5", "b5", "c5", "d5", "e5", "f5", "g5",
-                "a4", "b4", "c4", "d4", "e4", "f4", "g4",
-                "a3", "b3", "c3", "d3", "e3", "f3", "g3",
-                "a2", "b2", "c2", "d2", "e2", "f2", "g2",
-                "a1", "b1", "c1", "d1", "e1", "f1", "g1"
-            }.ToImmutableList();
+        private static readonly ImmutableList<string> moveViews = new List<string>
+        {
+            "a7", "b7", "c7", "d7", "e7", "f7", "g7",
+            "a6", "b6", "c6", "d6", "e6", "f6", "g6",
+            "a5", "b5", "c5", "d5", "e5", "f5", "g5",
+            "a4", "b4", "c4", "d4", "e4", "f4", "g4",
+            "a3", "b3", "c3", "d3", "e3", "f3", "g3",
+            "a2", "b2", "c2", "d2", "e2", "f2", "g2",
+            "a1", "b1", "c1", "d1", "e1", "f1", "g1"
+        }.ToImmutableList();
 
+        private enum State : int { INIT, AI, FR, TO, END }
+
+        private int moveFr;
+        private int moveTo;
+        private State state;
         private CongoGame game;
         private CongoUser white;
         private CongoUser black;
-        private State state;
 
-        // NOTE: r/w operations on bool are atomic
-        private bool ai;
-
-        private readonly DispatcherTimer aiTimer;
-        private readonly BackgroundWorker aiWorker;
+        private volatile bool advice = false;
+        private readonly object adviceLock = new object();
+        private BackgroundWorker adviceWorker;
+        private readonly ManualResetEventSlim adviceEvent;
         private readonly ManualResetEventSlim pauseEvent;
-        private readonly ManualResetEventSlim workerEvent;
-
-        private readonly BackgroundWorker adviceWorker;
-
-        // TODO: move position should be abstracted away
-        private int moveFr;
 
         private IEnumerable<CongoMove> getMovesFr(int fr)
         {
@@ -161,9 +134,11 @@ namespace Congo.GUI
         private Canvas getEmptyTile(int idx)
         {
             string code;
+
             if (idx >= 21 && idx < 28) {
                 code = riverColorCode;
             }
+
             else {
                 switch (idx % 7) {
                     case 0:
@@ -184,17 +159,10 @@ namespace Congo.GUI
                 Height = tileSize,
                 Background = (SolidColorBrush)new BrushConverter().ConvertFromString(code)
             };
-
             canvas.Tag = idx.ToString();
             canvas.MouseUp += tile_Click;
-            return canvas;
-        }
 
-        private Canvas createImageTile(CongoColor color, int idx)
-        {
-            return getEmptyTile(idx)
-                .WithPiece(color, game.Board.GetPiece(idx).GetType())
-                .WithStandardBorder();
+            return canvas;
         }
 
         private string getMoveView(CongoMove move)
@@ -208,8 +176,8 @@ namespace Congo.GUI
             else { return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")"; }
         }
 
-        private void cleanAdvice()
-            => textBlockAdvice.Text = "";
+        private CongoUser getActiveUser()
+            => game.ActivePlayer.Color.IsWhite() ? white : black;
 
         private void appendMove(CongoMove move)
         {
@@ -217,61 +185,104 @@ namespace Congo.GUI
             listBoxMoves.ScrollIntoView(listBoxMoves.Items[listBoxMoves.Items.Count - 1]);
         }
 
+        private void adviceWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            pauseEvent.Wait();
+
+            /* Avoid too fast switching between players. Safe to access 
+             * variables, because only reset could remove users, but is
+             * waiting for adviceEvent. */
+            if (white is Ai && black is Ai) { Thread.Sleep(1000); }
+
+            var g = (CongoGame)e.Argument;
+            var user = g.ActivePlayer.Color.IsWhite() ? white : black;
+            e.Result = user.Advice(g);
+
+            adviceEvent.Set();
+        }
+
+        private BackgroundWorker getAdviceWorker()
+        {
+            var worker = new BackgroundWorker();
+            worker.DoWork += adviceWorker_DoWork;
+
+            return worker;
+        }
+
+        private void aiAdvice_Init()
+        {
+            adviceEvent.Wait();
+            adviceEvent.Reset(); // ensure mutual exclusion
+
+            buttonMenuCancel.IsEnabled = true;
+            adviceWorker = getAdviceWorker();
+            adviceWorker.RunWorkerCompleted += aiAdvice_Finalize;
+
+            lock(adviceLock) { advice = true; Debug.WriteLine("+ai"); Debug.Flush(); }
+
+            adviceWorker.RunWorkerAsync(argument: game);
+        }
+
+        private void aiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (!Algorithm.IsBlocked()) {
+                var move = (CongoMove)e.Result;
+                if (move == null) { move = Algorithm.Rnd(game); }
+
+                game = game.Transition(move);
+
+                if (getActiveUser() is Hi) { buttonAdvice.IsEnabled = true; }
+
+                buttonMenuCancel.IsEnabled = false;
+                appendMove(move);
+                updateGame();
+            }
+
+            lock (adviceLock) { advice = false; Debug.WriteLine("-ai"); Debug.Flush(); }
+
+            Algorithm.Unblock();
+        }
+
+        private void hiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (!Algorithm.IsBlocked()) {
+                var move = (CongoMove)e.Result;
+                if (move == null) { move = Algorithm.Rnd(game); }
+
+                buttonAdvice.IsEnabled = true;
+                buttonMenuCancel.IsEnabled = false;
+                textBlockAdvice.Text = getMoveView(move);
+            }
+
+            lock (adviceLock) { advice = false; Debug.WriteLine("-hi"); Debug.Flush(); }
+
+            Algorithm.Unblock();
+        }
+
         /// <summary>
         /// Event handler for clicks on all board tiles.
         /// </summary>
         private void tile_Click(object sender, RoutedEventArgs e)
         {
-            if (ai) { return; }
-
             switch (state) {
 
                 case State.INIT:
+                case State.AI:
                     break;
 
                 case State.FR:
 
                     if (sender is Canvas tileFrom) {
                         moveFr = int.Parse((string)tileFrom.Tag);
-                        if (game.Board.IsOccupied(moveFr) &&
-                            game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFr)) {
-                            state = State.TO;
-                            drawGame();
-                        }
+                        updateGame();
                     }
                     break;
 
                 case State.TO:
 
                     if (sender is Canvas tileTo) {
-
-                        var moveTo = int.Parse((string)tileTo.Tag);
-                        var move = game.ActivePlayer.Accept(new CongoMove(moveFr, moveTo));
-
-                        /* Move exists, also includes monkey jump interrupt,
-                         * when Fr == To! */
-                        if (move != null) {
-                            game = game.Transition(move);
-
-                            var option = (move is MonkeyJump) ? State.TO : State.FR;
-                            state = game.HasEnded() ? State.END : option;
-
-                            // very dangerous row! transfering state
-                            if (move is MonkeyJump) { moveFr = moveTo; }
-
-                            cleanAdvice();
-                            appendMove(move);
-                            Algorithm.Stop = true; // maybe running advice
-                            drawGame();
-                        }
-
-                        // no move, but reset
-                        else if (moveFr == moveTo) {
-                            state = State.FR;
-                            drawGame();
-                        }
-
-                        else { /* do nothing */ }
+                        moveTo = int.Parse((string)tileTo.Tag);
+                        updateGame();
                     }
                     break;
 
@@ -283,45 +294,34 @@ namespace Congo.GUI
             }
         }
 
-        private void aiTimer_Tick(object sender, EventArgs e)
-        {
-            aiTimer.Stop();
-            ai = true;
-            workerEvent.Reset();
-            aiWorker.RunWorkerAsync(argument: game);
-        }
+        #region Ui Buttons
 
-        private void buttonMenuLocal_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Dialog with game and both users always starts new game.
+        /// </summary>
+        private void buttonNewGameDialog<T>(object sender, EventArgs e)
+            where T : Window, IPlayable, new()
         {
-            var dialog = new MenuLocalPopup();
+            var dialog = new T();
             if (dialog.ShowDialog() == true) {
-                game = dialog.game;
-                white = dialog.white;
-                black = dialog.black;
+                resetGame();
+
+                game = dialog.Game; white = dialog.White; black = dialog.Black;
+
+                buttonMenuLocal.IsEnabled = false;
+                buttonMenuNetwork.IsEnabled = false;
+                buttonMenuSave.IsEnabled = true;
+                buttonMenuPause.IsEnabled = (white is Ai) && (black is Ai);
+
                 initGame();
             }
         }
 
+        private void buttonMenuLocal_Click(object sender, RoutedEventArgs e)
+            => buttonNewGameDialog<MenuLocalPopup>(sender, e);
+
         private void buttonMenuNetwork_Click(object sender, RoutedEventArgs e)
-        {
-            new MenuNetworkPopup().ShowDialog();
-        }
-
-        /// <summary>
-        /// Toggle timer generating Ai moves.
-        /// </summary>
-        private void buttonMenuPause_Click(object sender, RoutedEventArgs e)
-        {
-            if (pauseEvent.IsSet) {
-                pauseEvent.Reset();
-                buttonMenuPause.Header = "Resume";
-            }
-
-            else {
-                pauseEvent.Set();
-                buttonMenuPause.Header = "Pause";
-            }
-        }
+            => buttonNewGameDialog<MenuNetworkPopup>(sender, e);
 
         private void buttonMenuSave_Click(object sender, RoutedEventArgs e)
         {
@@ -329,77 +329,74 @@ namespace Congo.GUI
             if (g != null) { Clipboard.SetText(CongoFen.ToFen(g)); }
         }
 
+        private void buttonMenuPause_Click(object sender, RoutedEventArgs e)
+        {
+            // .IsSet means no pause
+
+            if (pauseEvent.IsSet) {
+                pauseEvent.Reset();
+                buttonMenuPause.Header = "Resu_me";
+            }
+
+            else {
+                pauseEvent.Set();
+                buttonMenuPause.Header = "_Pause";
+            }
+        }
+
+        private void buttonMenuCancel_Click(object sender, RoutedEventArgs e)
+            => Algorithm.Cancel();
+
         private void buttonMenuReset_Click(object sender, RoutedEventArgs e)
             => resetGame();
 
         private void buttonMenuExit_Click(object sender, RoutedEventArgs e)
             => exitGame();
 
-        private void adviceWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void buttonAdvice_Click(object sender, RoutedEventArgs e)
         {
-            var g = (CongoGame)e.Argument;
-            var user = g.ActivePlayer.Color.IsWhite() ? white : black;
-            e.Result = getMoveView(user.Advice(g));
-        }
+            adviceEvent.Wait();
+            adviceEvent.Reset(); // ensure mutual exclusion
 
-        private void adviceWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            buttonAdviceBegin.Visibility = Visibility.Visible;
-            if (e.Result != null) {
-                textBlockAdvice.Text = e.Result.ToString();
-            }
-        }
+            buttonAdvice.IsEnabled = false;
+            buttonMenuCancel.IsEnabled = true;
 
-        private void aiWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            pauseEvent.Wait();
+            adviceWorker = getAdviceWorker();
+            adviceWorker.RunWorkerCompleted += hiAdvice_Finalize;
 
-            var g = (CongoGame)e.Argument;
-            var user = g.ActivePlayer.Color.IsWhite() ? white : black;
-            e.Result = user.Advice(g);
+            lock (adviceLock) { advice = true; Debug.WriteLine("+hi"); Debug.Flush(); }
 
-            workerEvent.Set();
-        }
-
-        private void aiWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Result != null && game != null) {
-                var move = (CongoMove)e.Result;
-                game = game.Transition(move);
-                appendMove(move);
-                drawGame();
-            }
-        }
-
-        /// <summary>
-        /// Use <b>Advice</b> button with caution as possibility to cancel
-        /// the calculation is not yet implemented.
-        /// </summary>
-        private void buttonAdviceBegin_Click(object sender, RoutedEventArgs e)
-        {
-            buttonAdviceBegin.Visibility = Visibility.Hidden;
             adviceWorker.RunWorkerAsync(argument: game);
         }
 
-        private void initEmptyBoard()
+        private void buttonMoveGenerator_Click(object sender, RoutedEventArgs e)
+            => finalizeState();
+
+        #endregion
+
+        #region Draw Game
+
+        private void cleanAdvice()
+            => textBlockAdvice.Text = "";
+
+        private void cleanBoard()
         {
             panelCongoBoard.Children.RemoveRange(0, panelCongoBoard.Children.Count);
 
             for (int i = 0; i < boardSize; ++i) {
-                panelCongoBoard.Children
-                    .Add(getEmptyTile(i)
-                    .WithStandardBorder());
+                panelCongoBoard.Children.Add(getEmptyTile(i).WithStandardBorder());
             }
         }
-
-        private void resetBoard()
-            => initEmptyBoard();
 
         private void drawPieces(CongoColor color)
         {
             var e = game.Board.GetEnumerator(color);
+
             while (e.MoveNext()) {
-                replaceTile(e.Current, createImageTile(color, e.Current));
+                var tile = getEmptyTile(e.Current)
+                    .WithPiece(color, game.Board.GetPiece(e.Current).GetType())
+                    .WithStandardBorder();
+                replaceTile(e.Current, tile);
             }
         }
 
@@ -418,134 +415,215 @@ namespace Congo.GUI
                     }
                 }
 
+                var tile = (Canvas)panelCongoBoard.Children[moveFr];
+
                 panelCongoBoard.Children[moveFr] = (game.FirstMonkeyJump == null)
-                    ? ((Canvas)panelCongoBoard.Children[moveFr]).WithMoveFrBorder()
-                    : ((Canvas)panelCongoBoard.Children[moveFr]).WithMoveToBorder();
+                    ? tile.WithMoveFrBorder()
+                    : tile.WithMoveToBorder();
             }
         }
 
         private void drawBoard()
         {
-            initEmptyBoard();
+            cleanBoard();
             drawPieces(White.Color);
             drawPieces(Black.Color);
             drawSelect();
         }
 
-        private void setPlayerInfo()
+        private void drawPanel()
         {
             var w = game.ActivePlayer.Color.IsWhite();
 
             borderWhitePlayer.BorderBrush = w ? Brushes.Red : Brushes.Transparent;
             borderBlackPlayer.BorderBrush = w ? Brushes.Transparent : Brushes.Red;
 
-            var u = w ? (white is Hi) : (black is Hi);
-            buttonAdviceBegin.IsEnabled = u;
+            cleanAdvice();
         }
 
-        /// <summary>
-        /// Draw user interface based on @b game and @b state class members.
-        /// </summary>
-        private void drawGame()
+        #endregion
+
+        #region Update Game state
+
+        private void initState()
         {
-            drawBoard();
-            setPlayerInfo();
+            if (game.HasEnded()) { state = State.END; }
 
-            if (state == State.END) {
-                borderWhitePlayer.BorderBrush = Brushes.Transparent;
-                borderBlackPlayer.BorderBrush = Brushes.Transparent;
+            else if (getActiveUser() is Ai) { state = State.AI; }
 
-                var c = game.Opponent.Color.IsWhite() ? "White" : "Black";
-                MessageBox.Show($"{c} wins.");
-                buttonMenuLocal.IsEnabled = true;
-                buttonMenuNetwork.IsEnabled = true;
-            }
+            else if (game.FirstMonkeyJump != null) { state = State.TO; buttonAdvice.IsEnabled = true; }
 
-            else {
-                var user = game.ActivePlayer.Color.IsWhite() ? white : black;
-
-                if (user is Ai) {
-                    ai = true;
-                    aiTimer.Start();
-                }
-
-                else {
-                    ai = false;
-                    aiTimer.Stop();
-                }
-            }
+            else { state = State.FR; buttonAdvice.IsEnabled = true; }
         }
 
-        private void initGame()
+        private void updateState()
         {
-            buttonMenuLocal.IsEnabled = false;
-            buttonMenuNetwork.IsEnabled = false;
+            // determine new state
 
             if (game.HasEnded()) { state = State.END; }
 
-            else if (game.FirstMonkeyJump != null) { state = State.TO; }
+            else if (getActiveUser() is Ai) { state = State.AI; }
+
+            else if (state == State.FR && game.Board.IsOccupied(moveFr)
+                && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFr)) {
+                state = State.TO;
+            }
+
+            // end of game | monkey jump | move ~> opponent
+            else if (state == State.TO) {
+
+                var move = game.ActivePlayer.Accept(new CongoMove(moveFr, moveTo));
+
+                /* Move exists, also includes monkey jump interrupt (Fr == To)! */
+                if (move != null) {
+                    game = game.Transition(move);
+
+                    if (game.HasEnded()) { state = State.END; }
+
+                    else if (move is MonkeyJump) { moveFr = moveTo; /* State.TO remains */ }
+
+                    // opponent will turn
+                    else {
+                        state = (getActiveUser() is Ai) ? State.AI : State.FR;
+                    }
+
+                    cleanAdvice();
+                    appendMove(move);
+                    Algorithm.Cancel(); // maybe running advice
+                }
+
+                // not a move, but reset
+                else if (moveFr == moveTo) { state = State.FR; }
+
+                else { /* do nothing */ }
+            }
 
             else { state = State.FR; }
-
-            drawGame();
         }
 
-        private void resetGui()
+        private void finalizeState()
         {
-            resetBoard();
-            borderWhitePlayer.BorderBrush = Brushes.Transparent;
-            borderBlackPlayer.BorderBrush = Brushes.Transparent;
+            // maybe act on new state
 
-            buttonMenuLocal.IsEnabled = true;
-            buttonMenuNetwork.IsEnabled = true;
+            switch (state) {
 
-            buttonAdviceBegin.IsEnabled = false;
-            cleanAdvice();
-            listBoxMoves.Items.Clear();
-            textBlockStatus.Text = "";
+                case State.AI:
+                    aiAdvice_Init();
+                    break;
 
-            aiTimer.Stop();
+                case State.FR:
+                case State.TO:
+                    break;
+
+                case State.END:
+                    borderWhitePlayer.BorderBrush = Brushes.Transparent;
+                    borderBlackPlayer.BorderBrush = Brushes.Transparent;
+
+                    var c = game.Opponent.Color.IsWhite() ? "White" : "Black";
+                    MessageBox.Show($"{c} wins.");
+                    buttonMenuLocal.IsEnabled = true;
+                    buttonMenuNetwork.IsEnabled = true;
+                    break;
+
+                case State.INIT:
+                default:
+                    break;
+            }
         }
 
+        #endregion
+
+        private void initGame()
+        {
+            initState();
+            drawBoard();
+            drawPanel();
+
+            buttonMoveGenerator.PerformClick();
+        }
+
+        private void updateGame()
+        {
+            updateState();
+            drawBoard();
+            drawPanel();
+
+            buttonMoveGenerator.PerformClick();
+        }
+
+        #region Reset and Exit Game
+
+        private void finalizeAdviceWorker()
+        {
+            lock (adviceLock) {
+                if (advice) { Algorithm.Block(); }
+            }
+
+            pauseEvent.Set(); // maybe worker on a break
+            adviceEvent.Wait();
+        }
+
+        /// <summary>
+        /// Upon call, the window reaches predictable state. Remove all code
+        /// entities, clean up the board, enable or disable buttons.
+        /// </summary>
         private void resetGame()
         {
-            Algorithm.Stop = true;
-            workerEvent.Wait();
+            /* code entities */
 
-            // code entities
+            finalizeAdviceWorker();
+
+            state = State.INIT;
             game = null;
             white = null;
             black = null;
-            state = State.INIT;
 
-            resetGui();
+            /* Gui entities */
+
+            // menu
+            buttonMenuLocal.IsEnabled = true;
+            buttonMenuNetwork.IsEnabled = true;
+            buttonMenuSave.IsEnabled = false;
+            buttonMenuCancel.IsEnabled = false;
+            buttonMenuReset.IsEnabled = true;
+            buttonMenuExit.IsEnabled = true;
+
+            buttonMenuPause.IsEnabled = false;
+            buttonMenuPause.Header = "_Pause";
+
+            // board and pieces
+            cleanBoard();
+
+            // panel
+            borderWhitePlayer.BorderBrush = Brushes.Transparent;
+            borderBlackPlayer.BorderBrush = Brushes.Transparent;
+            buttonAdvice.IsEnabled = false;
+            cleanAdvice();
+            listBoxMoves.Items.Clear();
+            textBlockStatus.Text = "";
         }
 
+        /// <summary>
+        /// Exits the game. Ensure worker is finalized and resources are
+        /// released, no further drawing actions are necessary.
+        /// </summary>
         private void exitGame()
-            => Application.Current.Shutdown(); // TODO: Congo.Gui.WainWindow.exitGame() shall be smarter for network games!
+        {
+            finalizeAdviceWorker();
+
+            // TODO: Congo.GUI.WainWindow.exitGame() releases resources if game is network.
+
+            Application.Current.Shutdown();
+        }
+
+        #endregion
 
         public MainWindow()
         {
             InitializeComponent();
 
-            ai = false;
-            aiTimer = new DispatcherTimer
-            {
-                Interval = new TimeSpan(0, 0, 1)
-            };
-            aiTimer.Tick += aiTimer_Tick;
-            aiTimer.Stop();
-
-            aiWorker = new BackgroundWorker();
-            aiWorker.DoWork += aiWorker_DoWork;
-            aiWorker.RunWorkerCompleted += aiWorker_RunWorkerCompleted;
-
+            adviceEvent = new ManualResetEventSlim(true);
             pauseEvent = new ManualResetEventSlim(true);
-            workerEvent = new ManualResetEventSlim(true);
-
-            adviceWorker = new BackgroundWorker();
-            adviceWorker.DoWork += adviceWorker_DoWork;
-            adviceWorker.RunWorkerCompleted += adviceWorker_RunWorkerCompleted;
 
             panelWhitePlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
             panelBlackPlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);
