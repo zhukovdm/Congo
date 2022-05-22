@@ -55,7 +55,7 @@ namespace Congo.GUI
             var dict = new Dictionary<string, AlgorithmDelegate>
             {
                 { "negamax", Algorithm.Negamax },
-                { "rnd", Algorithm.Negamax }
+                { "rnd", Algorithm.Rnd }
             };
             var white_algo = radioButtonWhiteNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
             White = (radioButtonWhiteHi.IsChecked == true) ? new Hi(white_algo) : new Ai(white_algo) as CongoUser;

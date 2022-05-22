@@ -517,6 +517,7 @@ namespace Congo.GUI
                     break;
 
                 case State.END:
+                    buttonAdvice.IsEnabled = false;
                     borderWhitePlayer.BorderBrush = Brushes.Transparent;
                     borderBlackPlayer.BorderBrush = Brushes.Transparent;
 
@@ -531,8 +532,6 @@ namespace Congo.GUI
                     break;
             }
         }
-
-        #endregion
 
         private void initGame()
         {
@@ -555,6 +554,8 @@ namespace Congo.GUI
                 buttonMoveGenerator.PerformClick();
             }));
         }
+
+        #endregion
 
         #region Reset and Exit Game
 
