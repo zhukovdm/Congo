@@ -24,3 +24,7 @@ assets/docs/*.pdf
 
 # Doxygen
 Congo.Assets/Resources/doxygen
+
+# Executables
+*.exe
+*.msi
