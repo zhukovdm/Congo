@@ -23,4 +23,4 @@ TestResults/
 assets/docs/*.pdf
 
 # Doxygen
-assets/doxygen/
+Congo.Assets/Resources/doxygen
