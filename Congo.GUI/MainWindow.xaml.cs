@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -71,7 +70,7 @@ namespace Congo.GUI
     public static class ButtonExtensions
     {
         public static void PerformClick(this Button button)
-            => button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            => button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent, button));
     }
 
     /// <summary>
@@ -218,14 +217,14 @@ namespace Congo.GUI
             adviceWorker = getAdviceWorker();
             adviceWorker.RunWorkerCompleted += aiAdvice_Finalize;
 
-            lock(adviceLock) { advice = true; Debug.WriteLine("+ai"); Debug.Flush(); }
+            lock(adviceLock) { advice = true; }
 
             adviceWorker.RunWorkerAsync(argument: game);
         }
 
         private void aiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (!Algorithm.IsBlocked()) {
+            if (!Algorithm.IsOmitted()) {
                 var move = (CongoMove)e.Result;
                 if (move == null) { move = Algorithm.Rnd(game); }
 
@@ -238,14 +237,14 @@ namespace Congo.GUI
                 updateGame();
             }
 
-            lock (adviceLock) { advice = false; Debug.WriteLine("-ai"); Debug.Flush(); }
+            lock (adviceLock) { advice = false; }
 
-            Algorithm.Unblock();
+            Algorithm.Include();
         }
 
         private void hiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (!Algorithm.IsBlocked()) {
+            if (!Algorithm.IsOmitted()) {
                 var move = (CongoMove)e.Result;
                 if (move == null) { move = Algorithm.Rnd(game); }
 
@@ -254,9 +253,9 @@ namespace Congo.GUI
                 textBlockAdvice.Text = getMoveView(move);
             }
 
-            lock (adviceLock) { advice = false; Debug.WriteLine("-hi"); Debug.Flush(); }
+            lock (adviceLock) { advice = false; }
 
-            Algorithm.Unblock();
+            Algorithm.Include();
         }
 
         /// <summary>
@@ -364,7 +363,7 @@ namespace Congo.GUI
             adviceWorker = getAdviceWorker();
             adviceWorker.RunWorkerCompleted += hiAdvice_Finalize;
 
-            lock (adviceLock) { advice = true; Debug.WriteLine("+hi"); Debug.Flush(); }
+            lock (adviceLock) { advice = true; }
 
             adviceWorker.RunWorkerAsync(argument: game);
         }
@@ -508,11 +507,13 @@ namespace Congo.GUI
             switch (state) {
 
                 case State.AI:
+                    buttonAdvice.IsEnabled = false;
                     aiAdvice_Init();
                     break;
 
                 case State.FR:
                 case State.TO:
+                    buttonAdvice.IsEnabled = true;
                     break;
 
                 case State.END:
@@ -539,7 +540,9 @@ namespace Congo.GUI
             drawBoard();
             drawPanel();
 
-            buttonMoveGenerator.PerformClick();
+            Dispatcher.BeginInvoke(new Action(() => {
+                buttonMoveGenerator.PerformClick();
+            }));
         }
 
         private void updateGame()
@@ -548,7 +551,9 @@ namespace Congo.GUI
             drawBoard();
             drawPanel();
 
-            buttonMoveGenerator.PerformClick();
+            Dispatcher.BeginInvoke(new Action(() => {
+                buttonMoveGenerator.PerformClick();
+            }));
         }
 
         #region Reset and Exit Game
@@ -556,7 +561,7 @@ namespace Congo.GUI
         private void finalizeAdviceWorker()
         {
             lock (adviceLock) {
-                if (advice) { Algorithm.Block(); }
+                if (advice) { Algorithm.Omit(); }
             }
 
             pauseEvent.Set(); // maybe worker on a break

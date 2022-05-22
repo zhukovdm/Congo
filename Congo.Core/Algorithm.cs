@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Congo.Core
@@ -12,7 +11,7 @@ namespace Congo.Core
     /// </summary>
     public static class Algorithm
     {
-        private enum State { OK, CANCEL, BLOCKED };
+        private enum State { OK, CANCEL, OMIT };
 
         private static volatile State state;
 
@@ -38,17 +37,14 @@ namespace Congo.Core
         public static void Cancel()
             => state = State.CANCEL;
 
-        public static void Block()
-        {
-            Debug.WriteLine("x");
-            state = State.BLOCKED;
-        }
+        public static void Omit()
+            => state = State.OMIT;
 
-        public static void Unblock()
+        public static void Include()
             => state = State.OK;
 
-        public static bool IsBlocked()
-            => state == State.BLOCKED;
+        public static bool IsOmitted()
+            => state == State.OMIT;
 
         private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
@@ -209,9 +205,9 @@ namespace Congo.Core
 
         public static CongoMove Negamax(CongoGame game)
         {
-            if (state == State.BLOCKED) { return null; }
+            if (state == State.OMIT) { return null; }
 
-            if (state != State.BLOCKED) { state = State.OK; }
+            if (state != State.OMIT) { state = State.OK; }
 
             /* negamax recursion bottom assumes game predecessor
              * and non-zero depth at first call */
