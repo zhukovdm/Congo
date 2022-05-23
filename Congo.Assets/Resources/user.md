@@ -1,5 +1,7 @@
 # Users' Guide
 
+Contents
+
 - [Users' Guide](#users-guide)
 - [Definitions](#definitions)
 - [Gameplay](#gameplay)
@@ -9,6 +11,10 @@
 # Definitions
 
 `User name` is any non-empty sequence of alphanumeric chars.
+
+`Congo FEN` id a description of the immediate state of the `Congo` game in
+textual form. `FEN` abbreviation is borrowed from the well-known
+`Forsyth-Edwards Notation` for describing board position in chess.
 
 # Gameplay
 

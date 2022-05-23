@@ -1,4 +1,6 @@
-﻿namespace Congo.Server
+﻿using Congo.Core;
+
+namespace Congo.Server
 {
     class Program
     {

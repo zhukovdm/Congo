@@ -1,6 +1,7 @@
 # Congo API
 
-- [Congo API](#congo-api)
+Contents
+
 - [Congo.Utils](#congoutils)
   - [UserInput.cs](#userinputcs)
 - [Congo.Core](#congocore)
@@ -540,17 +541,71 @@ class Program
 ```txt
 public static class TileExtensions
     private static readonly double tileSize
+    private static readonly double accentBoardThickness
+    private static readonly double standardBoardThickness
     private static readonly ImmutableDictionary<Type, string> type2suffix
+    private static Canvas WithBoard(this Canvas tile, Brush brush, double thickness)
     public static Canvas WithMoveFrBorder(this Canvas tile)
     public static Canvas WithMoveToBorder(this Canvas tile)
     public static Canvas WithStandardBorder(this Canvas tile)
     public static Canvas WithPiece(this Canvas tile, CongoColor color, Type type)
+```
 
-enum State : int { INIT, FR, TO, END }
-
+```txt
 public partial class MainWindow : Window
+    public static readonly double tileSize
+    private static readonly int boardSize
+    private static readonly string whiteColorCode
+    private static readonly string blackColorCode
+    private static readonly string riverColorCode
+    private static readonly string groundColorCode
+    private static readonly string castleColorCode
+    private static readonly ImmutableList<string> moveViews
+    private enum State : int { INIT, AI, FR, TO, END }
+    private int moveFr
+    private State state
+    private CongoGame game
+    private CongoUser white
+    private CongoUser black
+    private BackgroundWorker adviceWorker
+    private readonly ManualResetEventSlim adviceEvent
+    private readonly ManualResetEventSlim pauseEvent
+
+    buttonMenuLocal
+    buttonMenuNetwork
+    buttonMenuSave
+    buttonMenuPause
+    buttonMenuCancel
+    buttonMenuReset
+    buttonMenuExit
+
+    panelCongoBoard
+    panelBlackPlayer
+    borderBlackPlayer
+    panelWhitePlayer
+    borderWhitePlayer
+    buttonAdvice
+    textBlockAdvice
+    listBoxMoves
+    textBlockStatus
+
     private IEnumerable<CongoMove> getMovesFr(int fr)
     private void replaceTile(int idx, Canvas tile)
     private Canvas getEmptyTile(int idx)
+    private Canvas getImageTile(CongoColor color, int idx)
+    private string getMoveView(CongoMove move)
+    private void appendMove(CongoMove move)
     private void tile_Click(object sender, RoutedEventArgs e)
+
+    private void cleanAdvice()
+    private void cleanBoard()
+    private void drawPieces(CongoColor color)
+    private void drawSelect()
+    private void drawBoard()
+    private void drawPanel()
+    private void drawGame()
+    private void finalizeAdviceWorker()
+    private void resetGame()
+    private void exitGame()
+    public MainWindow()
 ```
