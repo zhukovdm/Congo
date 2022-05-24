@@ -3,5 +3,12 @@
 namespace Congo.CLI.MSTest
 {
     [TestClass]
-    public class CommandLineTest { }
+    public class CommandLineTest {
+
+        [TestMethod]
+        public void TestTrue()
+        {
+            Assert.IsTrue(true);
+        }
+    }
 }

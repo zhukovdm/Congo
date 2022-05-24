@@ -6,7 +6,6 @@ namespace Congo.Server
     {
         static void Main(string[] args)
         {
-
         }
     }
 }
