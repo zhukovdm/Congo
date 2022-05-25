@@ -13,7 +13,7 @@ namespace Congo.Core
     {
         private static readonly int size = 7;
 
-        private static readonly CongoBoard empty = new CongoBoard(
+        private static readonly CongoBoard empty = new(
             0, 0, new[] { 0U, 0U, 0U, 0x1111111U, 0U, 0U, 0U }.ToImmutableArray()
         );
 

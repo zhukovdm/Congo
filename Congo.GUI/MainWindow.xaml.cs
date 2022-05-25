@@ -98,6 +98,17 @@ namespace Congo.GUI
             "a1", "b1", "c1", "d1", "e1", "f1", "g1"
         }.ToImmutableList();
 
+        private static string getMoveView(CongoMove move)
+        {
+            if (move == null) { return null; }
+
+            else if (move is MonkeyJump jump) {
+                return "(" + moveViews[jump.Fr] + ", " + moveViews[jump.Bt] + ", " + moveViews[jump.To] + ")";
+            }
+
+            else { return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")"; }
+        }
+
         private enum State : int { INIT, AI, FR, TO, END }
 
         private int moveFr;
@@ -108,7 +119,7 @@ namespace Congo.GUI
         private CongoUser black;
 
         private volatile bool advice = false;
-        private readonly object adviceLock = new object();
+        private readonly object adviceLock = new();
         private BackgroundWorker adviceWorker;
         private readonly ManualResetEventSlim adviceEvent;
         private readonly ManualResetEventSlim pauseEvent;
@@ -139,40 +150,26 @@ namespace Congo.GUI
             }
 
             else {
-                switch (idx % 7) {
-                    case 0:
-                    case 1:
-                    case 5:
-                    case 6:
-                        code = groundColorCode;
-                        break;
-                    default:
-                        code = castleColorCode;
-                        break;
-                }
+                code = (idx % 7) switch
+                {
+                    0 or
+                    1 or
+                    5 or
+                    6 => groundColorCode,
+                    _ => castleColorCode,
+                };
             }
 
             var canvas = new Canvas
             {
                 Width = tileSize,
                 Height = tileSize,
-                Background = (SolidColorBrush)new BrushConverter().ConvertFromString(code)
+                Background = (SolidColorBrush)new BrushConverter().ConvertFromString(code),
+                Tag = idx.ToString()
             };
-            canvas.Tag = idx.ToString();
             canvas.MouseUp += tile_Click;
 
             return canvas;
-        }
-
-        private string getMoveView(CongoMove move)
-        {
-            if (move == null) { return null; }
-
-            else if (move is MonkeyJump jump) {
-                return "(" + moveViews[jump.Fr] + ", " + moveViews[jump.Bt] + ", " + moveViews[jump.To] + ")";
-            }
-
-            else { return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")"; }
         }
 
         private CongoUser getActiveUser()
@@ -181,7 +178,7 @@ namespace Congo.GUI
         private void appendMove(CongoMove move)
         {
             listBoxMoves.Items.Add(getMoveView(move));
-            listBoxMoves.ScrollIntoView(listBoxMoves.Items[listBoxMoves.Items.Count - 1]);
+            listBoxMoves.ScrollIntoView(listBoxMoves.Items[^1]);
         }
 
         private void adviceWorker_DoWork(object sender, DoWorkEventArgs e)

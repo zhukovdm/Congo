@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using System.Windows.Input;
 using Congo.Core;
@@ -37,8 +36,7 @@ namespace Congo.GUI
 
         private void buttonConfirm_Click(object sender, RoutedEventArgs e)
         {
-            if (radioButtonFen.IsChecked == true && CongoFen.FromFen(textBoxFen.Text) == null)
-            {
+            if (radioButtonFen.IsChecked == true && CongoFen.FromFen(textBoxFen.Text) == null) {
                 textBoxFen.BorderBrush = Brushes.Red;
                 return;
             }
@@ -49,20 +47,21 @@ namespace Congo.GUI
                 ? CongoGame.Standard()
                 : CongoFen.FromFen(textBoxFen.Text);
 
-            /* begin of weird piece of code due to C# 7.3 language limitations,
-             * which is true for all .NET Framework projects.*/
+            var white_algo = (radioButtonWhiteNegamax.IsChecked == true)
+                ? Algorithm.Negamax
+                : (AlgorithmDelegate) Algorithm.Rnd;
 
-            var dict = new Dictionary<string, AlgorithmDelegate>
-            {
-                { "negamax", Algorithm.Negamax },
-                { "rnd", Algorithm.Rnd }
-            };
-            var white_algo = radioButtonWhiteNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
-            White = (radioButtonWhiteHi.IsChecked == true) ? new Hi(white_algo) : new Ai(white_algo) as CongoUser;
-            var black_algo = radioButtonBlackNegamax.IsChecked == true ? dict["negamax"] : dict["rnd"];
-            Black = (radioButtonBlackHi.IsChecked == true) ? new Hi(black_algo) : new Ai(black_algo) as CongoUser;
+            White = (radioButtonWhiteHi.IsChecked == true)
+                ? new Hi(white_algo)
+                : new Ai(white_algo);
 
-            // end of weird piece of code
+            var black_algo = (radioButtonBlackNegamax.IsChecked == true)
+                ? Algorithm.Negamax
+                : (AlgorithmDelegate)Algorithm.Rnd;
+
+            Black = (radioButtonBlackHi.IsChecked == true)
+                ? new Hi(black_algo)
+                : new Ai(black_algo);
 
             DialogResult = true;
             Close();
