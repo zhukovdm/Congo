@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-
 using Congo.Core;
 
 namespace Congo.CLI
@@ -12,7 +11,7 @@ namespace Congo.CLI
     /// The class implements terminal-based user interface for both local
     /// and network games.
     /// </summary>
-    public abstract class CongoCommandLine : IDisposable
+    public abstract class CongoCommandLine
     {
         private static readonly string resourcesFolder = "Resources\\";
         private static readonly string textFileExt = ".txt";
@@ -33,8 +32,8 @@ namespace Congo.CLI
 
         private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
             new Dictionary<string, AlgorithmDelegate> {
-                { "rnd",      Algorithm.Rnd      },
-                { "negamax",  Algorithm.Negamax  }
+                { "random",  Algorithm.Random  },
+                { "negamax", Algorithm.Negamax }
             }.ToImmutableDictionary();
 
         private static readonly ImmutableList<string> squareViews =
@@ -80,7 +79,7 @@ namespace Congo.CLI
                 return File.ReadAllText(resourcesFolder + filename + textFileExt);
             } catch (Exception) { return null; }
         }
-        
+
         protected static void ReportAllowedCommands(List<string> allowedCommands)
             => writer.WriteLine($" Allowed commands are {string.Join(", ", allowedCommands.ToArray())}.");
 
@@ -132,22 +131,22 @@ namespace Congo.CLI
         private static void ShowBoard(CongoGame game)
         {
             writer.WriteLine();
-            var upperBound = game.Board.Size * game.Board.Size;
+            var upperBound = CongoBoard.Size * CongoBoard.Size;
 
             for (int square = 0; square < upperBound; square++) {
-                if (square % game.Board.Size == 0) {
-                    writer.Write($" {game.Board.Size - square / game.Board.Size}  ");
+                if (square % CongoBoard.Size == 0) {
+                    writer.Write($" {CongoBoard.Size - square / CongoBoard.Size}  ");
                 }
 
                 var pv = pieceViews[game.Board.GetPiece(square).GetType()];
                 if (game.Board.IsFirstMovePiece(square)) pv = pv.ToUpper();
                 writer.Write(" " + pv);
-                if (square % game.Board.Size == game.Board.Size - 1) writer.WriteLine();
+                if (square % CongoBoard.Size == CongoBoard.Size - 1) writer.WriteLine();
             }
 
             writer.WriteLine();
             writer.Write(" /  ");
-            for (int i = 0; i < game.Board.Size; i++) {
+            for (int i = 0; i < CongoBoard.Size; i++) {
                 writer.Write(" " + ((char)('a' + i)).ToString());
             }
             writer.WriteLine();
@@ -214,37 +213,40 @@ namespace Congo.CLI
 
         private static string[] VerifyAdviseCommand(string[] input)
         {
-            bool predicate(string[] arr) => arr.Length != 1;
+            static bool predicate(string[] arr) => arr.Length != 1;
             return VerifyCommand(predicate, input);
         }
 
         private static string[] VerifyAllowCommand(string[] input)
         {
-            bool predicate(string[] arr) => arr.Length != 1;
+            static bool predicate(string[] arr) => arr.Length != 1;
             return VerifyCommand(predicate, input);
         }
 
         private static string[] VerifyExitCommand(string[] input)
         {
-            bool predicate(string[] arr) => arr.Length != 1;
+            static bool predicate(string[] arr) => arr.Length != 1;
             return VerifyCommand(predicate, input);
         }
 
         private static string[] VerifyHelpCommand(string[] input)
         {
-            bool predicate(string[] arr) => arr.Length != 2 || !supportedCommands.ContainsKey(arr[1]);
+            static bool predicate(string[] arr)
+                => arr.Length != 2 || !supportedCommands.ContainsKey(arr[1]);
             return VerifyCommand(predicate, input);
         }
 
         private static string[] VerifyMoveCommand(string[] input)
         {
-            bool predicate(string[] arr) => arr.Length != 3 || squareViews.IndexOf(arr[1]) < 0 || squareViews.IndexOf(arr[1]) < 0;
+            static bool predicate(string[] arr)
+                => arr.Length != 3 || squareViews.IndexOf(arr[1]) < 0 || squareViews.IndexOf(arr[1]) < 0;
             return VerifyCommand(predicate, input);
         }
 
         private static string[] VerifyShowCommand(string[] input)
         {
-            bool predicate(string[] arr) => arr.Length != 2 || !supportedShows.ContainsKey(arr[1]);
+            static bool predicate(string[] arr)
+                => arr.Length != 2 || !supportedShows.ContainsKey(arr[1]);
             return VerifyCommand(predicate, input);
         }
 
@@ -265,7 +267,7 @@ namespace Congo.CLI
             do {
                 writer.WriteLine();
                 writer.Write(" > ");
-                input = reader.ReadLine().Split(new char[] { ' ', '\t', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                input = reader.ReadLine().Split(new char[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (input.Length > 0 && supportedCommands.ContainsKey(input[0])) {
                     if (allowedCommands.IndexOf(input[0]) >= 0) {
@@ -290,7 +292,7 @@ namespace Congo.CLI
         /// <summary>
         /// Creates local CongoGame out of the provided arguments.
         /// </summary>
-        public static CongoCommandLine CreateLocal(CongoArgs args)
+        private static CongoCommandLine CreateLocal(CongoArgs args)
         {
             var game = args.IsBoardStandard()
                 ? CongoGame.Standard()
@@ -303,9 +305,8 @@ namespace Congo.CLI
 
         /// <summary>
         /// TODO: CongoCommandLine.CreateNetwork()
-        /// Shall implement network connection and try to construct a game.
         /// </summary>
-        public static CongoCommandLine CreateNetwork(CongoArgs args)
+        private static CongoCommandLine CreateNetwork(CongoArgs args)
         {
             throw new NotImplementedException();
         }
@@ -315,11 +316,7 @@ namespace Congo.CLI
         /// by the ArgumentParser.
         /// </summary>
         public static CongoCommandLine Create(CongoArgs args)
-        {
-            return args.IsGameLocal()
-                ? CreateLocal(args)
-                : CreateNetwork(args);
-        }
+            => args.IsGameLocal() ? CreateLocal(args) : CreateNetwork(args);
 
         protected CongoGame game;
         protected CongoArgs args;
@@ -327,9 +324,8 @@ namespace Congo.CLI
         /// <summary>
         /// Correctness of the generated move is ensured by the algorithm.
         /// </summary>
-        /// <returns></returns>
         private CongoMove GetAiValidMove()
-            => supportedAlgorithms[args.GetAdvicingRef(game.ActivePlayer.Color)].Invoke(game);
+            => supportedAlgorithms[args.GetAdvisingRef(game.ActivePlayer.Color)].Invoke(game);
 
         /// <summary>
         /// Generates valid move, all entered invalid moves are ignored.
@@ -345,7 +341,7 @@ namespace Congo.CLI
                 switch (command[0]) {
 
                     case "advise":
-                        move = supportedAlgorithms[args.GetAdvicingRef(game.ActivePlayer.Color)].Invoke(game);
+                        move = supportedAlgorithms[args.GetAdvisingRef(game.ActivePlayer.Color)].Invoke(game);
                         ReportAdvisedMove(move);
                         move = null;
                         break;
@@ -413,12 +409,6 @@ namespace Congo.CLI
         /// position.
         /// </summary>
         public abstract void Step();
-
-        /// <summary>
-        /// Releases allocated resources, such as network socket, database
-        /// connection, etc.
-        /// </summary>
-        public abstract void Dispose();
     }
 
     public class LocalCommandLine : CongoCommandLine
@@ -434,18 +424,11 @@ namespace Congo.CLI
             game = game.Transition(GetValidMove());
             ShowStep();
         }
-
-        public override void Dispose() { }
     }
 
     public class NetworkCommandLine : CongoCommandLine
     {
         public override void Step()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Dispose()
         {
             throw new NotImplementedException();
         }

@@ -7,58 +7,50 @@ namespace Congo.CLI
 {
     public class CongoArgs
     {
-        public static class CongoArgsParser
+        public static class Parser
         {
+            #region Acceptors
+
             private static string[] AcceptLocalPlace(string arg)
-            {
-                return (arg == "local")
+                => (arg == "local")
                     ? new string[] { arg } : null;
-            }
 
             private static string[] AcceptLocalBoard(string arg)
-            {
-                return (arg == "standard") || (CongoFen.FromFen(arg) != null)
+                => (arg == "standard") || (CongoFen.FromFen(arg) != null)
                     ? new string[] { arg } : null;
-            }
 
             private static string[] AcceptNetworkPlace(string arg)
-            {
-                return (arg == "network")
+                => (arg == "network")
                     ? new string[] { arg } : null;
-            }
 
             private static string[] AcceptNetworkBoard(string arg)
-            {
-                return (arg == "standard") || Utils.UserInput.IsBoardIdValid(arg)
+                => (arg == "standard") || (CongoFen.FromFen(arg) != null) || Utils.UserInput.IsBoardIdValid(arg)
                     ? new string[] { arg } : null;
-            }
 
             private static string[] AcceptNetworkHost(string arg)
-            {
-                return Utils.UserInput.IsIpAddressValid(arg)
+                => Utils.UserInput.IsIpAddressValid(arg)
                     ? new string[] { arg } : null;
-            }
 
             private static string[] AcceptNetworkPort(string arg)
-            {
-                return Utils.UserInput.IsPortValid(arg)
+                => Utils.UserInput.IsPortValid(arg)
                     ? new string[] { arg } : null;
-            }
 
             private static string[] AcceptPlayer(string arg)
             {
                 var spl = arg.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
-                return (spl.Length == 2) && Utils.UserInput.IsUserNameValid(spl[0]) && (spl[1] == "rnd" || spl[1] == "negamax")
+                return (spl.Length == 2) && Utils.UserInput.IsUserNameValid(spl[0]) && (spl[1] == "random" || spl[1] == "negamax")
                     ? spl : null;
             }
+
+            #endregion
 
             private static ImmutableDictionary<string, ImmutableArray<string>> TryParse(
                 string[] args, Dictionary<string, Func<string, string[]>> acceptors, int cnt)
             {
                 var result = new Dictionary<string, ImmutableArray<string>>();
 
-                // each option shall appear exactly once
+                // at least count (repeated are not handled here)
                 if (args.Length != cnt) { return null; }
 
                 foreach (var arg in args) {
@@ -89,22 +81,22 @@ namespace Congo.CLI
             public static CongoArgs Parse(string[] args)
             {
                 var localAcceptors = new Dictionary<string, Func<string, string[]>>
-            {
-                { "--place", AcceptLocalPlace },
-                { "--board", AcceptLocalBoard },
-                { "--white", AcceptPlayer },
-                { "--black", AcceptPlayer }
-            };
+                {
+                    { "--place", AcceptLocalPlace },
+                    { "--board", AcceptLocalBoard },
+                    { "--white", AcceptPlayer },
+                    { "--black", AcceptPlayer },
+                };
 
                 var networkAcceptors = new Dictionary<string, Func<string, string[]>>
-            {
-                { "--place", AcceptNetworkPlace },
-                { "--board", AcceptNetworkBoard },
-                { "--white", AcceptPlayer },
-                { "--black", AcceptPlayer },
-                { "--host",  AcceptNetworkHost },
-                { "--port",  AcceptNetworkPort }
-            };
+                {
+                    { "--place", AcceptNetworkPlace },
+                    { "--host",  AcceptNetworkHost  },
+                    { "--port",  AcceptNetworkPort  },
+                    { "--board", AcceptNetworkBoard },
+                    { "--white", AcceptPlayer },
+                    { "--black", AcceptPlayer },
+                };
 
                 ImmutableDictionary<string, ImmutableArray<string>> result = null;
 
@@ -138,15 +130,22 @@ namespace Congo.CLI
         public bool IsGameLocal()
             => parsedArgs["--place"][0] == "local";
 
+        public bool IsGameNetwork()
+            => !IsGameLocal();
+
         public bool IsBoardStandard()
             => parsedArgs["--board"][0] == "standard";
 
-        public string GetBoardArg() => parsedArgs["--board"][0];
+        public string GetBoardArg()
+            => parsedArgs["--board"][0];
 
         public bool IsPlayerAi(CongoColor color)
             => parsedArgs[GetHandle(color)][0] == "ai";
 
-        public string GetAdvicingRef(CongoColor color)
+        public bool IsPlayerHi(CongoColor color)
+            => parsedArgs[GetHandle(color)][0] == "hi";
+
+        public string GetAdvisingRef(CongoColor color)
             => parsedArgs[GetHandle(color)][1];
     }
 }

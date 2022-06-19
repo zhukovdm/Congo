@@ -1,5 +1,5 @@
-﻿using Congo.Core;
-using System;
+﻿using System;
+using Congo.Core;
 
 namespace Congo.CLI
 {
@@ -9,10 +9,8 @@ namespace Congo.CLI
         {
             CongoGame.Initialize();
 
-            CongoCommandLine ui = null;
-
             try {
-                ui = CongoCommandLine.Create(CongoArgs.CongoArgsParser.Parse(args));
+                var ui = CongoCommandLine.Create(CongoArgs.Parser.Parse(args));
                 while (!ui.End()) { ui.Step(); }
                 ui.ReportResult();
             }
@@ -23,10 +21,6 @@ namespace Congo.CLI
 
             catch (Exception ex) {
                 Console.WriteLine("Unhandled exception: " + ex.Message);
-            }
-
-            finally {
-                ui?.Dispose();
             }
         }
     }
