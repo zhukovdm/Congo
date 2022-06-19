@@ -25,7 +25,7 @@ namespace Congo.Utils
             return holder.Length > 0
                 && holder.Length < 4
                 && holder.All(char.IsDigit)
-                && int.TryParse(holder, out var result)
+                && int.TryParse(holder, out var result) // always succeeds
                 && result >= 0
                 && result <= 255;
         }
@@ -33,9 +33,9 @@ namespace Congo.Utils
         /// <summary>
         /// Verifies the input is a valid IPv4 address in "127.0.0.0" format.
         /// </summary>
-        public static bool IsIpAddressValid(string ip)
+        public static bool IsIpAddressValid(string addr)
         {
-            var spl = ip.Split(new char[] { '.' }, System.StringSplitOptions.RemoveEmptyEntries);
+            var spl = addr.Split(new char[] { '.' }, System.StringSplitOptions.RemoveEmptyEntries);
 
             var result = spl.Length == 4;
             foreach (var s in spl) { result &= IsIpAddressHolderValid(s); }
@@ -48,7 +48,8 @@ namespace Congo.Utils
         /// </summary>
         public static bool IsPortValid(string port)
         {
-            return port.Length == 5
+            return port.Length >= 4
+                && port.Length <= 5
                 && port.All(char.IsDigit)
                 && int.TryParse(port, out var result)
                 && result >= 1024
