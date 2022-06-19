@@ -8,11 +8,11 @@ namespace Congo.Core
         /// <summary>
         /// Lexicographic order.
         /// </summary>
-        public static int Compare(CongoMove x, CongoMove y)
+        public static int Compare(CongoMove m1, CongoMove m2)
         {
-            if ((x.Fr < y.Fr) || (x.Fr == y.Fr && x.To < y.To)) { return -1; }
+            if ((m1.Fr < m2.Fr) || (m1.Fr == m2.Fr && m1.To < m2.To)) { return -1; }
 
-            else if (x.Fr == y.Fr && x.To == y.To) { return 0; }
+            else if (m1.Fr == m2.Fr && m1.To == m2.To) { return 0; }
 
             else { return 1; }
         }
@@ -36,7 +36,7 @@ namespace Congo.Core
         public override int GetHashCode() => base.GetHashCode();
 
         /// <summary>
-        /// This method is used only for testing purposes!
+        /// @note This method is used only for testing purposes!
         /// </summary>
         public override string ToString()
             => (Square)Fr + ", " + (Square)To;
@@ -50,7 +50,7 @@ namespace Congo.Core
             : base(fr, to) { Bt = bt; }
 
         /// <summary>
-        /// This method is used only for testing purposes!
+        /// @note This method is used only for testing purposes!
         /// </summary>
         public override string ToString()
             => (Square)Fr + ", " + (Square)Bt + ", " + (Square)To;
@@ -58,12 +58,12 @@ namespace Congo.Core
 
     /// <summary>
     /// This comparer is implemented due to MSTest framework limitations.
-    /// Use it in the tests. Do not use it anywhere else!
+    /// Use it in the tests. Do not use it anywhere else, not type-safe!
     /// </summary>
     public class CongoMoveObjComparer : IComparer
     {
-        public int Compare(object x, object y) // not type-safe!
-            => CongoMove.Compare((CongoMove)x, (CongoMove)y);
+        public int Compare(object m1, object m2)
+            => CongoMove.Compare((CongoMove)m1, (CongoMove)m2);
     }
 
     /// <summary>
@@ -71,7 +71,7 @@ namespace Congo.Core
     /// </summary>
     public class CongoMoveGenComparer : IComparer<CongoMove>
     {
-        public int Compare(CongoMove x, CongoMove y)
-            => CongoMove.Compare(x, y);
+        public int Compare(CongoMove m1, CongoMove m2)
+            => CongoMove.Compare(m1, m2);
     }
 }

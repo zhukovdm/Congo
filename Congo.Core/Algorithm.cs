@@ -19,7 +19,7 @@ namespace Congo.Core
 
         #region Random
 
-        private static readonly Random rnd = new Random();
+        private static readonly Random rnd = new();
 
         /// <summary>
         /// Rnd heuristic picks random move from all available.

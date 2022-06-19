@@ -23,7 +23,7 @@ namespace Congo.Core
     {
         private static readonly int colorFactor = 2;
         private static readonly int pieceFactor = CongoBoard.PieceSample.Length;
-        private static readonly int boardFactor = CongoBoard.Empty.Size * CongoBoard.Empty.Size;
+        private static readonly int boardFactor = CongoBoard.Size * CongoBoard.Size;
         private static readonly int colorSpan = pieceFactor * boardFactor;
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace Congo.Core
         {
             ulong hash = 0;
 
-            for (int square = 0; square < board.Size; ++square) {
+            for (int square = 0; square < CongoBoard.Size; ++square) {
                 var piece = board.GetPiece(square);
                 var color = board.IsWhitePiece(square)
                     ? White.Color

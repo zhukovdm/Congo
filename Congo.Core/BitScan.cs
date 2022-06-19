@@ -5,6 +5,7 @@ namespace Congo.Core
     public static class BitScan
     {
         private static readonly ulong magicNumber = 0x03F79D71B4CB0A89;
+
         private static readonly ImmutableArray<int> magicHash = new int[] {
              0,  1, 48,  2, 57, 49, 28,  3,
             61, 58, 50, 42, 38, 29, 17,  4,
@@ -17,8 +18,8 @@ namespace Congo.Core
         }.ToImmutableArray();
 
         /// <summary>
-        /// Calculates index of the non-zero least significant bit. The word
-        /// shall contain exactly one bit set!
+        /// Calculates index of the non-zero least significant bit.
+        /// @note The word shall contain exactly one bit set to 1!
         /// </summary>
         public static int DeBruijnLsb(ulong word)
             => magicHash[(int)((word * magicNumber) >> 58)];

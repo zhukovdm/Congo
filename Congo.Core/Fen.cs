@@ -38,7 +38,7 @@ namespace Congo.Core
 
         private static MonkeyJump GetFirstMonkeyJump(string input)
         {
-            var upperBound = CongoBoard.Empty.Size * CongoBoard.Empty.Size;
+            var upperBound = CongoBoard.Size * CongoBoard.Size;
 
             if (int.TryParse(input, out int from) && from >= -1 && from < upperBound) {
                 return new MonkeyJump(from, -1, -1);
@@ -83,13 +83,13 @@ namespace Congo.Core
             var board = CongoBoard.Empty;
 
             // parse board rank-by-rank
-            for (int rank = 0; rank < CongoBoard.Empty.Size; ++rank) {
+            for (int rank = 0; rank < CongoBoard.Size; ++rank) {
                 int file = 0;
 
                 for (int i = 0; i < sfen[rank].Length; ++i) {
 
                     // rank overflow
-                    if (file >= board.Size) { return null; }
+                    if (file >= CongoBoard.Size) { return null; }
 
                     // skip empty squares
                     if (sfen[rank][i] >= '1' && sfen[rank][i] <= '7') {
@@ -97,15 +97,15 @@ namespace Congo.Core
                     }
 
                     // white pieces
-                    else if (pieceSignatures.ToUpper().IndexOf(sfen[rank][i]) >= 0) {
+                    else if (pieceSignatures.ToUpper().Contains(sfen[rank][i])) {
                         board = AddPiece(board, White.Color, (char)(sfen[rank][i] - 'A' + 'a'),
-                            rank * board.Size + file, ref file);
+                            rank * CongoBoard.Size + file, ref file);
                     }
 
                     // black pieces
-                    else if (pieceSignatures.ToLower().IndexOf(sfen[rank][i]) >= 0) {
+                    else if (pieceSignatures.ToLower().Contains(sfen[rank][i])) {
                         board = AddPiece(board, Black.Color, sfen[rank][i],
-                            rank * board.Size + file, ref file);
+                            rank * CongoBoard.Size + file, ref file);
                     }
 
                     // unknown signature
@@ -113,7 +113,7 @@ namespace Congo.Core
                 }
 
                 // invalid input
-                if (file != board.Size) { return null; }
+                if (file != CongoBoard.Size) { return null; }
             }
 
             whiteFirstMonkeyJump = activePlayerColor.IsWhite() ? firstMonkeyJump : null;
@@ -145,11 +145,11 @@ namespace Congo.Core
                 { typeof(White),    "w" }, { typeof(Black),     "b" }
             };
 
-            for (int rank = 0; rank < game.Board.Size; ++rank) {
+            for (int rank = 0; rank < CongoBoard.Size; ++rank) {
                 int cnt = 0;
 
-                for (int file = 0; file < game.Board.Size; ++file) {
-                    var square = rank * game.Board.Size + file;
+                for (int file = 0; file < CongoBoard.Size; ++file) {
+                    var square = rank * CongoBoard.Size + file;
                     var piece = game.Board.GetPiece(square);
 
                     // animals

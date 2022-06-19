@@ -34,8 +34,7 @@ namespace Congo.Core
                 // monkey jump -> only monkey moves
                 else {
                     if (piece.IsMonkey()) {
-                        var monkey = (Monkey)piece;
-                        allMoves.AddRange(monkey.ContinueJump(color, board, e.Current));
+                        allMoves.AddRange(Monkey.ContinueJump(color, board, e.Current));
                     }
                 }
             }
@@ -50,7 +49,7 @@ namespace Congo.Core
         public CongoColor Color => color;
 
         public CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
-            => new CongoPlayer(color, board, firstMonkeyJump);
+            => new(color, board, firstMonkeyJump);
 
         public bool LionInDanger(ImmutableArray<CongoMove> opponentMoves)
         {

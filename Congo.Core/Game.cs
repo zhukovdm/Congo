@@ -44,21 +44,21 @@
 
         private static CongoBoard SetMixedRank(CongoBoard board, CongoColor color, int rank)
         {
-            board = board.With(color, Giraffe.Piece,   rank * board.Size + 0)
-                         .With(color, Monkey.Piece,    rank * board.Size + 1)
-                         .With(color, Elephant.Piece,  rank * board.Size + 2)
-                         .With(color, Lion.Piece,      rank * board.Size + 3)
-                         .With(color, Elephant.Piece,  rank * board.Size + 4)
-                         .With(color, Crocodile.Piece, rank * board.Size + 5)
-                         .With(color, Zebra.Piece,     rank * board.Size + 6);
+            board = board.With(color, Giraffe.Piece,   rank * CongoBoard.Size + 0)
+                         .With(color, Monkey.Piece,    rank * CongoBoard.Size + 1)
+                         .With(color, Elephant.Piece,  rank * CongoBoard.Size + 2)
+                         .With(color, Lion.Piece,      rank * CongoBoard.Size + 3)
+                         .With(color, Elephant.Piece,  rank * CongoBoard.Size + 4)
+                         .With(color, Crocodile.Piece, rank * CongoBoard.Size + 5)
+                         .With(color, Zebra.Piece,     rank * CongoBoard.Size + 6);
 
             return board;
         }
 
         private static CongoBoard SetPawnRank(CongoBoard board, CongoColor color, int rank)
         {
-            for (int file = 0; file < board.Size; ++file) {
-                board = board.With(color, Pawn.Piece, rank * board.Size + file);
+            for (int file = 0; file < CongoBoard.Size; ++file) {
+                board = board.With(color, Pawn.Piece, rank * CongoBoard.Size + file);
             }
 
             return board;
@@ -99,7 +99,7 @@
         private bool IsPawnPromotion(CongoMove move)
         {
             return board.GetPiece(move.Fr).IsPawn() &&
-                board.IsUpDownBorder(activePlayer.Color, move.To);
+                CongoBoard.IsUpDownBorder(activePlayer.Color, move.To);
         }
 
         private bool IsFriendlyAnimal(CongoPiece piece, CongoColor color)
@@ -202,10 +202,10 @@
                 /* from now onwards move.To == square */
 
                 // ground-to-river move
-                else if (!newBoard.IsRiver(move.Fr)) { }
+                else if (!CongoBoard.IsRiver(move.Fr)) { }
 
                 // ordinary non-monkey river-to-river move -> drown
-                else if (!piece.IsMonkey() && newBoard.IsRiver(move.Fr)) {
+                else if (!piece.IsMonkey() && CongoBoard.IsRiver(move.Fr)) {
                     newBoard = newBoard.Without(square);
                 }
 
@@ -215,7 +215,7 @@
                 else if (move.Fr == move.To) {
 
                     // started from the river -> drown
-                    if (newBoard.IsRiver(firstMonkeyJump.Fr)) {
+                    if (CongoBoard.IsRiver(firstMonkeyJump.Fr)) {
                         newBoard = newBoard.Without(square);
                     }
                     

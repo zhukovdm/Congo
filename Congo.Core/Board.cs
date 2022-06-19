@@ -304,22 +304,22 @@ namespace Congo.Core
         private uint GetPieceCode(int square)
             => (pieces[square / size] >> (square % size * 4)) & 0xFU;
 
-        public int Size => size;
+        public static int Size => size;
 
-        public bool IsJungle(int rank, int file) => IsJungleImpl(rank, file);
+        public static bool IsJungle(int rank, int file) => IsJungleImpl(rank, file);
 
-        public bool IsJungle(int square) => IsJungleImpl(square);
+        public static bool IsJungle(int square) => IsJungleImpl(square);
 
-        public bool IsAboveRiver(int square) => IsAboveRiverImpl(square);
+        public static bool IsAboveRiver(int square) => IsAboveRiverImpl(square);
 
-        public bool IsRiver(int square) => IsRiverImpl(square);
+        public static bool IsRiver(int square) => IsRiverImpl(square);
 
-        public bool IsBelowRiver(int square) => IsBelowRiverImpl(square);
+        public static bool IsBelowRiver(int square) => IsBelowRiverImpl(square);
 
         /// <summary>
         /// True if the top or bottom side of a position is a board border.
         /// </summary>
-        public bool IsUpDownBorder(CongoColor color, int square)
+        public static bool IsUpDownBorder(CongoColor color, int square)
         {
             return color.IsWhite()
                 ? square >= (int)Square.A7 && square <= (int)Square.G7
@@ -371,28 +371,28 @@ namespace Congo.Core
                 pieces.SetItem(rank, SetPieceCode(pieces[rank], newPiece, square % size)));
         }
 
-        public ImmutableArray<int> LeapsAsKing(int square)
+        public static ImmutableArray<int> LeapsAsKing(int square)
             => kingLeaps[square];
 
-        public ImmutableArray<int> LeapsAsKnight(int square)
+        public static ImmutableArray<int> LeapsAsKnight(int square)
             => knightLeaps[square];
 
-        public ImmutableArray<int> LeapsAsElephant(int square)
+        public static ImmutableArray<int> LeapsAsElephant(int square)
             => elephantLeaps[square];
 
-        public ImmutableArray<int> LeapsAsCapturingGiraffe(int square)
+        public static ImmutableArray<int> LeapsAsCapturingGiraffe(int square)
             => capturingGiraffeLeaps[square];
 
-        public ImmutableArray<int> LeapsAsCrocodile(int square)
+        public static ImmutableArray<int> LeapsAsCrocodile(int square)
             => crocodileLeaps[square];
 
-        public ImmutableArray<int> LeapsAsLion(CongoColor color, int square)
+        public static ImmutableArray<int> LeapsAsLion(CongoColor color, int square)
             => color.IsWhite() ? whiteLionLeaps[square] : blackLionLeaps[square];
 
-        public ImmutableArray<int> LeapsAsPawn(CongoColor color, int square)
+        public static ImmutableArray<int> LeapsAsPawn(CongoColor color, int square)
             => color.IsWhite() ? whitePawnLeaps[square] : blackPawnLeaps[square];
 
-        public ImmutableArray<int> LeapsAsSuperpawn(CongoColor color, int square)
+        public static ImmutableArray<int> LeapsAsSuperpawn(CongoColor color, int square)
             => color.IsWhite() ? whiteSuperpawnLeaps[square] : blackSuperpawnLeaps[square];
 
         /// <summary>
