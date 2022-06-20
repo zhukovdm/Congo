@@ -5,14 +5,7 @@ using System.Collections.Immutable;
 namespace Congo.Core
 {
     /// <summary>
-    /// Simplified Fen format
-    ///  - 7x ranks,
-    ///  - 1x active player color,
-    ///  - 1x first monkey jump from
-    ///     <code>rank/rank/rank/rank/rank/rank/rank/color/jump</code>
-    /// 
-    /// Fen for standard board
-    ///     <code>gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1</code>
+    /// Congo Fen (simplified Chess Fen)
     /// </summary>
     public static class CongoFen
     {
