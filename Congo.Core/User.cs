@@ -3,10 +3,10 @@
     public abstract class CongoUser
     {
         protected AlgorithmDelegate algo;
-        public CongoMove Advice(CongoGame game) => algo.Invoke(game);
+        public CongoMove Advise(CongoGame game) => algo.Invoke(game);
     }
 
-    public class Ai : CongoUser
+    public sealed class Ai : CongoUser
     {
         public Ai(AlgorithmDelegate algo)
         {
@@ -14,7 +14,7 @@
         }
     }
 
-    public class Hi : CongoUser
+    public sealed class Hi : CongoUser
     {
         public Hi(AlgorithmDelegate algo)
         {
