@@ -36,6 +36,11 @@ namespace Congo.Core
 
         public static void Cancel() => state = State.CANCELLED;
 
+        /// <summary>
+        /// @note This method shall be used only in one context, namely reset
+        /// of the current Gui. Disabled algorithm is supposed to be enabled
+        /// again by the advice finalizer.
+        /// </summary>
         public static void Disable() => state = State.DISABLED;
 
         public static void Enable() => state = State.ENABLED;
