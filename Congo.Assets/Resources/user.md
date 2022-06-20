@@ -25,8 +25,8 @@ from the board.
 special behavior towards animal pieces, which is described in the next chapter.
 
 `Castle` is a $3 \times 3$ square at each side of the board, namely
-$\{ \text{C}, \text{D}, \text{E} \} \times \{ 1, 2, 3 \}$ and
-$\{ \text{C}, \text{D}, \text{E} \} \times \{ 5, 6, 7 \}$.
+$\left{ \text{C}, \text{D}, \text{E} \right} \times \left{ 1, 2, 3 \right}$ and
+$\left{ \text{C}, \text{D}, \text{E} \right} \times \left{ 5, 6, 7 \right}$.
 
 `User name` is any non-empty sequence of **alphanumeric** chars.
 
