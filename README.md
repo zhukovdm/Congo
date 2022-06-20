@@ -1,44 +1,24 @@
-The project is currently in progress...
-
 # Congo
 
-This project is a `.NET` implementation of the board game `Congo`.
-
-- [Congo](#congo)
-- [System requirements](#system-requirements)
-- [Installation](#installation)
-- [Documentation](#documentation)
-- [Credits](#credits)
-
-# System requirements
-
-Before installation, ensure that the following technologies are available
-on the target system:
-- `Windows 10`,
-- `.NET Framework 4.8`,
-- `Visual Studio Community 2022`.
-
-# Installation
-
-- Open `Visual Studio Community 2019`.
-- Left click on `Clone a repository` in the upper right corner.
-- Insert `https://github.com/zhukovdm/Congo` into `Repository location` field.
-- Right click on `Clone` in the bottom right corner.
-- `Open` the solution.
-
-![open](./assets/images/install.png)
-
-- Restore NuGet packages.
-
-![open](./assets/images/nugets.png)
-
-- Press `Ctrl+Shift+B` to build entire solution.
-- Press `Ctrl+F5` to start the game.
+The project is a `.NET` implementation of the board game `Congo`.
 
 # Documentation
 
-[Users' Guide](assets/docs/USER.md) and [Programmers' Guide](assets/docs/PROG.md).
+Consult [Users' Guide](Congo.Assets/Resources/user.md) for installation 
+instructions, rules, gameplay and user interface.
+
+See the [Programmers' manual](./prog.md) to learn more about application
+architecture, algorithms and data structures used throughout `Congo` project.
 
 # Credits
 
-TBA
+- [Mindsports/Interesting game/Congo](https://www.mindsports.nl/index.php/side-dishes/interesting-games?start=2)
+- [Wikipedia/Congo (chess variant)](https://en.wikipedia.org/wiki/Congo_(chess_variant))
+- [Chess variants/Congo](https://www.chessvariants.com/ms.dir/congo.html)
+- [Wikipedia/Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess)
+- [Chess Programming Wiki](https://www.chessprogramming.org/)
+- [Computer Chess Programming Theory](http://www.frayn.net/beowulf/theory.html)
+
+Special thanks to Demian Freeling for inventing the game and to
+[Ihardlythinkso](https://commons.wikimedia.org/wiki/User:Ihardlythinkso)
+for drawings published on [Wikipedia](https://en.wikipedia.org/wiki/Congo_(chess_variant)).

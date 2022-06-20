@@ -150,9 +150,37 @@ TBA
 
 TBA
 
+`GUI client` is programmed in `WPF` and
+
+Before installation, ensure that the following technologies are available
+on the target system:
+- `Windows 10`,
+- `dotnet-6.0.300`
+
 ## congo-server
 
 TBA
+
+Server has only terminal-based user interface and having installed
+`dotnet-6.0.300` is enough to run an instance. Therefore, server project
+is platform independent.
+
+## Compile from sources and run
+
+- Open `Visual Studio Community 2022`.
+- Left click on `Clone a repository` in the upper right corner.
+- Insert `https://github.com/zhukovdm/Congo` into `Repository location` field.
+- Right click on `Clone` in the bottom right corner.
+- `Open` the solution.
+
+![open](./Pics/install.png)
+
+- Restore NuGet packages.
+
+![open](./Pics/nugets.png)
+
+- Press `Ctrl+Shift+B` to build entire solution.
+- Press `Ctrl+F5` to start the game.
 
 # Play with CLI
 
@@ -338,5 +366,5 @@ TBA
 
 # References
 
-Check out the [Programmers' manual](./prog.md) to learn more about application
+See the [Programmers' manual](./prog.md) to learn more about application
 architecture, algorithms and data structures used throughout `Congo` project.
