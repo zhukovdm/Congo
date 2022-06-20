@@ -94,11 +94,11 @@
                         </Grid.ColumnDefinitions>
                         <Button
                             Grid.Column="0"
-                            Name="buttonAdvice"
+                            Name="buttonAdvise"
                             FontSize="25"
                             BorderThickness="3"
                             VerticalAlignment="Center"
-                            Click="buttonAdvice_Click">Advice</Button>
+                            Click="buttonAdvise_Click">Advise</Button>
                         <DockPanel Grid.Column="1" Width="10"/>
                         <DockPanel Grid.Column="2" VerticalAlignment="Center">
                             <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="20" TextAlignment="Center" Text=""/>

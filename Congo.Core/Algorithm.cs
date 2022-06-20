@@ -11,20 +11,20 @@ namespace Congo.Core
     /// </summary>
     public static class Algorithm
     {
-        private enum State { OK, CANCEL, OMIT };
+        private enum State { ENABLED, CANCELLED, DISABLED };
 
         private static volatile State state;
 
-        static Algorithm() { state = State.OK; }
+        static Algorithm() { state = State.ENABLED; }
 
         #region Random
 
         private static readonly Random rnd = new();
 
         /// <summary>
-        /// Rnd heuristic picks random move from all available.
+        /// Random heuristic picks random move from all available.
         /// </summary>
-        public static CongoMove Rnd(CongoGame game)
+        public static CongoMove Random(CongoGame game)
         {
             var upperBound = game.ActivePlayer.Moves.Length;
             return game.ActivePlayer.Moves[rnd.Next(upperBound)];
@@ -34,17 +34,13 @@ namespace Congo.Core
 
         #region Negamax
 
-        public static void Cancel()
-            => state = State.CANCEL;
+        public static void Cancel() => state = State.CANCELLED;
 
-        public static void Omit()
-            => state = State.OMIT;
+        public static void Disable() => state = State.DISABLED;
 
-        public static void Include()
-            => state = State.OK;
+        public static void Enable() => state = State.ENABLED;
 
-        public static bool IsOmitted()
-            => state == State.OMIT;
+        public static bool IsDisabled() => state == State.DISABLED;
 
         private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
@@ -72,7 +68,7 @@ namespace Congo.Core
             CongoMove move = null;
             int score = -CongoEvaluator.INF;
 
-            if (state != State.OK) { /* do nothing, cancel or invalidate */ }
+            if (state != State.ENABLED) { /* do nothing, cancel or invalidate */ }
 
             // recursion bottom
             else if (game.HasEnded() || depth <= 0) {
@@ -94,17 +90,17 @@ namespace Congo.Core
                     var newMove = moves[i];
                     var newGame = game.Transition(newMove);
 
-                    /* apply move on _OLD_ board -> get new hash */
+                    // apply move to the __OLD__ board -> get new hash
 
-                    // ordinary move
+                    // ordinary move part
                     ulong newHash = CongoHashTable.ApplyMove(hash, game.Board, newMove);
 
-                    // monkey jump also has piece Between
+                    // monkey jump part
                     if (newMove is MonkeyJump jump) {
                         newHash = CongoHashTable.ApplyBetween(newHash, game.Board, jump);
                     }
 
-                    /* Negamax recursive call */
+                    // negamax recursive call
 
                     /* Speculatively keep alpha-beta interval the same.
                      * Works for multiple monkey jump, when player color does
@@ -122,8 +118,6 @@ namespace Congo.Core
 
                     (_, score) = Max((null, score), NegamaxSingleThread(newHash, newGame,
                         newGame.ActivePlayer.Moves, newAlpha, newBeta, depth - 1));
-
-                    /* evaluate negamax results */
 
                     // fail-hard beta cut-off
                     if (score >= beta) { score = beta; break; }
@@ -158,23 +152,18 @@ namespace Congo.Core
             // avoid flooding the system
             var cpus = Math.Max(Environment.ProcessorCount - 2, 1);
 
-            // adjust number of tasks, >= 1 move per task
+            // ensure >= 1 moves per task
             while (moves.Length / cpus == 0) { --cpus; }
-
-            /* one move -> one thread */
 
             if (cpus == 1) {
                 return NegamaxSingleThread(hash, game, game.ActivePlayer.Moves,
                     -CongoEvaluator.INF, CongoEvaluator.INF, depth);
             }
 
-            /* otherwise, divide moves evenly */
-
-            // current thread plans tasks and process remainder
+            // cpus > 1 , divide moves evenly
             var div = moves.Length / (cpus - 1);
             var rem = moves.Length % (cpus - 1);
 
-            // cpus > 1
             var taskPool = new Task<(CongoMove, int)>[cpus - 1];
 
             int from = 0;
@@ -191,6 +180,7 @@ namespace Congo.Core
                 from += div;
             }
 
+            // remainder is processed by the current thread
             if (rem > 0) {
                 var arr = new CongoMove[rem];
                 moves.CopyTo(from, arr, 0, rem);
@@ -205,16 +195,15 @@ namespace Congo.Core
 
         public static CongoMove Negamax(CongoGame game)
         {
-            if (state == State.OMIT) { return null; }
+            if (state == State.DISABLED) { return null; }
 
-            if (state != State.OMIT) { state = State.OK; }
+            if (state != State.DISABLED) { state = State.ENABLED; }
 
             /* negamax recursion bottom assumes game predecessor
              * and non-zero depth at first call */
 
             if (game.HasEnded() || negamaxDepth <= 0) { return null; }
 
-            // forget previous table if the game is new
             if (game.IsNew() || hT == null) { hT = new CongoHashTable(); }
 
             var hash = CongoHashTable.InitHash(game.Board);

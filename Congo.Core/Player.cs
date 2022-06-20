@@ -48,6 +48,8 @@ namespace Congo.Core
 
         public CongoColor Color => color;
 
+        public bool IsWhite() => color.IsWhite();
+
         public CongoPlayer With(CongoBoard board, MonkeyJump firstMonkeyJump)
             => new(color, board, firstMonkeyJump);
 

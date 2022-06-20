@@ -14,7 +14,7 @@ namespace Congo.GUI
 {
     public static class TileExtensions
     {
-        private static readonly double tileSize = Congo.GUI.MainWindow.tileSize;
+        private static readonly double tileSize = MainWindow.tileSize;
         private static readonly double accentBoardThickness = 5.0;
         private static readonly double standardBoardThickness = 1.0;
 
@@ -79,7 +79,7 @@ namespace Congo.GUI
     public partial class MainWindow : Window
     {
         public static readonly double tileSize = 82.0;
-        private static readonly int boardSize = CongoBoard.Empty.Size * CongoBoard.Empty.Size;
+        private static readonly int boardSize = CongoBoard.Size * CongoBoard.Size;
 
         private static readonly string whiteColorCode = "#914800";
         private static readonly string blackColorCode = "#000000";
@@ -118,9 +118,7 @@ namespace Congo.GUI
         private CongoUser white;
         private CongoUser black;
 
-        private volatile bool advice = false;
-        private readonly object adviceLock = new();
-        private BackgroundWorker adviceWorker;
+        private BackgroundWorker adviceWorker = null;
         private readonly ManualResetEventSlim adviceEvent;
         private readonly ManualResetEventSlim pauseEvent;
 
@@ -173,7 +171,7 @@ namespace Congo.GUI
         }
 
         private CongoUser getActiveUser()
-            => game.ActivePlayer.Color.IsWhite() ? white : black;
+            => game.ActivePlayer.IsWhite() ? white : black;
 
         private void appendMove(CongoMove move)
         {
@@ -192,7 +190,7 @@ namespace Congo.GUI
 
             var g = (CongoGame)e.Argument;
             var user = g.ActivePlayer.Color.IsWhite() ? white : black;
-            e.Result = user.Advice(g);
+            e.Result = user.Advise(g);
 
             adviceEvent.Set();
         }
@@ -214,45 +212,41 @@ namespace Congo.GUI
             adviceWorker = getAdviceWorker();
             adviceWorker.RunWorkerCompleted += aiAdvice_Finalize;
 
-            lock(adviceLock) { advice = true; }
-
             adviceWorker.RunWorkerAsync(argument: game);
         }
 
         private void aiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (!Algorithm.IsOmitted()) {
+            if (!Algorithm.IsDisabled()) {
                 var move = (CongoMove)e.Result;
-                if (move == null) { move = Algorithm.Rnd(game); }
+                if (move == null) { move = Algorithm.Random(game); }
 
                 game = game.Transition(move);
 
-                if (getActiveUser() is Hi) { buttonAdvice.IsEnabled = true; }
+                if (getActiveUser() is Hi) { buttonAdvise.IsEnabled = true; }
 
                 buttonMenuCancel.IsEnabled = false;
                 appendMove(move);
                 updateGame();
             }
 
-            lock (adviceLock) { advice = false; }
-
-            Algorithm.Include();
+            adviceWorker = null;
+            Algorithm.Enable();
         }
 
         private void hiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (!Algorithm.IsOmitted()) {
+            if (!Algorithm.IsDisabled()) {
                 var move = (CongoMove)e.Result;
-                if (move == null) { move = Algorithm.Rnd(game); }
+                if (move == null) { move = Algorithm.Random(game); }
 
-                buttonAdvice.IsEnabled = true;
+                buttonAdvise.IsEnabled = true;
                 buttonMenuCancel.IsEnabled = false;
                 textBlockAdvice.Text = getMoveView(move);
             }
 
-            lock (adviceLock) { advice = false; }
-
-            Algorithm.Include();
+            adviceWorker = null;
+            Algorithm.Enable();
         }
 
         /// <summary>
@@ -349,18 +343,16 @@ namespace Congo.GUI
         private void buttonMenuExit_Click(object sender, RoutedEventArgs e)
             => exitGame();
 
-        private void buttonAdvice_Click(object sender, RoutedEventArgs e)
+        private void buttonAdvise_Click(object sender, RoutedEventArgs e)
         {
             adviceEvent.Wait();
             adviceEvent.Reset(); // ensure mutual exclusion
 
-            buttonAdvice.IsEnabled = false;
+            buttonAdvise.IsEnabled = false;
             buttonMenuCancel.IsEnabled = true;
 
             adviceWorker = getAdviceWorker();
             adviceWorker.RunWorkerCompleted += hiAdvice_Finalize;
-
-            lock (adviceLock) { advice = true; }
 
             adviceWorker.RunWorkerAsync(argument: game);
         }
@@ -429,7 +421,7 @@ namespace Congo.GUI
 
         private void drawPanel()
         {
-            var w = game.ActivePlayer.Color.IsWhite();
+            var w = game.ActivePlayer.IsWhite();
 
             borderWhitePlayer.BorderBrush = w ? Brushes.Red : Brushes.Transparent;
             borderBlackPlayer.BorderBrush = w ? Brushes.Transparent : Brushes.Red;
@@ -447,9 +439,9 @@ namespace Congo.GUI
 
             else if (getActiveUser() is Ai) { state = State.AI; }
 
-            else if (game.FirstMonkeyJump != null) { state = State.TO; buttonAdvice.IsEnabled = true; }
+            else if (game.FirstMonkeyJump != null) { state = State.TO; buttonAdvise.IsEnabled = true; }
 
-            else { state = State.FR; buttonAdvice.IsEnabled = true; }
+            else { state = State.FR; buttonAdvise.IsEnabled = true; }
         }
 
         private void updateState()
@@ -504,17 +496,17 @@ namespace Congo.GUI
             switch (state) {
 
                 case State.AI:
-                    buttonAdvice.IsEnabled = false;
+                    buttonAdvise.IsEnabled = false;
                     aiAdvice_Init();
                     break;
 
                 case State.FR:
                 case State.TO:
-                    buttonAdvice.IsEnabled = true;
+                    buttonAdvise.IsEnabled = true;
                     break;
 
                 case State.END:
-                    buttonAdvice.IsEnabled = false;
+                    buttonAdvise.IsEnabled = false;
                     borderWhitePlayer.BorderBrush = Brushes.Transparent;
                     borderBlackPlayer.BorderBrush = Brushes.Transparent;
 
@@ -558,9 +550,10 @@ namespace Congo.GUI
 
         private void finalizeAdviceWorker()
         {
-            lock (adviceLock) {
-                if (advice) { Algorithm.Omit(); }
-            }
+            /* Algorithm can be disabled __only if__ ongoing advice exist,
+             * and will be re-enabled in the advice finalize procedure.
+             */
+            if (adviceWorker is not null) { Algorithm.Disable(); }
 
             pauseEvent.Set(); // maybe worker on a break
             adviceEvent.Wait();
@@ -572,7 +565,7 @@ namespace Congo.GUI
         /// </summary>
         private void resetGame()
         {
-            /* code entities */
+            /* Code entities */
 
             finalizeAdviceWorker();
 
@@ -600,7 +593,7 @@ namespace Congo.GUI
             // panel
             borderWhitePlayer.BorderBrush = Brushes.Transparent;
             borderBlackPlayer.BorderBrush = Brushes.Transparent;
-            buttonAdvice.IsEnabled = false;
+            buttonAdvise.IsEnabled = false;
             cleanAdvice();
             listBoxMoves.Items.Clear();
             textBlockStatus.Text = "";

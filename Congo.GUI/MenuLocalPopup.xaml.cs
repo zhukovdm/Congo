@@ -49,7 +49,7 @@ namespace Congo.GUI
 
             var white_algo = (radioButtonWhiteNegamax.IsChecked == true)
                 ? Algorithm.Negamax
-                : (AlgorithmDelegate) Algorithm.Rnd;
+                : (AlgorithmDelegate) Algorithm.Random;
 
             White = (radioButtonWhiteHi.IsChecked == true)
                 ? new Hi(white_algo)
@@ -57,7 +57,7 @@ namespace Congo.GUI
 
             var black_algo = (radioButtonBlackNegamax.IsChecked == true)
                 ? Algorithm.Negamax
-                : (AlgorithmDelegate)Algorithm.Rnd;
+                : (AlgorithmDelegate)Algorithm.Random;
 
             Black = (radioButtonBlackHi.IsChecked == true)
                 ? new Hi(black_algo)
