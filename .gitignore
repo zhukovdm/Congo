@@ -5,6 +5,7 @@ bin/
 obj/
 publish/
 *.user
+*/Properties/launchSettings.json
 
 # NuGet packages
 packages/
@@ -23,7 +24,7 @@ TestResults/
 assets/docs/*.pdf
 
 # Doxygen
-Congo.Assets/Resources/doxygen
+Congo.Assets/Resources/Doxygen
 
 # Executables
 *.exe
