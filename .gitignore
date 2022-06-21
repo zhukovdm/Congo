@@ -29,3 +29,6 @@ Congo.Assets/Resources/Doxygen
 # Executables
 *.exe
 *.msi
+
+# Server files
+Congo.Server/Data/
