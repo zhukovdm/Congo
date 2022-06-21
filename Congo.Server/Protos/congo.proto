@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option csharp_namespace = "Congo.Server";
+
+package congo;
+
+service CongoGrpc
+{
+    rpc Assign (AssignRequest) returns (AssignReply);
+    rpc Move (MoveRequest) returns (MoveReply);
+    rpc Get (GetRequest) returns (GetReply);
+}
+
+message AssignRequest
+{
+    string game = 1;
+}
+
+message AssignReply
+{
+    sint64 id = 1;
+}
+
+message MoveRequest
+{
+    sint64 id = 1;
+    int32 fr = 2;
+    int32 to = 3;
+}
+
+message MoveReply
+{
+    string fen = 1;
+}
+
+message GetRequest
+{
+    sint64 id = 1;
+}
+
+message GetReply
+{
+    string fen = 1;
+}
