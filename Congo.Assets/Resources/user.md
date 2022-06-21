@@ -24,8 +24,8 @@ from the board.
 `River` is the middle $4$<sup>th</sup> row of the board. Such squares have
 special behavior towards animal pieces, which is described in the next chapter.
 
-`Castle` is a $3 \times 3$ square at each side of the board, namely
-`{ C, D, E } x { 1, 2, 3, 5, 6, 7 }`.
+`Castle` is a $3 \times 3$ square at each side of the board, namely cartesian
+product $\{ C, D, E \} \times \{ 1, 2, 3, 5, 6, 7 \}$.
 
 `User name` is any non-empty sequence of **alphanumeric** chars.
 
@@ -40,10 +40,10 @@ There are two competing players in the game, black and white. Players alternate
 turns, passing is not possible. Further, we describe the behavior of each piece
 and the aim of a game.
 
-`[L]ion` is the King of the Jungle. It may not leave castle around it. Inside
-castle, it moves and captures as the King in Chess. If there is a vertical
-or diagonal line with no pieces between the two lions, the lion may jump to
-the other lion and capture it.
+`[L]ion` is the King of the Jungle. It may not leave $3 \times 3$ castle around
+it. Inside castle, it moves and captures as the King in Chess. If there is
+a vertical or diagonal line with no pieces between the two lions, the lion may
+jump to the other lion and capture it.
 
 `[Z]ebra` moves as the Knight in classic chess.
 
@@ -181,12 +181,12 @@ is platform independent.
 - Press `Ctrl+Shift+B` to build entire solution.
 - Press `Ctrl+F5` to start the game.
 
-# Play with CLI
+# Commond-line interface
 
 ## Setting up
 
-Options have different sets of allowed values depending on the locality of the
-game. The order of arguments doesn't make any difference.
+Options could have different sets of allowed values depending on the locality
+of the game. The order of arguments doesn't make any difference.
 
 To start **local** game in the terminal, use the following arguments:
 
@@ -365,5 +365,5 @@ TBA
 
 # References
 
-See the [Programmers' manual](./prog.md) to learn more about application
+Consult [Programmers' manual](./prog.md) to learn more about application
 architecture, algorithms and data structures used throughout `Congo` project.

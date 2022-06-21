@@ -4,13 +4,13 @@ The project is a `.NET` implementation of the board game `Congo`.
 
 # Documentation
 
-Consult [Users' Guide](Congo.Assets/Resources/user.md) for installation 
+See [Users' Guide](Congo.Assets/Resources/user.md) for installation 
 instructions, rules, gameplay and user interface.
 
-See the [Programmers' manual](./prog.md) to learn more about application
+Consult [Programmers' manual](./prog.md) to learn more about application
 architecture, algorithms and data structures used throughout `Congo` project.
 
-# Credits
+# References
 
 - [Mindsports/Interesting game/Congo](https://www.mindsports.nl/index.php/side-dishes/interesting-games?start=2)
 - [Wikipedia/Congo (chess variant)](https://en.wikipedia.org/wiki/Congo_(chess_variant))
@@ -18,6 +18,8 @@ architecture, algorithms and data structures used throughout `Congo` project.
 - [Wikipedia/Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess)
 - [Chess Programming Wiki](https://www.chessprogramming.org/)
 - [Computer Chess Programming Theory](http://www.frayn.net/beowulf/theory.html)
+
+# Credits
 
 Special thanks to Demian Freeling for inventing the game and to
 [Ihardlythinkso](https://commons.wikimedia.org/wiki/User:Ihardlythinkso)
