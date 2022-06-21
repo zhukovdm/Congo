@@ -35,6 +35,8 @@ namespace Congo.Utils
         /// </summary>
         public static bool IsIpAddressValid(string addr)
         {
+            if (addr == "localhost") { return true; }
+
             var spl = addr.Split(new char[] { '.' }, System.StringSplitOptions.RemoveEmptyEntries);
 
             var result = spl.Length == 4;
