@@ -67,13 +67,16 @@ internal static class CongoState
         ";
 
     private static string getMaxIdCommandText()
-        => @"SELECT MAX(id) FROM games";
+        => @"SELECT MAX(id) FROM games;";
 
     private static string getInsertFenCommandText()
-        => @"INSERT INTO games (fst, lst) VALUES ($fen, $fen)";
+        => @"INSERT INTO games (fst, lst) VALUES ($fen, $fen);";
 
     private static string getLstFenCommandText()
-        => @"SELECT lst FROM games WHERE id = $id";
+        => @"SELECT lst FROM games WHERE id = $id;";
+
+    private static string setLstFenCommandText()
+        => @"UPDATE games SET lst = $lst WHERE id = $id;";
 
     #endregion
 
@@ -84,6 +87,13 @@ internal static class CongoState
         var csvFile = dataPath + id + ".csv";
         using var sw = File.CreateText(csvFile);
         sw.WriteLine("fr,to,bt");
+    }
+
+    internal static void AppendCsv(long id, string row)
+    {
+        var csvFile = dataPath + id + ".csv";
+        using var sw = File.AppendText(csvFile);
+        sw.WriteLine(row);
     }
 
     #endregion
@@ -123,6 +133,11 @@ internal static class CongoState
     {
         return executeScalarQuery<string>(getLstFenCommandText(), new string[] { "$id" }, new object[] { gameId });
     }
+
+    internal static void SetLstFen(string lst, long gameId)
+    {
+        executeNonQuery(setLstFenCommandText(), new string[] { "$lst", "$id" }, new object[] { lst, gameId });
+    }
 }
 
 public class CongoGrpcService : CongoGrpc.CongoGrpcBase
@@ -148,6 +163,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         if (game is not null) { fen = request.Game; }
 
         var id = -1L;
+
         if (fen is not null) {
             id = CongoState.Create(fen);
             logger.LogInformation("Game {fen} created with id {response}.", fen, id);
@@ -158,7 +174,8 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
 
     /// <summary>
     /// Introduce new move into current game.
-    /// @return New game as Congo FEN string.
+    /// @return New game as Congo FEN string if move is possible.
+    ///     Otherwise empty string.
     /// </summary>
     public override Task<MoveReply> Move(MoveRequest request, ServerCallContext context)
     {
@@ -171,10 +188,12 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
 
                 if (move != null) {
                     fen = CongoFen.ToFen(game.Transition(move));
+                    CongoState.SetLstFen(fen, request.Id);
 
-                    // TODO: update "game" database with latest fen
+                    var bt = "";
+                    if (move is MonkeyJump jump) { bt = jump.Bt.ToString(); }
 
-                    // TODO: update "next" database with new move
+                    CongoState.AppendCsv(request.Id, string.Join(',', new object[] { request.Fr, bt, request.To }));
                 }
             }
         }
@@ -182,6 +201,9 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         return Task.FromResult(new MoveReply { Fen = fen });
     }
 
+    /// <summary>
+    /// Get last Congo FEN by game id.
+    /// </summary>
     public override Task<GetReply> Get(GetRequest request, ServerCallContext context)
     {
         string fen = "";
