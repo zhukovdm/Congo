@@ -9,11 +9,12 @@ public enum Color : int { White, Black }
 
 internal static class CongoState
 {
-    private static long _id = 1;
+    private static long id = 1;
     private static readonly string dataPath = "Data" + Path.DirectorySeparatorChar;
     private static readonly string dbPath = dataPath + "main.db";
     private static readonly string connString = string.Format(@"Data Source={0}", dbPath);
-    private static readonly ConcurrentDictionary<long, object> lockDb;
+
+    public static readonly ConcurrentDictionary<long, object> lockDb;
 
     #region SQL
 
@@ -71,6 +72,9 @@ internal static class CongoState
     private static string getInsertFenCommandText()
         => @"INSERT INTO games (fst, lst) VALUES ($fen, $fen)";
 
+    private static string getLstFenCommandText()
+        => @"SELECT lst FROM games WHERE id = $id";
+
     #endregion
 
     #region CSV
@@ -91,11 +95,11 @@ internal static class CongoState
 
         if (!File.Exists(dbPath)) {
             executeNonQuery(createTableCommandText(), Array.Empty<string>(), Array.Empty<object>());
-            createCsv(_id);
+            createCsv(id);
         }
 
         else {
-            _id = executeScalarQuery<long>(getMaxIdCommandText(), Array.Empty<string>(), Array.Empty<object>());
+            id = executeScalarQuery<long>(getMaxIdCommandText(), Array.Empty<string>(), Array.Empty<object>());
         }
     }
 
@@ -104,15 +108,20 @@ internal static class CongoState
     /// intended to be used by at most one transaction and other could timeout
     /// in between. Better decide new @b id manually.
     /// </summary>
-    public static long Create(string fen)
+    internal static long Create(string fen)
     {
-        var id = Interlocked.Increment(ref _id);
+        var newId = Interlocked.Increment(ref id);
 
         executeNonQuery(getInsertFenCommandText(), new string[] { "$fen" }, new object[] { fen });
-        lockDb[id] = new();
-        createCsv(id);
+        lockDb[newId] = new();
+        createCsv(newId);
 
-        return id;
+        return newId;
+    }
+
+    internal static string GetLstFen(long gameId)
+    {
+        return executeScalarQuery<string>(getLstFenCommandText(), new string[] { "$id" }, new object[] { gameId });
     }
 }
 
@@ -138,7 +147,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         var game = CongoFen.FromFen(request.Game);
         if (game is not null) { fen = request.Game; }
 
-        long id = -1;
+        var id = -1L;
         if (fen is not null) {
             id = CongoState.Create(fen);
             logger.LogInformation("Game {fen} created with id {response}.", fen, id);
@@ -147,13 +156,17 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         return Task.FromResult(new AssignReply { Id = id });
     }
 
+    /// <summary>
+    /// Introduce new move into current game.
+    /// @return New game as Congo FEN string.
+    /// </summary>
     public override Task<MoveReply> Move(MoveRequest request, ServerCallContext context)
     {
         string fen = "";
-        /*
-        if (lockDb.TryGetValue(request.Id, out var l)) {
+
+        if (CongoState.lockDb.TryGetValue(request.Id, out var l)) {
             lock (l) {
-                var game = CongoFen.FromFen(getFenFromDb(request.Id));
+                var game = CongoFen.FromFen(CongoState.GetLstFen(request.Id));
                 var move = game.ActivePlayer.Accept(new CongoMove(request.Fr, request.To));
 
                 if (move != null) {
@@ -165,20 +178,20 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
                 }
             }
         }
-        */
+
         return Task.FromResult(new MoveReply { Fen = fen });
     }
 
     public override Task<GetReply> Get(GetRequest request, ServerCallContext context)
     {
         string fen = "";
-        /*
-        if (lockDb.TryGetValue(request.Id, out var l)) {
-            lock (l) {
 
+        if (CongoState.lockDb.TryGetValue(request.Id, out var l)) {
+            lock (l) {
+                fen = CongoState.GetLstFen(request.Id);
             }
         }
-        */
+
         return Task.FromResult(new GetReply { Fen = fen });
     }
 }
