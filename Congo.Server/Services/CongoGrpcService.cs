@@ -80,20 +80,21 @@ internal static class CongoState
 
     #endregion
 
-    #region CSV
+    #region CSV, CRLF-terminated rows comply with rfc7111
+
+    private static string getCsvFilePath(long id)
+        => dataPath + id + ".csv";
 
     private static void createCsv(long id)
     {
-        var csvFile = dataPath + id + ".csv";
-        using var sw = File.CreateText(csvFile);
-        sw.WriteLine("fr,to,bt");
+        using var sw = File.CreateText(getCsvFilePath(id));
+        sw.Write("fr,to,bt\r\n");
     }
 
     internal static void AppendCsv(long id, string row)
     {
-        var csvFile = dataPath + id + ".csv";
-        using var sw = File.AppendText(csvFile);
-        sw.WriteLine(row);
+        using var sw = File.AppendText(getCsvFilePath(id));
+        sw.Write(row + "\r\n");
     }
 
     #endregion
