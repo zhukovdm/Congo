@@ -5,8 +5,6 @@ using Congo.Core;
 
 namespace Congo.Server.Services;
 
-public enum Color : int { White, Black }
-
 internal static class CongoState
 {
     private static long id = 1;
@@ -88,7 +86,7 @@ internal static class CongoState
     private static void createCsv(long id)
     {
         using var sw = File.CreateText(getCsvFilePath(id));
-        sw.Write("fr,to,bt\r\n");
+        sw.Write("fr,bt,to\r\n");
     }
 
     internal static void AppendCsv(long id, string row)
