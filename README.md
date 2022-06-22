@@ -5,8 +5,8 @@ The project is a `.NET` implementation of the board game `Congo`.
 # Documentation
 
 Read [Installation Guide](Congo.Assets/Resources/install.md) to find out
-how to install the application on different platforms or run it from source
-code.
+how to install the application on different platforms (currently Windows and
+Linux are supported) or build and run it from source code.
 
 See [User Guide](Congo.Assets/Resources/user.md) for rules, gameplay and
 user interface.
@@ -14,6 +14,10 @@ user interface.
 Consult [Programmer Guide](Congo.Assets/Resources/prog.md) to learn more about
 application architecture, algorithms and data structures used throughout `Congo`
 project.
+
+# Unit tests
+
+To run unit tests, execute `dotnet test` from project root folder.
 
 # References
 

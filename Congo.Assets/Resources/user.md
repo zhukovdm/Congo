@@ -1,4 +1,4 @@
-# Users' Guide
+# User Guide
 
 The purpose of this document is to describe rules, gameplay and user interface
 of the board game `Congo`.

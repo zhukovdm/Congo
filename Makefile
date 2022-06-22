@@ -8,5 +8,8 @@ all:
 docs:
 	doxygen
 
+tests:
+	dotnet test
+
 clean:
 	rm -rf $(DOXY_DIR)
