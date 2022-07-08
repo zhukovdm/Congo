@@ -6,19 +6,20 @@ package congo;
 
 service CongoGrpc
 {
-    rpc PostFen (PostFenRequest) returns (PostFenReply);
+    rpc PostBoard (PostBoardRequest) returns (PostBoardReply);
     rpc PostMove (PostMoveRequest) returns (PostMoveReply);
     rpc GetLastFen (GetLastFenRequest) returns (GetLastFenReply);
+    rpc CheckGameId (CheckGameIdRequest) returns (CheckGameIdReply);
     rpc GetDbMovesAll (GetDbMovesAllRequest) returns (GetDbMovesReply);
     rpc GetDbMovesFrom (GetDbMovesFromRequest) returns (GetDbMovesReply);
 }
 
-message PostFenRequest
+message PostBoardRequest
 {
-    string fen = 1;
+    string board = 1;
 }
 
-message PostFenReply
+message PostBoardReply
 {
     sint64 gameId = 1;
 }
@@ -43,6 +44,16 @@ message GetLastFenRequest
 message GetLastFenReply
 {
     string fen = 1;
+}
+
+message CheckGameIdRequest
+{
+    sint64 gameId = 1;
+}
+
+message CheckGameIdReply
+{
+    bool exist = 1;
 }
 
 message DbMove
