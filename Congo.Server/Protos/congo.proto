@@ -6,39 +6,63 @@ package congo;
 
 service CongoGrpc
 {
-    rpc Assign (AssignRequest) returns (AssignReply);
-    rpc Move (MoveRequest) returns (MoveReply);
-    rpc Get (GetRequest) returns (GetReply);
+    rpc PostFen (PostFenRequest) returns (PostFenReply);
+    rpc PostMove (PostMoveRequest) returns (PostMoveReply);
+    rpc GetLastFen (GetLastFenRequest) returns (GetLastFenReply);
+    rpc GetDbMovesAll (GetDbMovesAllRequest) returns (GetDbMovesReply);
+    rpc GetDbMovesFrom (GetDbMovesFromRequest) returns (GetDbMovesReply);
 }
 
-message AssignRequest
-{
-    string game = 1;
-}
-
-message AssignReply
-{
-    sint64 id = 1;
-}
-
-message MoveRequest
-{
-    sint64 id = 1;
-    int32 fr = 2;
-    int32 to = 3;
-}
-
-message MoveReply
+message PostFenRequest
 {
     string fen = 1;
 }
 
-message GetRequest
+message PostFenReply
 {
-    sint64 id = 1;
+    sint64 gameId = 1;
 }
 
-message GetReply
+message PostMoveRequest
+{
+    sint64 gameId = 1;
+    sint32 fr = 2;
+    sint32 to = 3;
+}
+
+message PostMoveReply
+{
+    sint64 moveId = 1;
+}
+
+message GetLastFenRequest
+{
+    sint64 gameId = 1;
+}
+
+message GetLastFenReply
 {
     string fen = 1;
+}
+
+message DbMove
+{
+    sint32 fr = 1;
+    sint32 to = 2;
+}
+
+message GetDbMovesFromRequest
+{
+    sint64 gameId = 1;
+    sint32 from = 2;
+}
+
+message GetDbMovesAllRequest
+{
+    sint64 gameId = 1;
+}
+
+message GetDbMovesReply
+{
+    repeated DbMove moves = 1;
 }

@@ -7,18 +7,18 @@ namespace Congo.Server.Services;
 
 internal static class CongoState
 {
-    private static long id = 1;
+    private static long id = 0;
     private static readonly string dataPath = "Data" + Path.DirectorySeparatorChar;
-    private static readonly string dbPath = dataPath + "main.db";
-    private static readonly string connString = string.Format(@"Data Source={0}", dbPath);
+    private static readonly string mainDbPath = dataPath + "main.db";
+    private static readonly string mainDbDataSource = string.Format(@"Data Source={0}", mainDbPath);
 
     public static readonly ConcurrentDictionary<long, object> lockDb;
 
     #region SQL
 
-    private static void executeNonQuery(string commandText, string[] pars, object[] objs)
+    private static void executeNonQuery(string dataSource, string commandText, string[] pars, object[] objs)
     {
-        using var conn = new SqliteConnection(connString);
+        using var conn = new SqliteConnection(dataSource);
         conn.Open();
         using var command = conn.CreateCommand();
         command.CommandText = commandText;
@@ -31,9 +31,9 @@ internal static class CongoState
         conn.Close();
     }
 
-    private static T executeScalarQuery<T>(string commandText, string[] pars, object[] objs)
+    private static object executeScalarQuery(string dataSource, string commandText, string[] pars, object[] objs)
     {
-        using var conn = new SqliteConnection(connString);
+        using var conn = new SqliteConnection(dataSource);
         conn.Open();
         using var command = conn.CreateCommand();
         command.CommandText = commandText;
@@ -45,97 +45,144 @@ internal static class CongoState
         var result = command.ExecuteScalar();
         conn.Close();
 
-        return (T)result;
+        return result;
     }
 
+    #region games commands
+
     /// <summary>
-    /// Create database and ensure at least one row. Avoid edge cases with empty db.
+    /// Create database with @b games table and ensure at least one row.
+    /// Avoid edge cases with empty db.
     /// </summary>
-    private static string createTableCommandText()
-        => @"
-            CREATE TABLE IF NOT EXISTS games(
-                [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    private static string commandTextCreateGamesTable()
+        => @"CREATE TABLE IF NOT EXISTS games(
+                [gameId] INTEGER NOT NULL PRIMARY KEY,
                 [fst] NVARCHAR(100) NOT NULL,
                 [lst] NVARCHAR(100) NOT NULL
             );
-            INSERT INTO games (fst, lst) VALUES (
+            INSERT INTO games (gameId, fst, lst) VALUES
+            (
+                0,
                 'gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1',
                 'gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1'
             );
         ";
 
-    private static string getMaxIdCommandText()
-        => @"SELECT MAX(id) FROM games;";
+    private static string commandTextGetMaxGameId()
+        => @"SELECT MAX(gameId) FROM games;";
 
-    private static string getInsertFenCommandText()
-        => @"INSERT INTO games (fst, lst) VALUES ($fen, $fen);";
+    private static string commandTextPostFen()
+        => @"INSERT INTO games (gameId, fst, lst) VALUES ($gameId, $fen, $fen);";
 
-    private static string getLstFenCommandText()
-        => @"SELECT lst FROM games WHERE id = $id;";
+    private static string commandTextGetLastFen()
+        => @"SELECT lst FROM games WHERE gameId = $gameId;";
 
-    private static string setLstFenCommandText()
-        => @"UPDATE games SET lst = $lst WHERE id = $id;";
+    private static string commandTextSetLastFen()
+        => @"UPDATE games SET lst = $lst WHERE gameId = $gameId;";
+
+    #endregion
+
+    #region moves commands
+
+    private static string commandTextCreateMovesTable()
+        =>  @"CREATE TABLE IF NOT EXISTS moves(
+                [moveId] INTEGER NOT NULL PRIMARY KEY,
+                [fr] INTEGER NOT NULL,
+                [to] INTEGER NOT NULL
+            );
+        ";
+
+    private static string commandTextGetMaxMoveId()
+        => @"SELECT MAX(moveId) FROM moves;";
+
+    private static string commandTextAppendMove()
+        => @"INSERT INTO moves (moveId, fr, to) VALUES ($moveId, $fr, $to);";
+
+    private static string commandTextGetMovesFrom()
+        => @"SELECT moveId, fr, to FROM moves WHERE moveId > $moveId ORDER BY moveId ASC;";
 
     #endregion
 
-    #region CSV, CRLF-terminated rows comply with rfc7111
-
-    private static string getCsvFilePath(long id)
-        => dataPath + id + ".csv";
-
-    private static void createCsv(long id)
-    {
-        using var sw = File.CreateText(getCsvFilePath(id));
-        sw.Write("fr,bt,to\r\n");
-    }
-
-    internal static void AppendCsv(long id, string row)
-    {
-        using var sw = File.AppendText(getCsvFilePath(id));
-        sw.Write(row + "\r\n");
-    }
-
     #endregion
+
+    private static string getGameDbDataSource(long gameId)
+        => string.Format(@"Data Source={0}", dataPath + gameId + ".db");
 
     static CongoState()
     {
         lockDb = new();
         if (!Directory.Exists(dataPath)) { Directory.CreateDirectory(dataPath); }
 
-        if (!File.Exists(dbPath)) {
-            executeNonQuery(createTableCommandText(), Array.Empty<string>(), Array.Empty<object>());
-            createCsv(id);
+        if (!File.Exists(mainDbPath)) {
+            executeNonQuery(mainDbDataSource, commandTextCreateGamesTable(), Array.Empty<string>(), Array.Empty<object>());
+            executeNonQuery(getGameDbDataSource(id), commandTextCreateMovesTable(), Array.Empty<string>(), Array.Empty<object>());
         }
 
         else {
-            id = executeScalarQuery<long>(getMaxIdCommandText(), Array.Empty<string>(), Array.Empty<object>());
+            id = (long) executeScalarQuery(mainDbDataSource, commandTextGetMaxGameId(), Array.Empty<string>(), Array.Empty<object>());
         }
     }
 
     /// <summary>
+    /// Create new game record in the database for a @b valid Fen.
     /// @note This method does not use transactions, because SQLite buffer is
     /// intended to be used by at most one transaction and other could timeout
-    /// in between. Better decide new @b id manually.
+    /// in between. Better to decide new @b id manually.
     /// </summary>
     internal static long Create(string fen)
     {
         var newId = Interlocked.Increment(ref id);
 
-        executeNonQuery(getInsertFenCommandText(), new string[] { "$fen" }, new object[] { fen });
         lockDb[newId] = new();
-        createCsv(newId);
+        executeNonQuery(mainDbDataSource, commandTextPostFen(), new string[] { "$gameId", "$fen" }, new object[] { newId, fen });
+        executeNonQuery(getGameDbDataSource(newId), commandTextCreateMovesTable(), Array.Empty<string>(), Array.Empty<object>());
 
         return newId;
     }
 
-    internal static string GetLstFen(long gameId)
+    /// <summary>
+    /// Get latest Fen assoc. with @b gameId.
+    /// @note @b gameId shall exist!
+    /// </summary>
+    internal static string GetLastFen(long gameId)
+        => (string)executeScalarQuery(mainDbDataSource, commandTextGetLastFen(), new string[] { "$gameId" }, new object[] { gameId });
+
+    /// <summary>
+    /// Set the latest Fen assoc. with @b gameId.
+    /// @note @b gameId shall exist!
+    /// </summary>
+    internal static void SetLastFen(long gameId, string lst)
+        => executeNonQuery(mainDbDataSource, commandTextSetLastFen(), new string[] { "$gameId", "$lst" }, new object[] { gameId, lst });
+
+    internal static long AppendMove(long gameId, CongoMove move)
     {
-        return executeScalarQuery<string>(getLstFenCommandText(), new string[] { "$id" }, new object[] { gameId });
+        var source = getGameDbDataSource(gameId);
+        var result = executeScalarQuery(source, commandTextGetMaxMoveId(), Array.Empty<string>(), Array.Empty<object>());
+        var nextId = (result is not null) ? (long)result + 1 : 0;
+        executeNonQuery(source, commandTextAppendMove(), new string[] { "$moveId", "$fr", "$to" }, new object[] { nextId, move.Fr, move.To });
+
+        return nextId;
     }
 
-    internal static void SetLstFen(string lst, long gameId)
+    internal static List<DbMove> GetDbMovesFrom(long gameId, int from)
     {
-        executeNonQuery(setLstFenCommandText(), new string[] { "$lst", "$id" }, new object[] { lst, gameId });
+        var moves = new List<DbMove>();
+
+        using var conn = new SqliteConnection(getGameDbDataSource(gameId));
+        conn.Open();
+        using var command = conn.CreateCommand();
+        command.CommandText = commandTextGetMovesFrom();
+        command.Parameters.AddWithValue("$moveId", from);
+
+        var result = command.ExecuteReader();
+
+        while (result.Read()) {
+            var fr = result.GetInt32(1);
+            var to = result.GetInt32(2);
+            moves.Add(new DbMove() { Fr = result.GetInt32(1), To = result.GetInt32(2) });
+        }
+
+        return moves;
     }
 }
 
@@ -152,23 +199,23 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// Create new record with @b request.Game in the database.
     /// @return Assigned game identifier or -1 on failure.
     /// </summary>
-    public override Task<AssignReply> Assign(AssignRequest request, ServerCallContext context)
+    public override Task<PostFenReply> PostFen(PostFenRequest request, ServerCallContext context)
     {
         string fen = null;
 
-        if (request.Game == "standard") { fen = CongoFen.ToFen(CongoGame.Standard()); }
+        if (request.Fen == "standard") { fen = CongoFen.ToFen(CongoGame.Standard()); }
 
-        var game = CongoFen.FromFen(request.Game);
-        if (game is not null) { fen = request.Game; }
+        var game = CongoFen.FromFen(request.Fen);
+        if (game is not null) { fen = request.Fen; }
 
-        var id = -1L;
+        long gameId = -1;
 
         if (fen is not null) {
-            id = CongoState.Create(fen);
-            logger.LogInformation("Game {fen} created with id {response}.", fen, id);
+            gameId = CongoState.Create(fen);
+            logger.LogInformation("Game {fen} created with gameId {response}.", fen, gameId);
         }
 
-        return Task.FromResult(new AssignReply { Id = id });
+        return Task.FromResult(new PostFenReply { GameId = gameId });
     }
 
     /// <summary>
@@ -176,43 +223,58 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// @return New game as Congo FEN string if move is possible.
     ///     Otherwise empty string.
     /// </summary>
-    public override Task<MoveReply> Move(MoveRequest request, ServerCallContext context)
+    public override Task<PostMoveReply> PostMove(PostMoveRequest request, ServerCallContext context)
     {
-        string fen = "";
+        long moveId = -1;
 
-        if (CongoState.lockDb.TryGetValue(request.Id, out var l)) {
+        if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
             lock (l) {
-                var game = CongoFen.FromFen(CongoState.GetLstFen(request.Id));
+                var game = CongoFen.FromFen(CongoState.GetLastFen(request.GameId));
                 var move = game.ActivePlayer.Accept(new CongoMove(request.Fr, request.To));
 
                 if (move != null) {
-                    fen = CongoFen.ToFen(game.Transition(move));
-                    CongoState.SetLstFen(fen, request.Id);
-
-                    var bt = "";
-                    if (move is MonkeyJump jump) { bt = jump.Bt.ToString(); }
-
-                    CongoState.AppendCsv(request.Id, string.Join(',', new object[] { request.Fr, bt, request.To }));
+                    var fen = CongoFen.ToFen(game.Transition(move));
+                    CongoState.SetLastFen(request.GameId, fen);
+                    moveId = CongoState.AppendMove(request.GameId, move);
                 }
             }
         }
 
-        return Task.FromResult(new MoveReply { Fen = fen });
+        return Task.FromResult(new PostMoveReply { MoveId = moveId });
     }
 
     /// <summary>
     /// Get last Congo FEN by game id.
     /// </summary>
-    public override Task<GetReply> Get(GetRequest request, ServerCallContext context)
+    public override Task<GetLastFenReply> GetLastFen(GetLastFenRequest request, ServerCallContext context)
     {
         string fen = "";
 
-        if (CongoState.lockDb.TryGetValue(request.Id, out var l)) {
+        if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
             lock (l) {
-                fen = CongoState.GetLstFen(request.Id);
+                fen = CongoState.GetLastFen(request.GameId);
             }
         }
 
-        return Task.FromResult(new GetReply { Fen = fen });
+        return Task.FromResult(new GetLastFenReply { Fen = fen });
     }
+
+    private static Task<GetDbMovesReply> getDbMovesFromImpl(long gameId, int from)
+    {
+        var reply = new GetDbMovesReply();
+
+        if (CongoState.lockDb.TryGetValue(gameId, out var l)) {
+            lock (l) {
+                reply.Moves.AddRange(CongoState.GetDbMovesFrom(gameId, from));
+            }
+        }
+
+        return Task.FromResult(reply);
+    }
+
+    public override Task<GetDbMovesReply> GetDbMovesFrom(GetDbMovesFromRequest request, ServerCallContext context)
+        => getDbMovesFromImpl(request.GameId, request.From);
+
+    public override Task<GetDbMovesReply> GetDbMovesAll(GetDbMovesAllRequest request, ServerCallContext context)
+        => getDbMovesFromImpl(request.GameId, -1);
 }
