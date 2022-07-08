@@ -134,17 +134,19 @@
         public CongoPlayer BlackPlayer => blackPlayer;
 
         public CongoPlayer ActivePlayer
-            => activePlayer.Color.IsWhite() ? whitePlayer : blackPlayer;
+            => activePlayer.IsWhite() ? whitePlayer : blackPlayer;
 
         public CongoPlayer Opponent
-            => activePlayer.Color.IsWhite() ? blackPlayer : whitePlayer;
+            => activePlayer.IsWhite() ? blackPlayer : whitePlayer;
 
         public CongoMove FirstMonkeyJump => firstMonkeyJump;
 
         /// <summary>
         /// Generates new game based on current board, players, current player
-        /// and a given move. <b>Move must be proven valid</b>. Malformed
-        /// moves are not checked and method call has an undefined behavior.
+        /// and a given move. <b>Move must be retrieved from the set of active
+        /// player moves due to monkey jumps!</b> Malformed and manually
+        /// constructed moves are not checked ~> method call has an undefined
+        /// behavior.
         /// </summary>
         public CongoGame Transition(CongoMove move)
         {

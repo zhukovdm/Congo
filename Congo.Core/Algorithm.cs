@@ -22,7 +22,7 @@ namespace Congo.Core
         private static readonly Random rnd = new();
 
         /// <summary>
-        /// Random heuristic picks random move from all available.
+        /// Picks any available move at random.
         /// </summary>
         public static CongoMove Random(CongoGame game)
         {
@@ -37,9 +37,9 @@ namespace Congo.Core
         public static void Cancel() => state = State.CANCELLED;
 
         /// <summary>
-        /// @note This method shall be used only in one context, namely reset
-        /// of the current Gui. Disabled algorithm is supposed to be enabled
-        /// again by the advice finalizer.
+        /// @note This method shall be used only in one situation, namely
+        /// reset of the current Gui. Disabled algorithm is supposed to be
+        /// enabled again by the advice finalizer.
         /// </summary>
         public static void Disable() => state = State.DISABLED;
 
@@ -67,7 +67,7 @@ namespace Congo.Core
         /// best score and returning best move. Constructs, such as (null, score),
         /// (_, score) and (move, _), are less transparent, but essential.
         /// </summary>
-        private static (CongoMove, int) NegamaxSingleThread(ulong hash, CongoGame game,
+        private static (CongoMove, int) negamaxSingleThread(ulong hash, CongoGame game,
             ImmutableArray<CongoMove> moves, int alpha, int beta, int depth)
         {
             CongoMove move = null;
@@ -77,7 +77,7 @@ namespace Congo.Core
 
             // recursion bottom
             else if (game.HasEnded() || depth <= 0) {
-                score = game.Predecessor.ActivePlayer.Color.IsWhite()
+                score = game.Predecessor.ActivePlayer.IsWhite()
                     ? CongoEvaluator.Default(game)
                     : -CongoEvaluator.Default(game);
 
@@ -111,7 +111,7 @@ namespace Congo.Core
                      * Works for multiple monkey jump, when player color does
                      * not change. */
                     var newAlpha = alpha;
-                    var newBeta  = beta;
+                    var newBeta = beta;
 
                     /* Ordinary move is detected (opposite to multiple monkey 
                      * jump), because active player changes the color -> set
@@ -121,7 +121,7 @@ namespace Congo.Core
                         newBeta = -alpha;
                     }
 
-                    (_, score) = Max((null, score), NegamaxSingleThread(newHash, newGame,
+                    (_, score) = Max((null, score), negamaxSingleThread(newHash, newGame,
                         newGame.ActivePlayer.Moves, newAlpha, newBeta, depth - 1));
 
                     // fail-hard beta cut-off
@@ -149,7 +149,7 @@ namespace Congo.Core
         /// segment of possible moves and schedule it. Do/undo is not necessary
         /// due to the game immutability.
         /// </summary>
-        private static (CongoMove, int) NegamaxMultiThread(ulong hash, CongoGame game, int depth)
+        private static (CongoMove, int) negamaxMultiThread(ulong hash, CongoGame game, int depth)
         {
             var moves = game.ActivePlayer.Moves;
             (CongoMove, int) result = (null, -CongoEvaluator.INF);
@@ -161,7 +161,7 @@ namespace Congo.Core
             while (moves.Length / cpus == 0) { --cpus; }
 
             if (cpus == 1) {
-                return NegamaxSingleThread(hash, game, game.ActivePlayer.Moves,
+                return negamaxSingleThread(hash, game, game.ActivePlayer.Moves,
                     -CongoEvaluator.INF, CongoEvaluator.INF, depth);
             }
 
@@ -178,10 +178,10 @@ namespace Congo.Core
                 moves.CopyTo(from, arr, 0, div);
 
                 taskPool[i] = Task.Run(() => {
-                    return NegamaxSingleThread(hash, game, arr.ToImmutableArray(),
+                    return negamaxSingleThread(hash, game, arr.ToImmutableArray(),
                         -CongoEvaluator.INF, CongoEvaluator.INF, depth);
                 });
-                
+
                 from += div;
             }
 
@@ -189,7 +189,7 @@ namespace Congo.Core
             if (rem > 0) {
                 var arr = new CongoMove[rem];
                 moves.CopyTo(from, arr, 0, rem);
-                result = NegamaxSingleThread(hash, game, arr.ToImmutableArray(),
+                result = negamaxSingleThread(hash, game, arr.ToImmutableArray(),
                     -CongoEvaluator.INF, CongoEvaluator.INF, depth);
             }
 
@@ -213,7 +213,7 @@ namespace Congo.Core
 
             var hash = CongoHashTable.InitHash(game.Board);
 
-            var (move, _) = NegamaxMultiThread(hash, game, negamaxDepth);
+            var (move, _) = negamaxMultiThread(hash, game, negamaxDepth);
 
             return move;
         }
