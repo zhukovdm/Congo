@@ -221,14 +221,12 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// Create new record with @b request.Game in the database.
     /// @return Assigned game identifier or -1 on failure.
     /// </summary>
-    public override Task<PostFenReply> PostFen(PostFenRequest request, ServerCallContext context)
+    public override Task<PostBoardReply> PostBoard(PostBoardRequest request, ServerCallContext context)
     {
         string fen = null;
 
-        if (request.Fen == "standard") { fen = CongoFen.ToFen(CongoGame.Standard()); }
-
-        var game = CongoFen.FromFen(request.Fen);
-        if (game is not null) { fen = request.Fen; }
+        if (request.Board == "standard") { fen = CongoFen.ToFen(CongoGame.Standard()); }
+        if (CongoFen.FromFen(request.Board) is not null) { fen = request.Board; }
 
         long gameId = -1;
 
@@ -237,7 +235,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
             logger.LogInformation("Game {fen} created with gameId {response}.", fen, gameId);
         }
 
-        return Task.FromResult(new PostFenReply { GameId = gameId });
+        return Task.FromResult(new PostBoardReply { GameId = gameId });
     }
 
     /// <summary>
@@ -280,6 +278,9 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
 
         return Task.FromResult(new GetLastFenReply { Fen = fen });
     }
+
+    public override Task<CheckGameIdReply> CheckGameId(CheckGameIdRequest request, ServerCallContext context)
+        => Task.FromResult(new CheckGameIdReply { Exist = CongoState.lockDb.TryGetValue(request.GameId, out _) });
 
     private static Task<GetDbMovesReply> getDbMovesFromImpl(long gameId, int from)
     {
