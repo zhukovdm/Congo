@@ -1,4 +1,5 @@
 ﻿using System;
+using Grpc.Core;
 using Congo.Core;
 
 namespace Congo.CLI
@@ -16,6 +17,10 @@ namespace Congo.CLI
             }
 
             catch (ArgumentException ex) {
+                Console.WriteLine(ex.Message);
+            }
+
+            catch (RpcException ex) {
                 Console.WriteLine(ex.Message);
             }
 

@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using Grpc.Core;
+using Grpc.Net.Client;
+using Congo.Server;
 using Congo.Core;
 
 namespace Congo.CLI
@@ -22,18 +26,12 @@ namespace Congo.CLI
 
         private static readonly ImmutableDictionary<string, VerifyCommandDelegate> supportedCommands =
             new Dictionary<string, VerifyCommandDelegate>() {
-                { "advise", VerifyAdviseCommand },
-                { "allow",  VerifyAllowCommand  },
-                { "exit",   VerifyExitCommand   },
-                { "help",   VerifyHelpCommand   },
-                { "move",   VerifyMoveCommand   },
-                { "show",   VerifyShowCommand   }
-            }.ToImmutableDictionary();
-
-        private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
-            new Dictionary<string, AlgorithmDelegate> {
-                { "random",  Algorithm.Random  },
-                { "negamax", Algorithm.Negamax }
+                { "advise", verifyAdviseCommand },
+                { "allow",  verifyAllowCommand  },
+                { "exit",   verifyExitCommand   },
+                { "help",   verifyHelpCommand   },
+                { "move",   verifyMoveCommand   },
+                { "show",   verifyShowCommand   }
             }.ToImmutableDictionary();
 
         private static readonly ImmutableList<string> squareViews =
@@ -66,8 +64,8 @@ namespace Congo.CLI
 
         private static readonly ImmutableDictionary<string, ShowDelegate> supportedShows =
             new Dictionary<string, ShowDelegate> {
-                { "board", ShowBoard }, { "players", ShowPlayers },
-                { "moves", ShowMoves }, { "game",    ShowGame    }
+                { "board", showBoard }, { "players", showPlayers },
+                { "moves", showMoves }, { "game",    showGame    }
             }.ToImmutableDictionary();
 
         private static string GetMoveView(CongoMove move)
@@ -107,9 +105,9 @@ namespace Congo.CLI
         }
 
         /// <summary>
-        /// Counts pieces by each kind separately.
+        /// Counts pieces of all kinds by a color.
         /// </summary>
-        private static int[] CountPieces(CongoBoard board, CongoColor color)
+        private static int[] countPieces(CongoBoard board, CongoColor color)
         {
             var counter = new int[pieceTypes.Count];
             var enumerator = board.GetEnumerator(color);
@@ -122,13 +120,19 @@ namespace Congo.CLI
             return counter;
         }
 
-        private static void ShowTransition(CongoGame game)
+        private static void showTransition(CongoGame game)
         {
             writer.WriteLine();
             writer.WriteLine($" transition { GetMoveView(game.TransitionMove) }");
         }
 
-        private static void ShowBoard(CongoGame game)
+        protected static void showNetworkGameId(long gameId)
+        {
+            writer.WriteLine();
+            writer.WriteLine($" Network gameId {gameId}");
+        }
+
+        protected static void showBoard(CongoGame game)
         {
             writer.WriteLine();
             var upperBound = CongoBoard.Size * CongoBoard.Size;
@@ -152,11 +156,11 @@ namespace Congo.CLI
             writer.WriteLine();
         }
 
-        private static void ShowPlayer(CongoBoard board, CongoColor color, CongoPlayer activePlayer)
+        private static void showPlayer(CongoBoard board, CongoColor color, CongoPlayer activePlayer)
         {
             var activeRepr = color == activePlayer.Color ? "*" : " ";
             var colorRepr  = color.IsWhite() ? "white" : "black";
-            var counter    = CountPieces(board, color);
+            var counter    = countPieces(board, color);
 
             writer.Write($" {activeRepr} {colorRepr}");
             for (int i = 2; i < pieceTypes.Count; i++) {
@@ -168,14 +172,14 @@ namespace Congo.CLI
             writer.WriteLine();
         }
 
-        private static void ShowPlayers(CongoGame game)
+        protected static void showPlayers(CongoGame game)
         {
             writer.WriteLine();
-            ShowPlayer(game.Board, White.Color, game.ActivePlayer);
-            ShowPlayer(game.Board, Black.Color, game.ActivePlayer);
+            showPlayer(game.Board, White.Color, game.ActivePlayer);
+            showPlayer(game.Board, Black.Color, game.ActivePlayer);
         }
 
-        private static void ShowMoves(CongoGame game)
+        private static void showMoves(CongoGame game)
         {
             writer.WriteLine();
             int cnt = 0;
@@ -191,17 +195,17 @@ namespace Congo.CLI
             writer.WriteLine();
         }
 
-        private static void ShowGame(CongoGame game)
+        private static void showGame(CongoGame game)
         {
-            ShowBoard(game);
-            ShowPlayers(game);
-            ShowMoves(game);
+            showBoard(game);
+            showPlayers(game);
+            showMoves(game);
         }
 
         /// <summary>
         /// Predicate applied on the input shall detect a malformed command.
         /// </summary>
-        private static string[] VerifyCommand(Func<string[], bool> predicate, string[] input)
+        private static string[] verifyCommand(Func<string[], bool> predicate, string[] input)
         {
             if (predicate(input)) {
                 ReportWrongCommandFormat(input[0]);
@@ -211,46 +215,46 @@ namespace Congo.CLI
             return input;
         }
 
-        private static string[] VerifyAdviseCommand(string[] input)
+        private static string[] verifyAdviseCommand(string[] input)
         {
             static bool predicate(string[] arr) => arr.Length != 1;
-            return VerifyCommand(predicate, input);
+            return verifyCommand(predicate, input);
         }
 
-        private static string[] VerifyAllowCommand(string[] input)
+        private static string[] verifyAllowCommand(string[] input)
         {
             static bool predicate(string[] arr) => arr.Length != 1;
-            return VerifyCommand(predicate, input);
+            return verifyCommand(predicate, input);
         }
 
-        private static string[] VerifyExitCommand(string[] input)
+        private static string[] verifyExitCommand(string[] input)
         {
             static bool predicate(string[] arr) => arr.Length != 1;
-            return VerifyCommand(predicate, input);
+            return verifyCommand(predicate, input);
         }
 
-        private static string[] VerifyHelpCommand(string[] input)
+        private static string[] verifyHelpCommand(string[] input)
         {
             static bool predicate(string[] arr)
                 => arr.Length != 2 || !supportedCommands.ContainsKey(arr[1]);
-            return VerifyCommand(predicate, input);
+            return verifyCommand(predicate, input);
         }
 
-        private static string[] VerifyMoveCommand(string[] input)
+        private static string[] verifyMoveCommand(string[] input)
         {
             static bool predicate(string[] arr)
                 => arr.Length != 3 || squareViews.IndexOf(arr[1]) < 0 || squareViews.IndexOf(arr[1]) < 0;
-            return VerifyCommand(predicate, input);
+            return verifyCommand(predicate, input);
         }
 
-        private static string[] VerifyShowCommand(string[] input)
+        private static string[] verifyShowCommand(string[] input)
         {
             static bool predicate(string[] arr)
                 => arr.Length != 2 || !supportedShows.ContainsKey(arr[1]);
-            return VerifyCommand(predicate, input);
+            return verifyCommand(predicate, input);
         }
 
-        private static void Greet()
+        protected static void greet()
         {
             writer.WriteLine();
             writer.Write(ReadTextFile("greet"));
@@ -297,18 +301,43 @@ namespace Congo.CLI
             var game = args.IsBoardStandard()
                 ? CongoGame.Standard()
                 : CongoFen.FromFen(args.GetBoardArg());
-            Greet();
-            ShowBoard(game);
-            ShowPlayers(game);
             return new LocalCommandLine(game, args);
         }
 
         /// <summary>
-        /// TODO: CongoCommandLine.CreateNetwork()
+        /// Creates network CongoGame out of the provided arguments.
         /// </summary>
         private static CongoCommandLine CreateNetwork(CongoArgs args)
         {
-            throw new NotImplementedException();
+            // currently, ssl certificate is not supported!
+            var httpHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            var channel = GrpcChannel.ForAddress(
+                "https://" + args.GetHost() + ":" + args.GetPort(),
+                new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new CongoGrpc.CongoGrpcClient(channel);
+
+            long gameId = -1;
+            var board = args.GetBoardArg();
+
+            // assign identifier to the unknown game
+            if (args.IsBoardStandard() || args.IsBoardValidCongoFen()) {
+                gameId = client.PostBoard(new PostBoardRequest() { Board = board }).GameId;
+            }
+
+            if (args.IsBoardValidNetId()) {
+                gameId = long.Parse(board);
+                
+                if (!client.CheckGameId(new CheckGameIdRequest() { GameId = gameId }).Exist) {
+                    throw new RpcException(new Status(StatusCode.NotFound, "GameId does not exist."));
+                }
+            }
+
+            return new NetworkCommandLine(channel, client, args, gameId);
         }
 
         /// <summary>
@@ -320,12 +349,31 @@ namespace Congo.CLI
 
         protected CongoGame game;
         protected CongoArgs args;
+        protected CongoUser whiteUser, blackUser;
+
+        protected CongoUser activeUser
+        {
+            get => game.ActivePlayer.IsWhite() ? whiteUser : blackUser;
+        }
+
+        protected CongoUser createLocalUser(CongoColor color)
+        {
+            var algo = args.GetAdvisingDelegate(color);
+            return args.IsPlayerAi(color) ? new Ai(algo) : new Hi(algo);
+        }
+
+        protected CongoUser createMaybeNetworkUser(CongoColor color)
+        {
+            return (args.GetLocalPlayerColor() == color)
+                ? createLocalUser(color)
+                : new Net(args.GetRandomAdvisingDelegate());
+        }
 
         /// <summary>
         /// Correctness of the generated move is ensured by the algorithm.
         /// </summary>
-        private CongoMove GetAiValidMove()
-            => supportedAlgorithms[args.GetAdvisingRef(game.ActivePlayer.Color)].Invoke(game);
+        private CongoMove getAiValidMove()
+            => activeUser.Advise(game);
 
         /// <summary>
         /// Generates valid move, all entered invalid moves are ignored.
@@ -341,7 +389,7 @@ namespace Congo.CLI
                 switch (command[0]) {
 
                     case "advise":
-                        move = supportedAlgorithms[args.GetAdvisingRef(game.ActivePlayer.Color)].Invoke(game);
+                        move = activeUser.Advise(game);
                         ReportAdvisedMove(move);
                         move = null;
                         break;
@@ -383,13 +431,13 @@ namespace Congo.CLI
         /// <summary>
         /// Generates valid move based on the player kind (either Ai or Hi).
         /// </summary>
-        protected CongoMove GetValidMove()
-            => args.IsPlayerAi(game.ActivePlayer.Color) ? GetAiValidMove() : GetHiValidMove();
+        protected CongoMove getValidMove()
+            => (activeUser is Ai) ? getAiValidMove() : GetHiValidMove();
 
         protected void ShowStep()
         {
-            ShowTransition(game);
-            ShowBoard(game);
+            showTransition(game);
+            showBoard(game);
         }
 
         public void ReportResult()
@@ -417,20 +465,70 @@ namespace Congo.CLI
         {
             this.game = game;
             this.args = args;
+
+            whiteUser = createLocalUser(White.Color);
+            blackUser = createLocalUser(Black.Color);
+
+            greet();
+            showBoard(game);
+            showPlayers(game);
         }
 
         public override void Step()
         {
-            game = game.Transition(GetValidMove());
+            game = game.Transition(getValidMove());
             ShowStep();
         }
     }
 
     public class NetworkCommandLine : CongoCommandLine
     {
+        private readonly GrpcChannel channel;
+        private readonly CongoGrpc.CongoGrpcClient client;
+        private readonly long gameId;
+        private long moveId = -1;
+
+        private CongoGame getNetworkMove()
+        {
+            int cnt = 0;
+
+            do {
+                break;
+            } while (true);
+
+            return game;
+        }
+
+        public NetworkCommandLine(GrpcChannel channel, CongoGrpc.CongoGrpcClient client, CongoArgs args, long gameId)
+        {
+            this.channel = channel;
+            this.client = client;
+            this.gameId = gameId;
+
+            whiteUser = createMaybeNetworkUser(White.Color);
+            blackUser = createMaybeNetworkUser(Black.Color);
+
+            game = CongoFen.FromFen(client.GetLastFen(new GetLastFenRequest() { GameId = gameId }).Fen);
+
+            greet();
+            showNetworkGameId(gameId);
+            showBoard(game);
+            showPlayers(game);
+        }
+
         public override void Step()
         {
-            throw new NotImplementedException();
+            if (activeUser is not Net) {
+                var move = getValidMove();
+                game = game.Transition(move);
+                moveId = client.PostMove(new PostMoveRequest() { GameId = gameId, Fr = move.Fr, To = move.To }).MoveId;
+            }
+
+            // TODO: continue here!
+
+            else {
+                game = getNetworkMove();
+            }
         }
     }
 }
