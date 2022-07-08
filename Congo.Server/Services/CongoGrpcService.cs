@@ -12,7 +12,7 @@ internal static class CongoState
     private static readonly string mainDbPath = dataPath + "main.db";
     private static readonly string mainDbDataSource = string.Format(@"Data Source={0}", mainDbPath);
 
-    public static readonly ConcurrentDictionary<long, object> lockDb;
+    internal static readonly ConcurrentDictionary<long, object> lockDb;
 
     #region SQL
 
@@ -57,10 +57,10 @@ internal static class CongoState
     private static string commandTextCreateGamesTable()
         => @"CREATE TABLE IF NOT EXISTS games(
                 [gameId] INTEGER NOT NULL PRIMARY KEY,
-                [fst] NVARCHAR(100) NOT NULL,
-                [lst] NVARCHAR(100) NOT NULL
+                [firstFen] NVARCHAR(100) NOT NULL,
+                [lastFen] NVARCHAR(100) NOT NULL
             );
-            INSERT INTO games (gameId, fst, lst) VALUES
+            INSERT INTO games (gameId, firstFen, lastFen) VALUES
             (
                 0,
                 'gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1',
@@ -72,13 +72,16 @@ internal static class CongoState
         => @"SELECT MAX(gameId) FROM games;";
 
     private static string commandTextPostFen()
-        => @"INSERT INTO games (gameId, fst, lst) VALUES ($gameId, $fen, $fen);";
+        => @"INSERT INTO games (gameId, firstFen, lastFen) VALUES ($gameId, $fen, $fen);";
 
     private static string commandTextGetLastFen()
-        => @"SELECT lst FROM games WHERE gameId = $gameId;";
+        => @"SELECT lastFen FROM games WHERE gameId = $gameId;";
 
     private static string commandTextSetLastFen()
-        => @"UPDATE games SET lst = $lst WHERE gameId = $gameId;";
+        => @"UPDATE games SET lastFen = $lastFen WHERE gameId = $gameId;";
+
+    private static string commandtextGetGameIdentifiers()
+        => @"SELECT gameId FROM games ORDER BY gameId ASC;";
 
     #endregion
 
@@ -87,8 +90,8 @@ internal static class CongoState
     private static string commandTextCreateMovesTable()
         =>  @"CREATE TABLE IF NOT EXISTS moves(
                 [moveId] INTEGER NOT NULL PRIMARY KEY,
-                [fr] INTEGER NOT NULL,
-                [to] INTEGER NOT NULL
+                [fromSquare] INTEGER NOT NULL,
+                [toSquare] INTEGER NOT NULL
             );
         ";
 
@@ -96,10 +99,10 @@ internal static class CongoState
         => @"SELECT MAX(moveId) FROM moves;";
 
     private static string commandTextAppendMove()
-        => @"INSERT INTO moves (moveId, fr, to) VALUES ($moveId, $fr, $to);";
+        => @"INSERT INTO moves (moveId, fromSquare, toSquare) VALUES ($moveId, $fromSquare, $toSquare);";
 
     private static string commandTextGetMovesFrom()
-        => @"SELECT moveId, fr, to FROM moves WHERE moveId > $moveId ORDER BY moveId ASC;";
+        => @"SELECT moveId, fromSquare, toSquare FROM moves WHERE moveId > $moveId ORDER BY moveId ASC;";
 
     #endregion
 
@@ -108,19 +111,38 @@ internal static class CongoState
     private static string getGameDbDataSource(long gameId)
         => string.Format(@"Data Source={0}", dataPath + gameId + ".db");
 
+    private static void addLocks()
+    {
+        using var conn = new SqliteConnection(mainDbDataSource);
+        conn.Open();
+        using var command = conn.CreateCommand();
+        command.CommandText = commandtextGetGameIdentifiers();
+
+        var result = command.ExecuteReader();
+
+        while (result.Read()) {
+            lockDb[result.GetInt32(0)] = new();
+        }
+    }
+
     static CongoState()
     {
         lockDb = new();
-        if (!Directory.Exists(dataPath)) { Directory.CreateDirectory(dataPath); }
+
+        if (!Directory.Exists(dataPath)) {
+            Directory.CreateDirectory(dataPath);
+        }
 
         if (!File.Exists(mainDbPath)) {
             executeNonQuery(mainDbDataSource, commandTextCreateGamesTable(), Array.Empty<string>(), Array.Empty<object>());
-            executeNonQuery(getGameDbDataSource(id), commandTextCreateMovesTable(), Array.Empty<string>(), Array.Empty<object>());
         }
 
-        else {
-            id = (long) executeScalarQuery(mainDbDataSource, commandTextGetMaxGameId(), Array.Empty<string>(), Array.Empty<object>());
+        if (!File.Exists(dataPath + "0" + ".db")) {
+            executeNonQuery(getGameDbDataSource(0), commandTextCreateMovesTable(), Array.Empty<string>(), Array.Empty<object>());
         }
+
+        addLocks();
+        id = (long)executeScalarQuery(mainDbDataSource, commandTextGetMaxGameId(), Array.Empty<string>(), Array.Empty<object>());
     }
 
     /// <summary>
@@ -152,14 +174,14 @@ internal static class CongoState
     /// @note @b gameId shall exist!
     /// </summary>
     internal static void SetLastFen(long gameId, string lst)
-        => executeNonQuery(mainDbDataSource, commandTextSetLastFen(), new string[] { "$gameId", "$lst" }, new object[] { gameId, lst });
+        => executeNonQuery(mainDbDataSource, commandTextSetLastFen(), new string[] { "$gameId", "$lastFen" }, new object[] { gameId, lst });
 
     internal static long AppendMove(long gameId, CongoMove move)
     {
         var source = getGameDbDataSource(gameId);
         var result = executeScalarQuery(source, commandTextGetMaxMoveId(), Array.Empty<string>(), Array.Empty<object>());
-        var nextId = (result is not null) ? (long)result + 1 : 0;
-        executeNonQuery(source, commandTextAppendMove(), new string[] { "$moveId", "$fr", "$to" }, new object[] { nextId, move.Fr, move.To });
+        var nextId = (result != DBNull.Value) ? (long)result + 1 : 0;
+        executeNonQuery(source, commandTextAppendMove(), new string[] { "$moveId", "$fromSquare", "$toSquare" }, new object[] { nextId, move.Fr, move.To });
 
         return nextId;
     }
