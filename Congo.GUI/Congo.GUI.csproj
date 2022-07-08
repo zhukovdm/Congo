@@ -43,8 +43,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\Congo.Server\Protos\greet.proto" GrpcServices="Client">
-      <Link>Protos\greet.proto</Link>
+    <Protobuf Include="..\Congo.Server\Protos\congo.proto" GrpcServices="Client">
+      <Link>Protos\congo.proto</Link>
     </Protobuf>
   </ItemGroup>
 
