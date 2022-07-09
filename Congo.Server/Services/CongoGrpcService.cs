@@ -74,6 +74,9 @@ internal static class CongoState
     private static string commandTextPostFen()
         => @"INSERT INTO games (gameId, firstFen, lastFen) VALUES ($gameId, $fen, $fen);";
 
+    private static string commandTextGetFirstFen()
+        => @"SELECT firstFen FROM games WHERE gameId = $gameId;";
+
     private static string commandTextGetLastFen()
         => @"SELECT lastFen FROM games WHERE gameId = $gameId;";
 
@@ -163,6 +166,13 @@ internal static class CongoState
     }
 
     /// <summary>
+    /// Get first Fen assoc. with @b gameId.
+    /// @note @b gameId shall exist!
+    /// </summary>
+    internal static string GetFirstFen(long gameId)
+        => (string)executeScalarQuery(mainDbDataSource, commandTextGetFirstFen(), new string[] { "$gameId" }, new object[] { gameId });
+
+    /// <summary>
     /// Get latest Fen assoc. with @b gameId.
     /// @note @b gameId shall exist!
     /// </summary>
@@ -186,7 +196,7 @@ internal static class CongoState
         return nextId;
     }
 
-    internal static List<DbMove> GetDbMovesFrom(long gameId, int from)
+    internal static List<DbMove> GetDbMovesFrom(long gameId, long from)
     {
         var moves = new List<DbMove>();
 
@@ -264,7 +274,23 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     }
 
     /// <summary>
-    /// Get last Congo FEN by game id.
+    /// Get first available Congo FEN for a certain gameId.
+    /// </summary>
+    public override Task<GetFirstFenReply> GetFirstFen(GetFirstFenRequest request, ServerCallContext context)
+    {
+        string fen = "";
+
+        if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
+            lock (l) {
+                fen = CongoState.GetFirstFen(request.GameId);
+            }
+        }
+
+        return Task.FromResult(new GetFirstFenReply { Fen = fen });
+    }
+
+    /// <summary>
+    /// Get last available Congo FEN for a certain gameId.
     /// </summary>
     public override Task<GetLastFenReply> GetLastFen(GetLastFenRequest request, ServerCallContext context)
     {
@@ -282,7 +308,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     public override Task<CheckGameIdReply> CheckGameId(CheckGameIdRequest request, ServerCallContext context)
         => Task.FromResult(new CheckGameIdReply { Exist = CongoState.lockDb.TryGetValue(request.GameId, out _) });
 
-    private static Task<GetDbMovesReply> getDbMovesFromImpl(long gameId, int from)
+    private static Task<GetDbMovesReply> getDbMovesFromImpl(long gameId, long from)
     {
         var reply = new GetDbMovesReply();
 

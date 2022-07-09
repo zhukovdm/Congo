@@ -8,6 +8,7 @@ service CongoGrpc
 {
     rpc PostBoard (PostBoardRequest) returns (PostBoardReply);
     rpc PostMove (PostMoveRequest) returns (PostMoveReply);
+    rpc GetFirstFen (GetFirstFenRequest) returns (GetFirstFenReply);
     rpc GetLastFen (GetLastFenRequest) returns (GetLastFenReply);
     rpc CheckGameId (CheckGameIdRequest) returns (CheckGameIdReply);
     rpc GetDbMovesAll (GetDbMovesAllRequest) returns (GetDbMovesReply);
@@ -34,6 +35,16 @@ message PostMoveRequest
 message PostMoveReply
 {
     sint64 moveId = 1;
+}
+
+message GetFirstFenRequest
+{
+    sint64 gameId = 1;
+}
+
+message GetFirstFenReply
+{
+    string fen = 1;
 }
 
 message GetLastFenRequest
@@ -65,7 +76,7 @@ message DbMove
 message GetDbMovesFromRequest
 {
     sint64 gameId = 1;
-    sint32 from = 2;
+    sint64 from = 2;
 }
 
 message GetDbMovesAllRequest
