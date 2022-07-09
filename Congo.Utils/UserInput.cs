@@ -8,6 +8,8 @@ namespace Congo.Utils
     /// </summary>
     public static class UserInput
     {
+        private static readonly string zero = "0";
+
         /// <summary>
         /// Verifies user name contains only alphanumeric chars, [A-Za-z0-9]+
         /// </summary>
@@ -25,7 +27,7 @@ namespace Congo.Utils
         {
             return holder.Length > 0
                 && holder.Length < 4
-                && !holder.StartsWith('0')
+                && (holder == zero || !holder.StartsWith('0'))
                 && holder.All(char.IsDigit)
                 && int.TryParse(holder, out var result) // always succeeds
                 && result >= 0
