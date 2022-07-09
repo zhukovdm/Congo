@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Grpc.Net.Client;
 using Congo.Core;
+using Congo.Server;
+using Congo.Utils;
 
 namespace Congo.GUI
 {
@@ -25,51 +29,7 @@ namespace Congo.GUI
             EventManager.RegisterClassHandler(typeof(TextBox), GotKeyboardFocusEvent, new KeyboardFocusChangedEventHandler(OnGotKeyboardFocus));
         }
 
-        private void ButtonConfirm_Click(object sender, RoutedEventArgs e)
-        {
-            var msgBoxTitle = "Wrong input";
-
-            var boxes = new List<TextBox> {
-                textBoxUserName, textBoxIp1, textBoxIp2, textBoxIp3, textBoxIp4, textBoxPort
-            };
-
-            foreach (var b in boxes) {
-                if (b.Text == string.Empty) {
-                    var text = "Please, fill in all options.";
-                    MessageBox.Show(text, msgBoxTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-            }
-
-            string spec = "";
-
-            if (!Utils.UserInput.IsUserNameValid(textBoxUserName.Text)) {
-                spec += "User name " + textBoxUserName.Text + " is invalid." + System.Environment.NewLine;
-            }
-
-            var ips = new List<string> {
-                textBoxIp1.Text, textBoxIp2.Text, textBoxIp3.Text, textBoxIp4.Text
-            };
-
-            for (int i = 0; i < ips.Count; i++) {
-                if (!Utils.UserInput.IsIpAddressHolderValid(ips[i])) {
-                    spec += "IP address holder " + (i + 1) + ": " + ips[i] + " is invalid." + System.Environment.NewLine;
-                }
-            }
-
-            if (!Utils.UserInput.IsPortValid(textBoxPort.Text)) {
-                spec += "Port address " + textBoxPort.Text + " is invalid." + System.Environment.NewLine;
-            }
-
-            if (spec != string.Empty) {
-                MessageBox.Show(spec, msgBoxTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            // TODO: socket & network connection
-        }
-
-        private void TextBox_LostKeyboardFocus(object sender, RoutedEventArgs e)
+        private void textBox_LostKeyboardFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox textBox) {
                 textBox.BorderBrush = (textBox.Text == string.Empty)
@@ -78,16 +38,121 @@ namespace Congo.GUI
             }
         }
 
-        private void Esc_PushButton(object sender, KeyEventArgs e)
+        private void esc_PushButton(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape) { Close(); }
+        }
+
+        private void radioButtonFen_Checked(object sender, RoutedEventArgs e)
+        {
+            textBoxFen.Visibility = Visibility.Visible;
+            textBoxFen.Focus();
+        }
+
+        private void radioButtonFen_Unchecked(object sender, RoutedEventArgs e)
+        {
+            textBoxFen.Visibility = Visibility.Hidden;
+        }
+
+        private void radioButtonId_Checked(object sender, RoutedEventArgs e)
+        {
+            textBoxId.Visibility = Visibility.Visible;
+            textBoxId.Focus();
+        }
+
+        private void radioButtonId_Unchecked(object sender, RoutedEventArgs e)
+        {
+            textBoxId.Visibility = Visibility.Hidden;
+        }
+
+        private void buttonConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            string error;
+            var errorBuf = new StringWriter();
+
+            #region check user input
+
+            if (radioButtonFen.IsChecked == true && CongoFen.FromFen(textBoxFen.Text) == null) {
+                errorBuf.WriteLine("Fen is selected, but valid CongoFen string is not provided.");
+            }
+
+            if (radioButtonId.IsChecked == true && !UserInput.IsBoardIdValid(textBoxId.Text)) {
+                errorBuf.WriteLine("Id is selected, but valid gameId is not provided.");
+            }
+
+            if (!UserInput.IsIpAddressValid(textBoxHost.Text)) {
+                errorBuf.WriteLine("Entered host address is invalid.");
+            }
+
+            if (!UserInput.IsPortValid(textBoxPort.Text)) {
+                errorBuf.WriteLine("Entered port is invalid.");
+            }
+
+            error = errorBuf.ToString();
+
+            if (error != string.Empty) {
+                MessageBox.Show(error, "Wrong input", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            #endregion
+
+            #region create network primitives
+
+            GrpcChannel channel = null;
+            CongoGrpc.CongoGrpcClient client = null;
+
+            // no exceptions could arise while creating channel and client
+            if (errorBuf.ToString() == string.Empty) {
+                channel = NetworkPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text);
+                client = new CongoGrpc.CongoGrpcClient(channel);
+            }
+
+            #endregion
+
+            #region check game
+
+            long gameId = -1;
+
+            try {
+
+                if (radioButtonStandard.IsChecked == true) {
+                    gameId = client.PostBoard(new PostBoardRequest() { Board = CongoFen.ToFen(CongoGame.Standard()) }).GameId;
+                }
+
+                if (radioButtonFen.IsChecked == true) {
+                    gameId = client.PostBoard(new PostBoardRequest() { Board = textBoxFen.Text }).GameId;
+                }
+            } catch (Exception) {
+                errorBuf.WriteLine("New board cannot be posted on the server.");
+            }
+
+            if (radioButtonId.IsChecked == true) {
+                gameId = long.Parse(textBoxId.Text);
+            }
+
+            try {
+                if (!client.CheckGameId(new CheckGameIdRequest() { GameId = gameId}).Exist) {
+                    errorBuf.WriteLine("gameId doesn't exist on the server.");
+                }
+            } catch (Exception) {
+                errorBuf.WriteLine("gameId cannot be checked on the server.");
+            }
+
+            #endregion
+
+            error = errorBuf.ToString();
+
+            if (error != string.Empty) {
+                MessageBox.Show(error, "Wrong communication", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
         }
 
         public MenuNetworkPopup()
         {
             InitializeComponent();
-            textBoxUserName.Focus();
-            PreviewKeyDown += new KeyEventHandler(Esc_PushButton);
+            PreviewKeyDown += new KeyEventHandler(esc_PushButton);
         }
     }
 }
