@@ -4,11 +4,11 @@ The project is a `.NET` implementation of the board game `Congo`.
 
 # Documentation
 
-Read [Installation Instruction](Congo.Assets/Resources/ig.md) to find out
+Read [Installation Instruction](Congo.Assets/Resources/ii.md) to find out
 how to install the application on different platforms (currently Windows and
 Linux are supported) or build and run it from source code.
 
-See [User's Manual](Congo.Assets/Resources/ug.md) for rules, gameplay and
+See [User's Manual](Congo.Assets/Resources/um.md) for rules, gameplay and
 user interface.
 
 Consult [Programmer's Guide](Congo.Assets/Resources/pg.md) to learn more about
