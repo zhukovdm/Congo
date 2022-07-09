@@ -170,8 +170,10 @@ namespace Congo.GUI
             return canvas;
         }
 
-        private CongoUser getActiveUser()
-            => game.ActivePlayer.IsWhite() ? white : black;
+        private CongoUser activeUser
+        {
+            get => game.ActivePlayer.IsWhite() ? white : black;
+        }
 
         private void appendMove(CongoMove move)
         {
@@ -189,7 +191,7 @@ namespace Congo.GUI
             if (white is Ai && black is Ai) { Thread.Sleep(1000); }
 
             var g = (CongoGame)e.Argument;
-            var user = g.ActivePlayer.Color.IsWhite() ? white : black;
+            var user = g.ActivePlayer.IsWhite() ? white : black;
             e.Result = user.Advise(g);
 
             adviceEvent.Set();
@@ -223,7 +225,7 @@ namespace Congo.GUI
 
                 game = game.Transition(move);
 
-                if (getActiveUser() is Hi) { buttonAdvise.IsEnabled = true; }
+                if (activeUser is Hi) { buttonAdvise.IsEnabled = true; }
 
                 buttonMenuCancel.IsEnabled = false;
                 appendMove(move);
@@ -437,7 +439,7 @@ namespace Congo.GUI
         {
             if (game.HasEnded()) { state = State.END; }
 
-            else if (getActiveUser() is Ai) { state = State.AI; }
+            else if (activeUser is Ai) { state = State.AI; }
 
             else if (game.FirstMonkeyJump != null) { state = State.TO; buttonAdvise.IsEnabled = true; }
 
@@ -450,7 +452,7 @@ namespace Congo.GUI
 
             if (game.HasEnded()) { state = State.END; }
 
-            else if (getActiveUser() is Ai) { state = State.AI; }
+            else if (activeUser is Ai) { state = State.AI; }
 
             else if (state == State.FR && game.Board.IsOccupied(moveFr)
                 && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFr)) {
@@ -472,7 +474,7 @@ namespace Congo.GUI
 
                     // opponent will turn
                     else {
-                        state = (getActiveUser() is Ai) ? State.AI : State.FR;
+                        state = (activeUser is Ai) ? State.AI : State.FR;
                     }
 
                     cleanAdvice();
