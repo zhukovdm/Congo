@@ -19,9 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Congo.CLI.MSTest", "Congo.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Congo.Test", "Congo.Test\Congo.Test.csproj", "{B25F18AD-5319-45DE-A603-F820524C89A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Server", "Congo.Server\Congo.Server.csproj", "{7F442664-17DE-4A59-A52C-CD3DB6B0E4B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Congo.Server", "Congo.Server\Congo.Server.csproj", "{7F442664-17DE-4A59-A52C-CD3DB6B0E4B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Congo.Utils.MSTest", "Congo.Utils.MSTest\Congo.Utils.MSTest.csproj", "{8FB05458-88C4-45E9-991E-9A15CDB8F9BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Congo.Utils.MSTest", "Congo.Utils.MSTest\Congo.Utils.MSTest.csproj", "{8FB05458-88C4-45E9-991E-9A15CDB8F9BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
