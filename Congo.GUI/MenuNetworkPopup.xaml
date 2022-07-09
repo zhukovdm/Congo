@@ -8,10 +8,14 @@
     xmlns:System="clr-namespace:System;assembly=mscorlib"
     mc:Ignorable="d"
     Icon="Resources/icon.png"
-    Title="Network Game" MinHeight="500" Height="500" MinWidth="600" Width="600">
+    Title="Network Game" MinHeight="575" Height="575" MinWidth="600" Width="600">
     <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="FontSize" Value="35"/>
+        </Style>
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="FontSize" Value="35"/>
+            <EventSetter Event="LostKeyboardFocus" Handler="textBox_LostKeyboardFocus"/>
         </Style>
         <Style TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="35"/>
@@ -29,7 +33,11 @@
                 </GroupBox.Header>
                 <StackPanel Orientation="Vertical">
                     <Viewbox HorizontalAlignment="Left">
-                        <RadioButton GroupName="board_type" Content="Standard" IsChecked="True"/>
+                        <RadioButton
+                            GroupName="board_type"
+                            Name="radioButtonStandard"
+                            Content="Standard"
+                            IsChecked="True"/>
                     </Viewbox>
                     <DockPanel Height="5"/>
                     <Grid>
@@ -39,9 +47,15 @@
                             <ColumnDefinition Width="0.65*"/>
                         </Grid.ColumnDefinitions>
                         <Viewbox Grid.Column="0">
-                            <RadioButton GroupName="board_type" Content="Fen" IsChecked="False"/>
+                            <RadioButton
+                                GroupName="board_type"
+                                Name="radioButtonFen"
+                                Content="Fen"
+                                Checked="radioButtonFen_Checked"
+                                Unchecked="radioButtonFen_Unchecked"
+                                IsChecked="False"/>
                         </Viewbox>
-                        <TextBox Grid.Column="2"/>
+                        <TextBox Grid.Column="2" Name="textBoxFen" Visibility="Hidden"/>
                     </Grid>
                     <DockPanel Height="5"/>
                     <Grid>
@@ -51,9 +65,15 @@
                             <ColumnDefinition Width="0.65*"/>
                         </Grid.ColumnDefinitions>
                         <Viewbox Grid.Column="0">
-                            <RadioButton GroupName="board_type" Content="Id" IsChecked="False"/>
+                            <RadioButton
+                                GroupName="board_type"
+                                Name="radioButtonId"
+                                Content="Id"
+                                Checked="radioButtonId_Checked"
+                                Unchecked="radioButtonId_Unchecked"
+                                IsChecked="False"/>
                         </Viewbox>
-                        <TextBox Grid.Column="2"/>
+                        <TextBox Grid.Column="2" Name="textBoxId" Visibility="Hidden"/>
                     </Grid>
                 </StackPanel>
             </GroupBox>
@@ -68,10 +88,17 @@
                             <ColumnDefinition Width="0.50*"/>
                         </Grid.ColumnDefinitions>
                         <Viewbox Grid.Column="0">
-                            <RadioButton GroupName="player_color" Content="White" IsChecked="True"/>
+                            <RadioButton
+                                GroupName="player_color"
+                                Name="radioButtonWhite"
+                                Content="White"
+                                IsChecked="True"/>
                         </Viewbox>
                         <Viewbox Grid.Column="1">
-                            <RadioButton GroupName="player_color" Content="Black" IsChecked="False"/>
+                            <RadioButton
+                                GroupName="player_color"
+                                Content="Black"
+                                IsChecked="False"/>
                         </Viewbox>
                     </Grid>
                     <Grid>
@@ -80,10 +107,17 @@
                             <ColumnDefinition Width="0.50*"/>
                         </Grid.ColumnDefinitions>
                         <Viewbox Grid.Column="0">
-                            <RadioButton GroupName="player_type" Content="Hi" IsChecked="True"/>
+                            <RadioButton
+                                GroupName="player_type"
+                                Name="radioButtonHi"
+                                Content="Hi"
+                                IsChecked="True"/>
                         </Viewbox>
                         <Viewbox Grid.Column="1">
-                            <RadioButton GroupName="player_type" Content="Ai" IsChecked="False"/>
+                            <RadioButton
+                                GroupName="player_type"
+                                Content="Ai"
+                                IsChecked="False"/>
                         </Viewbox>
                     </Grid>
                     <Grid>
@@ -92,10 +126,17 @@
                             <ColumnDefinition Width="0.50*"/>
                         </Grid.ColumnDefinitions>
                         <Viewbox Grid.Column="0">
-                            <RadioButton GroupName="player_algo" Content="Random" IsChecked="False"/>
+                            <RadioButton
+                                GroupName="player_algo"
+                                Name="radioButtonRandom"
+                                Content="Random"
+                                IsChecked="False"/>
                         </Viewbox>
                         <Viewbox Grid.Column="1">
-                            <RadioButton GroupName="player_algo" Content="Negamax" IsChecked="True"/>
+                            <RadioButton
+                                GroupName="player_algo"
+                                Content="Negamax"
+                                IsChecked="True"/>
                         </Viewbox>
                     </Grid>
                 </StackPanel>
@@ -111,7 +152,7 @@
                             <ColumnDefinition Width="0.75*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0">Host</TextBlock>
-                        <TextBox Grid.Column="1">localhost</TextBox>
+                        <TextBox Grid.Column="1" Name="textBoxHost">localhost</TextBox>
                     </Grid>
                     <DockPanel Height="5"/>
                     <Grid>
@@ -120,10 +161,19 @@
                             <ColumnDefinition Width="0.75*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0">Port</TextBlock>
-                        <TextBox Grid.Column="1"></TextBox>
+                        <TextBox Grid.Column="1" Name="textBoxPort">7153</TextBox>
                     </Grid>
                 </StackPanel>
             </GroupBox>
+            <DockPanel Height="5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.30*"/>
+                    <ColumnDefinition Width="0.40*"/>
+                    <ColumnDefinition Width="0.30*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="1" Click="buttonConfirm_Click">Confirm</Button>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>
