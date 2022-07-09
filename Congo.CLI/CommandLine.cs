@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Congo.Server;
@@ -20,7 +21,7 @@ namespace Congo.CLI
         private static readonly string resourcesFolder = "Resources\\";
         private static readonly string textFileExt = ".txt";
         private static readonly TextReader reader = Console.In;
-        private static readonly TextWriter writer = Console.Out;
+        protected static readonly TextWriter writer = Console.Out;
 
         private delegate string[] VerifyCommandDelegate(string[] input);
 
@@ -42,13 +43,14 @@ namespace Congo.CLI
                 "a4", "b4", "c4", "d4", "e4", "f4", "g4",
                 "a3", "b3", "c3", "d3", "e3", "f3", "g3",
                 "a2", "b2", "c2", "d2", "e2", "f2", "g2",
-                "a1", "b1", "c1", "d1", "e1", "f1", "g1"
+                "a1", "b1", "c1", "d1", "e1", "f1", "g1",
             }.ToImmutableList();
 
-        private static readonly ImmutableList<Type> pieceTypes = new Type[] {
-            typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
-            typeof(Giraffe), typeof(Crocodile), typeof(Pawn), typeof(Superpawn),
-            typeof(Lion), typeof(Monkey)
+        private static readonly ImmutableList<Type> pieceTypes =
+            new Type[] {
+                typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
+                typeof(Giraffe), typeof(Crocodile), typeof(Pawn),
+                typeof(Superpawn), typeof(Lion), typeof(Monkey),
         }.ToImmutableList();
 
         private static readonly ImmutableDictionary<Type, string> pieceViews =
@@ -57,7 +59,7 @@ namespace Congo.CLI
                 { typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
                 { typeof(Giraffe),  "g" }, { typeof(Crocodile), "c" },
                 { typeof(Pawn),     "p" }, { typeof(Superpawn), "s" },
-                { typeof(Lion),     "l" }, { typeof(Monkey),    "m" }
+                { typeof(Lion),     "l" }, { typeof(Monkey),    "m" },
             }.ToImmutableDictionary();
 
         private delegate void ShowDelegate(CongoGame game);
@@ -65,13 +67,13 @@ namespace Congo.CLI
         private static readonly ImmutableDictionary<string, ShowDelegate> supportedShows =
             new Dictionary<string, ShowDelegate> {
                 { "board", showBoard }, { "players", showPlayers },
-                { "moves", showMoves }, { "game",    showGame    }
+                { "moves", showMoves }, { "game",    showGame    },
             }.ToImmutableDictionary();
 
-        private static string GetMoveView(CongoMove move)
+        protected static string getMoveView(CongoMove move)
             => "(" + squareViews[move.Fr] + "," + squareViews[move.To] + ")";
 
-        private static string ReadTextFile(string filename)
+        private static string readTextFile(string filename)
         {
             try {
                 return File.ReadAllText(resourcesFolder + filename + textFileExt);
@@ -97,12 +99,10 @@ namespace Congo.CLI
             => writer.WriteLine($" Command {command} is not allowed. Consult \"allow\".");
 
         private static void ReportAdvisedMove(CongoMove move)
-            => writer.WriteLine($" Advised move is { GetMoveView(move) }.");
+            => writer.WriteLine($" Advised move is { getMoveView(move) }.");
 
         private static void ReportWrongMove()
-        {
-            writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
-        }
+            => writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
 
         /// <summary>
         /// Counts pieces of all kinds by a color.
@@ -123,10 +123,10 @@ namespace Congo.CLI
         private static void showTransition(CongoGame game)
         {
             writer.WriteLine();
-            writer.WriteLine($" transition { GetMoveView(game.TransitionMove) }");
+            writer.WriteLine($" transition { getMoveView(game.TransitionMove) }");
         }
 
-        protected static void showNetworkGameId(long gameId)
+        protected static void showGameId(long gameId)
         {
             writer.WriteLine();
             writer.WriteLine($" Network gameId {gameId}");
@@ -184,7 +184,7 @@ namespace Congo.CLI
             writer.WriteLine();
             int cnt = 0;
             foreach (var move in game.ActivePlayer.Moves) {
-                var repr = " " + GetMoveView(move);
+                var repr = " " + getMoveView(move);
                 if (cnt + repr.Length > 40) {
                     cnt = 0;
                     writer.WriteLine();
@@ -257,13 +257,13 @@ namespace Congo.CLI
         protected static void greet()
         {
             writer.WriteLine();
-            writer.Write(ReadTextFile("greet"));
+            writer.Write(readTextFile("greet"));
         }
 
         /// <summary>
         /// Try get user command until input passes any of the Verify function.
         /// </summary>
-        private static string[] GetUserCommand(List<string> allowedCommands)
+        private static string[] getUserCommand(List<string> allowedCommands)
         {
             string[] input;
             string[] command = null;
@@ -296,7 +296,7 @@ namespace Congo.CLI
         /// <summary>
         /// Creates local CongoGame out of the provided arguments.
         /// </summary>
-        private static CongoCommandLine CreateLocal(CongoArgs args)
+        private static CongoCommandLine createLocal(CongoArgs args)
         {
             var game = args.IsBoardStandard()
                 ? CongoGame.Standard()
@@ -307,7 +307,7 @@ namespace Congo.CLI
         /// <summary>
         /// Creates network CongoGame out of the provided arguments.
         /// </summary>
-        private static CongoCommandLine CreateNetwork(CongoArgs args)
+        private static CongoCommandLine createNetwork(CongoArgs args)
         {
             // currently, ssl certificate is not supported!
             var httpHandler = new HttpClientHandler
@@ -345,7 +345,7 @@ namespace Congo.CLI
         /// by the ArgumentParser.
         /// </summary>
         public static CongoCommandLine Create(CongoArgs args)
-            => args.IsGameLocal() ? CreateLocal(args) : CreateNetwork(args);
+            => args.IsGameLocal() ? createLocal(args) : createNetwork(args);
 
         protected CongoGame game;
         protected CongoArgs args;
@@ -378,13 +378,13 @@ namespace Congo.CLI
         /// <summary>
         /// Generates valid move, all entered invalid moves are ignored.
         /// </summary>
-        private CongoMove GetHiValidMove()
+        private CongoMove getHiValidMove()
         {
             CongoMove move = null;
             var allowedCommands = supportedCommands.Select(pair => pair.Key).ToList();
 
             do {
-                var command = GetUserCommand(allowedCommands);
+                var command = getUserCommand(allowedCommands);
 
                 switch (command[0]) {
 
@@ -402,7 +402,7 @@ namespace Congo.CLI
                         throw new ArgumentException("The program is terminated...");
 
                     case "help":
-                        ReportHelpFile(ReadTextFile(command[1]));
+                        ReportHelpFile(readTextFile(command[1]));
                         break;
 
                     case "move":
@@ -432,9 +432,9 @@ namespace Congo.CLI
         /// Generates valid move based on the player kind (either Ai or Hi).
         /// </summary>
         protected CongoMove getValidMove()
-            => (activeUser is Ai) ? getAiValidMove() : GetHiValidMove();
+            => (activeUser is Ai) ? getAiValidMove() : getHiValidMove();
 
-        protected void ShowStep()
+        protected void showStep()
         {
             showTransition(game);
             showBoard(game);
@@ -450,7 +450,8 @@ namespace Congo.CLI
             writer.WriteLine();
         }
 
-        public bool End() => game.HasEnded();
+        public bool End()
+            => game.HasEnded();
 
         /// <summary>
         /// Obtains next move from the user and generate view of the current
@@ -477,41 +478,79 @@ namespace Congo.CLI
         public override void Step()
         {
             game = game.Transition(getValidMove());
-            ShowStep();
+            showStep();
         }
     }
 
     public class NetworkCommandLine : CongoCommandLine
     {
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly GrpcChannel channel;
+#pragma warning restore IDE0052 // Remove unread private members
+
         private readonly CongoGrpc.CongoGrpcClient client;
         private readonly long gameId;
         private long moveId = -1;
 
+        private CongoUser getUserByGame(CongoGame game)
+            => game.ActivePlayer.IsWhite() ? whiteUser : blackUser;
+
+        private CongoGame getGameFromNetwork()
+            => CongoFen.FromFen(client.GetLastFen(new GetLastFenRequest() { GameId = gameId }).Fen);
+
+        private void showTransitions()
+        {
+            var dbMoves = client.GetDbMovesFrom(new GetDbMovesFromRequest() { GameId = gameId, From = moveId }).Moves;
+            writer.WriteLine();
+            writer.WriteLine(" transitions: " + string.Join(" -> ", dbMoves.Select(x => getMoveView(new CongoMove(x.Fr, x.To)))));
+            moveId += dbMoves.Count;
+        }
+
+        /// <summary>
+        /// Network move periodically poll the server and obtain the latest
+        /// Fen. Move is finalized by obtaining moves from the known @b moveId.
+        /// </summary>
         private CongoGame getNetworkMove()
         {
-            int cnt = 0;
+            var newGame = getGameFromNetwork();
 
-            do {
-                break;
-            } while (true);
+            if (getUserByGame(newGame) is Net && !newGame.HasEnded()) {
+                int cnt = 0;
 
-            return game;
+                do {
+                    if (cnt == 0) { writer.WriteLine(); writer.Write(' '); }
+                    writer.Write('.');
+                    newGame = getGameFromNetwork();
+                    cnt = (cnt + 1) % 30;
+                    Thread.Sleep(1000);
+                } while (getUserByGame(newGame) is Net && !newGame.HasEnded());
+
+                writer.WriteLine();
+            }
+
+            showTransitions();
+            return newGame;
         }
 
         public NetworkCommandLine(GrpcChannel channel, CongoGrpc.CongoGrpcClient client, CongoArgs args, long gameId)
         {
             this.channel = channel;
             this.client = client;
+            this.args = args;
             this.gameId = gameId;
 
             whiteUser = createMaybeNetworkUser(White.Color);
             blackUser = createMaybeNetworkUser(Black.Color);
 
-            game = CongoFen.FromFen(client.GetLastFen(new GetLastFenRequest() { GameId = gameId }).Fen);
+            game = CongoFen.FromFen(client.GetFirstFen(new GetFirstFenRequest() { GameId = gameId }).Fen);
 
             greet();
-            showNetworkGameId(gameId);
+            showGameId(gameId);
+
+            showBoard(CongoFen.FromFen(client.GetFirstFen(new GetFirstFenRequest() { GameId = gameId }).Fen));
+            showTransitions();
+
+            game = CongoFen.FromFen(client.GetLastFen(new GetLastFenRequest() { GameId = gameId }).Fen);
             showBoard(game);
             showPlayers(game);
         }
@@ -524,10 +563,9 @@ namespace Congo.CLI
                 moveId = client.PostMove(new PostMoveRequest() { GameId = gameId, Fr = move.Fr, To = move.To }).MoveId;
             }
 
-            // TODO: continue here!
-
             else {
                 game = getNetworkMove();
+                showBoard(game);
             }
         }
     }
