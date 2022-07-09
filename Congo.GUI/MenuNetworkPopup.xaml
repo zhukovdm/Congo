@@ -8,149 +8,122 @@
     xmlns:System="clr-namespace:System;assembly=mscorlib"
     mc:Ignorable="d"
     Icon="Resources/icon.png"
-    Title="Network Game"
-    MinHeight="370"
-    Height="370"
-    MinWidth="500"
-    Width="500">
+    Title="Network Game" MinHeight="500" Height="500" MinWidth="600" Width="600">
     <Window.Resources>
-        <System:Double x:Key="globalFontSize">40.0</System:Double>
-        <System:Double x:Key="textBoxIpWidth">80.0</System:Double>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="FontSize" Value="35"/>
+        </Style>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="35"/>
+        </Style>
+        <Style TargetType="{x:Type Viewbox}">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
     </Window.Resources>
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <DockPanel Height="10"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="1.0*"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="2.5*"/>
-                    <ColumnDefinition Width="10"/>
-                </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0" Width="10"/>
-                <TextBlock Grid.Column="1" FontSize="{StaticResource globalFontSize}">Board:</TextBlock>
-                <DockPanel Grid.Column="2" Width="10"/>
-                <TextBox 
-                    Grid.Column="3"
-                    Name="textBoxUserName"
-                    FontSize="{StaticResource globalFontSize}"
-                    LostKeyboardFocus="TextBox_LostKeyboardFocus"/>
-                <DockPanel Grid.Column="4" Width="10"/>
-            </Grid>
-            <StackPanel Height="10"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="9"/>
-                    <ColumnDefinition Width="1.0*"/>
-                    <ColumnDefinition Width="9"/>
-                </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0" Width="9"/>
-                <GroupBox Grid.Column="1">
-                    <GroupBox.Header>
-                        <TextBlock Text="Player" FontSize="20"/>
-                    </GroupBox.Header>
+        <StackPanel Orientation="Vertical" Grid.RowSpan="2" Grid.ColumnSpan="2">
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="Board" FontSize="20"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <Viewbox HorizontalAlignment="Left">
+                        <RadioButton GroupName="board_type" Content="Standard" IsChecked="True"/>
+                    </Viewbox>
+                    <DockPanel Height="5"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="1.5*"/>
+                            <ColumnDefinition Width="0.20*"/>
+                            <ColumnDefinition Width="0.15*"/>
+                            <ColumnDefinition Width="0.65*"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Vertical">
-                            <Viewbox Height="40" HorizontalAlignment="Left">
-                                <RadioButton GroupName="player_type" Content="Hi" IsChecked="True"/>
-                            </Viewbox>
-                            <Viewbox Height="40" HorizontalAlignment="Left">
-                                <RadioButton GroupName="player_type" Content="Ai"/>
-                            </Viewbox>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Vertical">
-                            <Viewbox Height="40" HorizontalAlignment="Left">
-                                <RadioButton GroupName="player_algo" Content="Negamax" IsChecked="True"/>
-                            </Viewbox>
-                            <Viewbox Height="40" HorizontalAlignment="Left">
-                                <RadioButton GroupName="player_algo" Content="Random"/>
-                            </Viewbox>
-                        </StackPanel>
+                        <Viewbox Grid.Column="0">
+                            <RadioButton GroupName="board_type" Content="Fen" IsChecked="False"/>
+                        </Viewbox>
+                        <TextBox Grid.Column="2"/>
                     </Grid>
-                </GroupBox>
-                <DockPanel Grid.Column="0" Width="9"/>
-            </Grid>
-            <StackPanel Height="10"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="1.0*"/>
-                    <ColumnDefinition Width="4.0*"/>
-                    <ColumnDefinition Width="10"/>
-                </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0" Width="10"/>
-                <TextBlock Grid.Column="1" FontSize="{StaticResource globalFontSize}">IP:</TextBlock>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <DockPanel Width="10"/>
-                    <TextBox
-                        Name="textBoxIp1"
-                        Width="{StaticResource textBoxIpWidth}"
-                        FontSize="{StaticResource globalFontSize}"
-                        TextAlignment="Center"
-                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                        127
-                    </TextBox>
-                    <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
-                    <TextBox
-                        Name="textBoxIp2"
-                        Width="{StaticResource textBoxIpWidth}"
-                        FontSize="{StaticResource globalFontSize}"
-                        TextAlignment="Center"
-                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                        0
-                    </TextBox>
-                    <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
-                    <TextBox
-                        Name="textBoxIp3"
-                        Width="{StaticResource textBoxIpWidth}"
-                        FontSize="{StaticResource globalFontSize}"
-                        TextAlignment="Center"
-                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                        0
-                    </TextBox>
-                    <TextBlock Width="10" FontSize="{StaticResource globalFontSize}" TextAlignment="Center">.</TextBlock>
-                    <TextBox
-                        Name="textBoxIp4"
-                        Width="{StaticResource textBoxIpWidth}"
-                        FontSize="{StaticResource globalFontSize}"
-                        TextAlignment="Center"
-                        LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                        1
-                    </TextBox>
+                    <DockPanel Height="5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.20*"/>
+                            <ColumnDefinition Width="0.15*"/>
+                            <ColumnDefinition Width="0.65*"/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.Column="0">
+                            <RadioButton GroupName="board_type" Content="Id" IsChecked="False"/>
+                        </Viewbox>
+                        <TextBox Grid.Column="2"/>
+                    </Grid>
                 </StackPanel>
-                <DockPanel Grid.Column="0" Width="10"/>
-            </Grid>
-            <StackPanel Height="10"/>
-            <DockPanel HorizontalAlignment="Center">
-                <TextBlock
-                    Width="90"
-                    FontSize="{StaticResource globalFontSize}">
-                    Port:
-                </TextBlock>
-                <DockPanel Width="10"/>
-                <TextBox
-                    Name="textBoxPort"
-                    Width="120"
-                    FontSize="{StaticResource globalFontSize}"
-                    TextAlignment="Center"
-                    LostKeyboardFocus="TextBox_LostKeyboardFocus">
-                    61374
-                </TextBox>
-                <DockPanel Width="20"/>
-                <Button
-                    Name="buttonConfirm"
-                    Width="170"
-                    FontSize="{StaticResource globalFontSize}"
-                    Click="ButtonConfirm_Click">
-                    Confirm
-                </Button>
-            </DockPanel>
-            <StackPanel Height="10"/>
+            </GroupBox>
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="Player" FontSize="20"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.50*"/>
+                            <ColumnDefinition Width="0.50*"/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.Column="0">
+                            <RadioButton GroupName="player_color" Content="White" IsChecked="True"/>
+                        </Viewbox>
+                        <Viewbox Grid.Column="1">
+                            <RadioButton GroupName="player_color" Content="Black" IsChecked="False"/>
+                        </Viewbox>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.50*"/>
+                            <ColumnDefinition Width="0.50*"/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.Column="0">
+                            <RadioButton GroupName="player_type" Content="Hi" IsChecked="True"/>
+                        </Viewbox>
+                        <Viewbox Grid.Column="1">
+                            <RadioButton GroupName="player_type" Content="Ai" IsChecked="False"/>
+                        </Viewbox>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.50*"/>
+                            <ColumnDefinition Width="0.50*"/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.Column="0">
+                            <RadioButton GroupName="player_algo" Content="Random" IsChecked="False"/>
+                        </Viewbox>
+                        <Viewbox Grid.Column="1">
+                            <RadioButton GroupName="player_algo" Content="Negamax" IsChecked="True"/>
+                        </Viewbox>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="Connection" FontSize="20"/>
+                </GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.25*"/>
+                            <ColumnDefinition Width="0.75*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0">Host</TextBlock>
+                        <TextBox Grid.Column="1">localhost</TextBox>
+                    </Grid>
+                    <DockPanel Height="5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.25*"/>
+                            <ColumnDefinition Width="0.75*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0">Port</TextBlock>
+                        <TextBox Grid.Column="1"></TextBox>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
         </StackPanel>
     </Grid>
 </Window>
