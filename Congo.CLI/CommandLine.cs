@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Congo.Server;
 using Congo.Core;
+using Congo.Server;
+using Congo.Utils;
 
 namespace Congo.CLI
 {
@@ -309,16 +309,7 @@ namespace Congo.CLI
         /// </summary>
         private static CongoCommandLine createNetwork(CongoArgs args)
         {
-            // currently, ssl certificate is not supported!
-            var httpHandler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
-
-            var channel = GrpcChannel.ForAddress(
-                "https://" + args.GetHost() + ":" + args.GetPort(),
-                new GrpcChannelOptions { HttpHandler = httpHandler });
-
+            var channel = NetworkPrimitives.CreateRpcChannel(args.GetPort(), args.GetHost());
             var client = new CongoGrpc.CongoGrpcClient(channel);
 
             long gameId = -1;
