@@ -14,8 +14,6 @@
     Width="900">
     <Grid>
         <StackPanel Orientation="Vertical">
-
-            <!-- Menu -->
             <StackPanel Orientation="Horizontal">
                 <Menu Background="Transparent">
                     <MenuItem Header="_Game">
@@ -42,33 +40,39 @@
                     <ColumnDefinition Width="10"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <StackPanel.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontSize" Value="40"/>
+                            <Setter Property="TextAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </StackPanel.Resources>
                     <DockPanel Height="83">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="7"/>
+                        <TextBlock Text="7"/>
                     </DockPanel>
                     <DockPanel Height="82">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="6"/>
+                        <TextBlock Text="6"/>
                     </DockPanel>
                     <DockPanel Height="82">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="5"/>
+                        <TextBlock Text="5"/>
                     </DockPanel>
                     <DockPanel Height="82">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="4"/>
+                        <TextBlock Text="4"/>
                     </DockPanel>
                     <DockPanel Height="82">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="3"/>
+                        <TextBlock Text="3"/>
                     </DockPanel>
                     <DockPanel Height="82">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="2"/>
+                        <TextBlock Text="2"/>
                     </DockPanel>
                     <DockPanel Height="83">
-                        <TextBlock TextAlignment="Center" FontSize="40" VerticalAlignment="Center" Text="1"/>
+                        <TextBlock Text="1"/>
                     </DockPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
                         <StackPanel Orientation="Horizontal">
                             <StackPanel Orientation="Vertical">
-                                <!-- Board -->
                                 <Border BorderBrush="Black" BorderThickness="1">
                                     <WrapPanel Width="574" Name="panelCongoBoard" Orientation="Horizontal"/>
                                 </Border>
@@ -112,14 +116,20 @@
                 <DockPanel Grid.Column="4" Width="10"/>
             </Grid>
             <StackPanel Orientation="Horizontal">
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="FontSize" Value="40"/>
+                        <Setter Property="TextAlignment" Value="Center"/>
+                    </Style>
+                </StackPanel.Resources>
                 <DockPanel Width="50"/>
-                <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="a"/>
-                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="b"/>
-                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="c"/>
-                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="d"/>
-                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="e"/>
-                <TextBlock Width="82" FontSize="40" TextAlignment="Center" Text="f"/>
-                <TextBlock Width="83" FontSize="40" TextAlignment="Center" Text="g"/>
+                <TextBlock Width="83" Text="a"/>
+                <TextBlock Width="82" Text="b"/>
+                <TextBlock Width="82" Text="c"/>
+                <TextBlock Width="82" Text="d"/>
+                <TextBlock Width="82" Text="e"/>
+                <TextBlock Width="82" Text="f"/>
+                <TextBlock Width="83" Text="g"/>
             </StackPanel>
             <Button Name="buttonMoveGenerator" Visibility="Hidden" Click="buttonMoveGenerator_Click"/>
         </StackPanel>

@@ -77,7 +77,6 @@
                             </StackPanel>
                         </Grid>
                     </GroupBox>
-                    <DockPanel Height="10"/>
                     <GroupBox>
                         <GroupBox.Header>
                             <TextBlock Text="Black" FontSize="20"/>
@@ -105,8 +104,8 @@
                             </StackPanel>
                         </Grid>
                     </GroupBox>
-                    <DockPanel Height="10"/>
-                    <Button Name="buttonConfirm" Width="200" FontSize="30" Content="Confirm" Click="buttonConfirm_Click"/>
+                    <DockPanel Height="5"/>
+                    <Button Name="buttonConfirm" Width="200" FontSize="35" Content="Confirm" Click="buttonConfirm_Click"/>
                 </StackPanel>
             </Grid>
         </StackPanel>
