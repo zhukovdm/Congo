@@ -19,11 +19,13 @@ namespace Congo.Utils
 
         /// <summary>
         /// Verifies IPv4 address holder is an integer number between 0 and 255.
+        /// Trailing zeros are <b>not</b> allowed.
         /// </summary>
         public static bool IsIpAddressHolderValid(string holder)
         {
             return holder.Length > 0
                 && holder.Length < 4
+                && !holder.StartsWith('0')
                 && holder.All(char.IsDigit)
                 && int.TryParse(holder, out var result) // always succeeds
                 && result >= 0
@@ -47,11 +49,13 @@ namespace Congo.Utils
 
         /// <summary>
         /// Verifies entered port is any number between 1024 and 65535.
+        /// Trailing zeros are <b>not</b> allowed.
         /// </summary>
         public static bool IsPortValid(string port)
         {
             return port.Length >= 4
                 && port.Length <= 5
+                && !port.StartsWith('0')
                 && port.All(char.IsDigit)
                 && int.TryParse(port, out var result)
                 && result >= 1024
@@ -59,7 +63,7 @@ namespace Congo.Utils
         }
 
         /// <summary>
-        /// Verifies entered game id, [0-9]+
+        /// Verifies entered game id, pattern [0-9]+
         /// </summary>
         public static bool IsBoardIdValid(string id)
         {
