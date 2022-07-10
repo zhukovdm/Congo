@@ -25,13 +25,6 @@ namespace Congo.CLI
         private static readonly string negamaxValue = "negamax";
         private static readonly string standardValue = "standard";
 
-        // TODO: get rid of this dictionary
-        private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
-            new Dictionary<string, AlgorithmDelegate> {
-                { randomValue,  Algorithm.Random  },
-                { negamaxValue, Algorithm.Negamax }
-            }.ToImmutableDictionary();
-
         public static class Parser
         {
             #region argument acceptors
