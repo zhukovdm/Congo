@@ -12,11 +12,7 @@ namespace Congo.Utils
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
-
-            return GrpcChannel.ForAddress(
-                "https://" + host + ":" + port,
-                new GrpcChannelOptions { HttpHandler = httpHandler }
-            );
+            return GrpcChannel.ForAddress("https://" + host + ":" + port, new GrpcChannelOptions { HttpHandler = httpHandler });
         }
     }
 }

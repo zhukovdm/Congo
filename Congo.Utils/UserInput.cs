@@ -3,48 +3,55 @@
 namespace Congo.Utils
 {
     /// <summary>
-    /// Class containing supporting methods used in different parts
-    /// of the project.
+    /// Class containing supporting methods used in different parts of the project.
     /// </summary>
     public static class UserInput
     {
         private static readonly string zero = "0";
-
-        /// <summary>
-        /// Verifies user name contains only alphanumeric chars, [A-Za-z0-9]+
-        /// </summary>
-        public static bool IsUserNameValid(string name)
-        {
-            return name.Length > 0
-                && name.All(char.IsLetterOrDigit);
-        }
+        private static readonly string localhostValue = "localhost";
 
         /// <summary>
         /// Verifies IPv4 address holder is an integer number between 0 and 255.
         /// Trailing zeros are <b>not</b> allowed.
         /// </summary>
-        public static bool IsIpAddressHolderValid(string holder)
+        private static bool isValidIpAddressHolder(string holder)
         {
-            return holder.Length > 0
+            return holder is not null
+                && holder.Length > 0
                 && holder.Length < 4
                 && (holder == zero || !holder.StartsWith('0'))
                 && holder.All(char.IsDigit)
-                && int.TryParse(holder, out var result) // always succeeds
+                && int.TryParse(holder, out var result) // obtain result, parsing always succeeds
                 && result >= 0
                 && result <= 255;
         }
 
         /// <summary>
-        /// Verifies the input is a valid IPv4 address in "127.0.0.0" format.
+        /// Verifies entered game id, pattern [0-9]+
+        /// Trailing zeros are <b>not</b> allowed.
         /// </summary>
-        public static bool IsIpAddressValid(string addr)
+        public static bool IsValidBoardId(string id)
         {
-            if (addr == "localhost") { return true; }
+            return id is not null
+                && id.Length > 0
+                && (id == zero || !id.StartsWith('0'))
+                && id.All(char.IsDigit);
+        }
+
+        /// <summary>
+        /// Verifies the input is a valid IPv4 address in <b>127.0.0.0</b>
+        /// format. <b>localhost</b> is also acceptable.
+        /// </summary>
+        public static bool IsValidHost(string addr)
+        {
+            if (addr is null) { return false; }
+
+            if (addr == localhostValue) { return true; }
 
             var spl = addr.Split(new char[] { '.' }, System.StringSplitOptions.RemoveEmptyEntries);
 
             var result = spl.Length == 4;
-            foreach (var s in spl) { result &= IsIpAddressHolderValid(s); }
+            foreach (var s in spl) { result &= isValidIpAddressHolder(s); }
 
             return result;
         }
@@ -53,24 +60,16 @@ namespace Congo.Utils
         /// Verifies entered port is any number between 1024 and 65535.
         /// Trailing zeros are <b>not</b> allowed.
         /// </summary>
-        public static bool IsPortValid(string port)
+        public static bool IsValidPort(string port)
         {
-            return port.Length >= 4
+            return port is not null
+                && port.Length >= 4
                 && port.Length <= 5
                 && !port.StartsWith('0')
                 && port.All(char.IsDigit)
-                && int.TryParse(port, out var result)
+                && int.TryParse(port, out var result) // obtain result, parsing always succeeds
                 && result >= 1024
                 && result <= 65535;
-        }
-
-        /// <summary>
-        /// Verifies entered game id, pattern [0-9]+
-        /// </summary>
-        public static bool IsBoardIdValid(string id)
-        {
-            return id.Length > 0
-                && id.All(char.IsDigit);
         }
     }
 }
