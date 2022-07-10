@@ -341,7 +341,7 @@ namespace Congo.CLI
 
         private static CongoCommandLine createNetworkGame(CongoArgs args)
         {
-            var channel = NetworkPrimitives.CreateRpcChannel(args.GetMaybePort(), args.GetMaybeHost());
+            var channel = NetworkPrimitives.CreateRpcChannel(args.GetMaybeHost(), args.GetMaybePort());
             var client = new CongoGrpc.CongoGrpcClient(channel);
 
             long gameId = -1;
