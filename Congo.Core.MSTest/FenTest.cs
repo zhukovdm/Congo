@@ -3,50 +3,43 @@
 namespace Congo.Core.MSTest
 {
     [TestClass]
-    public class Fen_Test
+    public class FromFen
     {
         [TestMethod]
-        public void Length()
-        {
-            Assert.IsNull(CongoFen.FromFen("3l3/7/7/7/7/7/3L3/7/w/-1"));
-        }
+        public void Null()
+            => Assert.IsNull(CongoFen.FromFen(null));
 
         [TestMethod]
-        public void FromFen_TwoLions()
+        public void Length()
+            => Assert.IsNull(CongoFen.FromFen("3l3/7/7/7/7/7/3L3/7/w/-1"));
+
+        [TestMethod]
+        public void TwoLions()
         {
             var game = CongoFen.FromFen("3l3/7/7/7/7/7/3L3/w/-1");
-            Assert.IsTrue(
-                game.Board.GetPiece((int)Square.D7).IsLion() &&
-                game.Board.IsBlackPiece((int)Square.D7) &&
-                game.Board.GetPiece((int)Square.D1).IsLion() &&
-                game.Board.IsWhitePiece((int)Square.D1) &&
-                game.ActivePlayer.Color.IsWhite()
-            );
+            Assert.IsTrue(game.Board.GetPiece((int)Square.D7).IsLion() && game.Board.IsBlackPiece((int)Square.D7) &&
+                          game.Board.GetPiece((int)Square.D1).IsLion() && game.Board.IsWhitePiece((int)Square.D1) &&
+                          game.ActivePlayer.Color.IsWhite());
         }
 
         [TestMethod]
-        public void FromFen_InvalidShortRankUnderflow()
-        {
-            var game = CongoFen.FromFen("3l2/7/7/7/7/7/3L3/w/-1");
-            Assert.IsTrue(game == null);
-        }
+        public void InvalidShortRankUnderflow()
+            => Assert.IsNull(CongoFen.FromFen("3l2/7/7/7/7/7/3L3/w/-1"));
 
         [TestMethod]
-        public void FromFen_InvalidLongRankOverflow()
-        {
-            var game = CongoFen.FromFen("3l3/8/7/7/7/7/3L3/w/-1");
-            Assert.IsTrue(game == null);
-        }
+        public void InvalidLongRankOverflow()
+            => Assert.IsNull(CongoFen.FromFen("3l3/8/7/7/7/7/3L3/w/-1"));
 
         [TestMethod]
-        public void FromFen_InvalidRankPiecesOnRankOverflow()
-        {
-            var game = CongoFen.FromFen("7/7/7/7/7/7/3L3P/w/-1");
-            Assert.IsTrue(game == null);
-        }
+        public void InvalidRankPiecesOnRankOverflow()
+            => Assert.IsNull(CongoFen.FromFen("7/7/7/7/7/7/3L3P/w/-1"));
+    }
 
+    [TestClass]
+    public class ToFen
+    {
         [TestMethod]
-        public void ToFen_Standard()
+        public void Standard()
         {
             var game = CongoGame.Standard();
             var actual = CongoFen.ToFen(game);
@@ -55,7 +48,7 @@ namespace Congo.Core.MSTest
         }
 
         [TestMethod]
-        public void ToFen_Empty()
+        public void Empty()
         {
             var board = CongoBoard.Empty;
             var white = new CongoPlayer(White.Color, board, null);
@@ -67,7 +60,7 @@ namespace Congo.Core.MSTest
         }
 
         [TestMethod]
-        public void ToFen_WithFirstMonkeyJump()
+        public void WithFirstMonkeyJump()
         {
             var board = CongoBoard.Empty;
             var white = new CongoPlayer(White.Color, board, null);

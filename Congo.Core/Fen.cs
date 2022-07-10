@@ -55,6 +55,8 @@ namespace Congo.Core
         /// </summary>
         public static CongoGame FromFen(string fen)
         {
+            if (fen is null) { return null; }
+
             var seps = new char[] { '/' };
             var sfen = fen.Split(seps, StringSplitOptions.RemoveEmptyEntries);
 
