@@ -10,46 +10,81 @@ namespace Congo.CLI
 {
     public class CongoArgs
     {
+        private static readonly string placeOption = "--place";
+        private static readonly string boardOption = "--board";
+        private static readonly string whiteOption = "--white";
+        private static readonly string blackOption = "--black";
+        private static readonly string hostOption = "--host";
+        private static readonly string portOption = "--port";
+
+        private static readonly string localValue = "local";
+        private static readonly string networkValue = "network";
+        private static readonly string aiValue = "ai";
+        private static readonly string hiValue = "hi";
+        private static readonly string randomValue = "random";
+        private static readonly string negamaxValue = "negamax";
+        private static readonly string standardValue = "standard";
+
+        // TODO: get rid of this dictionary
         private static readonly ImmutableDictionary<string, AlgorithmDelegate> supportedAlgorithms =
             new Dictionary<string, AlgorithmDelegate> {
-                { "random",  Algorithm.Random  },
-                { "negamax", Algorithm.Negamax }
+                { randomValue,  Algorithm.Random  },
+                { negamaxValue, Algorithm.Negamax }
             }.ToImmutableDictionary();
 
         public static class Parser
         {
-            #region Acceptors
+            #region argument acceptors
 
-            private static string[] AcceptLocalPlace(string arg)
-                => (arg == "local")
-                    ? new string[] { arg } : null;
+            private static string[] acceptLocalPlace(string arg)
+            {
+                return arg == localValue
+                    ? new string[] { arg }
+                    : null;
+            }
 
-            private static string[] AcceptLocalBoard(string arg)
-                => (arg == "standard") || (CongoFen.FromFen(arg) != null)
-                    ? new string[] { arg } : null;
+            private static string[] acceptNetworkPlace(string arg)
+            {
+                return arg == networkValue
+                    ? new string[] { arg }
+                    : null;
+            }
 
-            private static string[] AcceptNetworkPlace(string arg)
-                => (arg == "network")
-                    ? new string[] { arg } : null;
+            private static string[] acceptLocalBoard(string arg)
+            {
+                return arg == standardValue || CongoFen.FromFen(arg) != null
+                    ? new string[] { arg }
+                    : null;
+            }
 
-            private static string[] AcceptNetworkBoard(string arg)
-                => (arg == "standard") || (CongoFen.FromFen(arg) != null) || Utils.UserInput.IsBoardIdValid(arg)
-                    ? new string[] { arg } : null;
+            private static string[] acceptNetworkBoard(string arg)
+            {
+                return arg == standardValue || CongoFen.FromFen(arg) != null || Utils.UserInput.IsValidBoardId(arg)
+                    ? new string[] { arg }
+                    : null;
+            }
 
-            private static string[] AcceptNetworkHost(string arg)
-                => Utils.UserInput.IsIpAddressValid(arg)
-                    ? new string[] { arg } : null;
-
-            private static string[] AcceptNetworkPort(string arg)
-                => Utils.UserInput.IsPortValid(arg)
-                    ? new string[] { arg } : null;
-
-            private static string[] AcceptPlayer(string arg)
+            private static string[] acceptPlayer(string arg)
             {
                 var spl = arg.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
-                return (spl.Length == 2) && Utils.UserInput.IsUserNameValid(spl[0]) && (spl[1] == "random" || spl[1] == "negamax")
-                    ? spl : null;
+                return (spl.Length == 2) && (spl[0] == aiValue || spl[0] == hiValue) && (spl[1] == randomValue || spl[1] == negamaxValue)
+                    ? spl
+                    : null;
+            }
+
+            private static string[] acceptHost(string arg)
+            {
+                return Utils.UserInput.IsValidHost(arg)
+                    ? new string[] { arg }
+                    : null;
+            }
+
+            private static string[] acceptPort(string arg)
+            {
+                return Utils.UserInput.IsValidPort(arg)
+                    ? new string[] { arg }
+                    : null;
             }
 
             #endregion
@@ -58,7 +93,6 @@ namespace Congo.CLI
             {
                 var result = new Dictionary<string, ImmutableArray<string>>();
 
-                // at least count (repeated are not handled here)
                 if (args.Length != cnt) { return null; }
 
                 foreach (var arg in args) {
@@ -90,43 +124,62 @@ namespace Congo.CLI
             {
                 var localAcceptors = new AcceptDict
                 {
-                    { "--place", AcceptLocalPlace },
-                    { "--board", AcceptLocalBoard },
-                    { "--white", AcceptPlayer },
-                    { "--black", AcceptPlayer },
+                    { placeOption, acceptLocalPlace },
+                    { boardOption, acceptLocalBoard },
+                    { whiteOption, acceptPlayer },
+                    { blackOption, acceptPlayer },
                 };
 
                 var networkAcceptors = new AcceptDict
                 {
-                    { "--place", AcceptNetworkPlace },
-                    { "--host",  AcceptNetworkHost  },
-                    { "--port",  AcceptNetworkPort  },
-                    { "--board", AcceptNetworkBoard },
-                    { "--white", AcceptPlayer },
-                    { "--black", AcceptPlayer },
+                    { placeOption, acceptNetworkPlace },
+                    { boardOption, acceptNetworkBoard },
+                    { whiteOption, acceptPlayer },
+                    { blackOption, acceptPlayer },
+                    { hostOption, acceptHost },
+                    { portOption, acceptPort },
                 };
 
-                ParsedDict result = null;
+                var result = tryParse(args, localAcceptors, localAcceptors.Count);
 
-                if (result == null) { result = tryParse(args, localAcceptors, localAcceptors.Count); }
+                if (result is null) {
 
-                if (result == null) {
-                    result = tryParse(args, networkAcceptors, networkAcceptors.Count - 1);
-                    if (result != null) {
-                        result = (result.ContainsKey("--white") && result.ContainsKey("--black")) ? null : result;
-                    }
+                    /* network configuration should contain either white 
+                     * or black player configuration, but not both!
+                     */
+                    result = tryParse(args, networkAcceptors, networkAcceptors.Count - 1); // only 5 
+                    result = (result?.ContainsKey(whiteOption) == true && result?.ContainsKey(blackOption) == true)
+                        ? null
+                        : result;
                 }
 
-                if (result == null) { throw new ArgumentException("Malformed arguments detected."); }
+                if (result is null) { throw new ArgumentException("Malformed arguments detected."); }
 
                 return new CongoArgs(result);
             }
         }
 
-        private static string getHandle(CongoColor color)
-            => color == White.Color ? "--white" : "--black";
-
         private readonly ParsedDict parsedArgs;
+
+        private static string getColorHandle(CongoColor color)
+        {
+            return color == White.Color
+                ? whiteOption
+                : blackOption;
+        }
+
+        private string getMaybeValue(string key, int idx)
+        {
+            return parsedArgs.ContainsKey(key) && parsedArgs[key].Length > idx
+                ? parsedArgs[key][idx]
+                : null;
+        }
+
+        private bool isExpectedValue(string key, int idx, string value)
+            => getMaybeValue(key, idx) == value;
+
+        private bool isPlayerType(CongoColor color, string type)
+            => isExpectedValue(getColorHandle(color), 0, type);
 
         private CongoArgs(ParsedDict parsedArgs)
         {
@@ -134,45 +187,56 @@ namespace Congo.CLI
         }
 
         public bool IsGameLocal()
-            => parsedArgs["--place"][0] == "local";
+            => isExpectedValue(placeOption, 0, localValue);
 
         public bool IsGameNetwork()
-            => parsedArgs["--place"][0] == "network";
+            => isExpectedValue(placeOption, 0, networkValue);
 
         public bool IsBoardStandard()
-            => parsedArgs["--board"][0] == "standard";
+            => isExpectedValue(boardOption, 0, standardValue);
 
         public bool IsBoardValidCongoFen()
-            => CongoFen.FromFen(parsedArgs["--board"][0]) != null;
+            => CongoFen.FromFen(getMaybeValue(boardOption, 0)) is not null;
 
-        public bool IsBoardValidNetId()
-            => Utils.UserInput.IsBoardIdValid(parsedArgs["--board"][0]);
+        public bool IsBoardValidId()
+            => Utils.UserInput.IsValidBoardId(getMaybeValue(boardOption, 0));
 
-        public string GetBoardArg()
-            => parsedArgs["--board"][0];
+        public string GetMaybeBoardValue()
+            => getMaybeValue(boardOption, 0);
 
         public bool IsPlayerAi(CongoColor color)
-            => parsedArgs[getHandle(color)][0] == "ai";
+            => isPlayerType(color, aiValue);
 
         public bool IsPlayerHi(CongoColor color)
-            => parsedArgs[getHandle(color)][0] == "hi";
+            => isPlayerType(color, hiValue);
 
         public CongoColor GetLocalPlayerColor()
-            => parsedArgs.ContainsKey("--white") ? White.Color : Black.Color;
-
-        public AlgorithmDelegate GetAdvisingDelegate(CongoColor color)
-            => supportedAlgorithms[parsedArgs[getHandle(color)][1]];
-
-        public AlgorithmDelegate GetRandomAdvisingDelegate()
-            => supportedAlgorithms["random"];
-
-        public string GetHost()
-            => parsedArgs["--host"][0];
+        {
+            return parsedArgs.ContainsKey(whiteOption)
+                ? White.Color
+                : Black.Color;
+        }
 
         /// <summary>
-        /// @note Parsing helps to avoid trailing zeroes.
+        /// The method looks for a player definition. Returns Algorithm.Random
+        /// if player is not found.
         /// </summary>
-        public string GetPort()
-            => int.Parse(parsedArgs["--port"][0]).ToString();
+        public AlgorithmDelegate GetAdvisingDelegate(CongoColor color)
+        {
+            AlgorithmDelegate result = Algorithm.Random;
+
+            var val = getMaybeValue(getColorHandle(color), 1);
+            if (val is not null && val == negamaxValue) {
+                result = Algorithm.Negamax;
+            }
+
+            return result;
+        }
+
+        public string GetMaybeHost()
+            => getMaybeValue(hostOption, 0);
+
+        public string GetMaybePort()
+            => getMaybeValue(portOption, 0);
     }
 }
