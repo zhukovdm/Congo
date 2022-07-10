@@ -11,7 +11,7 @@ namespace Congo.CLI
             CongoGame.Initialize();
 
             try {
-                var ui = CongoCommandLine.Create(CongoArgs.Parser.Parse(args));
+                var ui = CongoCommandLine.Create(CongoArgs.Parser.Parse(args)).Init();
                 while (!ui.End()) { ui.Step(); }
                 ui.ReportResult();
             }
