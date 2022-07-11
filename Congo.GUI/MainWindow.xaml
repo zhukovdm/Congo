@@ -8,25 +8,23 @@
     mc:Ignorable="d"
     Icon="Resources/icon.png"
     Title="Congo"
-    MinHeight="710"
-    Height="710"
-    MinWidth="900"
-    Width="900">
+    MinHeight="710" Height="710" MinWidth="900" Width="900">
     <Grid>
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
                 <Menu Background="Transparent">
                     <MenuItem Header="_Game">
-                        <MenuItem Name="buttonMenuLocal" Header="_Local" Click="buttonMenuLocal_Click"/>
-                        <MenuItem Name="buttonMenuNetwork" Header="_Network" Click="buttonMenuNetwork_Click"/>
+                        <MenuItem Name="buttonMenuLocal" Header="Local" Click="buttonMenuLocal_Click"/>
+                        <MenuItem Name="buttonMenuNetwork" Header="Network" Click="buttonMenuNetwork_Click"/>
                         <Separator/>
                         <MenuItem Name="buttonMenuSave" Header="_Save" Click="buttonMenuSave_Click"/>
                         <Separator/>
-                        <MenuItem Name="buttonMenuPause" Header="_Pause" Click="buttonMenuPause_Click"/>
-                        <MenuItem Name="buttonMenuCancel" Header="_Cancel" Click="buttonMenuCancel_Click"/>
-                        <Separator/>
                         <MenuItem Name="buttonMenuReset" Header="_Reset" Click="buttonMenuReset_Click"/>
                         <MenuItem Name="buttonMenuExit" Header="_Exit" Click="buttonMenuExit_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="_Control">
+                        <MenuItem Name="buttonMenuPause" Header="Pause" Click="buttonMenuPause_Click"/>
+                        <MenuItem Name="buttonMenuCancel" Header="Cancel" Click="buttonMenuCancel_Click"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
@@ -82,12 +80,12 @@
                 </StackPanel>
                 <DockPanel Grid.Column="2" Width="10"/>
                 <StackPanel Grid.Column="3" Orientation="Vertical">
-                    <DockPanel Name="panelBlackPlayer" Height="50">
-                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="5"/>
+                    <DockPanel Height="50">
+                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="5" Background="#000000"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
-                    <DockPanel Name="panelWhitePlayer" Height="50">
-                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="5"/>
+                    <DockPanel Height="50">
+                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="5" Background="#914800"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
                     <Grid>
@@ -103,15 +101,16 @@
                             BorderThickness="3"
                             VerticalAlignment="Center"
                             Click="buttonAdvise_Click">Advise</Button>
-                        <DockPanel Grid.Column="1" Width="10"/>
                         <DockPanel Grid.Column="2" VerticalAlignment="Center">
-                            <TextBlock Grid.Column="2" Name="textBlockAdvice" FontSize="20" TextAlignment="Center" Text=""/>
+                            <TextBlock Grid.Column="2" Name="textBlockAdvise" FontSize="20" TextAlignment="Center"/>
                         </DockPanel>
                     </Grid>
                     <DockPanel Height="10"/>
-                    <ListBox Name="listBoxMoves" FontSize="20" Height="355"/>
+                    <TextBlock Height="40" Name="textBlockGameId" Background="LightGray" FontSize="30" TextAlignment="Center"/>
                     <DockPanel Height="10"/>
-                    <TextBlock Name="textBlockStatus" Background="LightGray" FontSize="30" TextAlignment="Center"/>
+                    <ListBox Height="305" Name="listBoxMoves" FontSize="20"/>
+                    <DockPanel Height="10"/>
+                    <TextBlock Height="40" Name="textBlockStatus" Background="LightGray" FontSize="30" TextAlignment="Center"/>
                 </StackPanel>
                 <DockPanel Grid.Column="4" Width="10"/>
             </Grid>

@@ -2,7 +2,7 @@
 
 namespace Congo.GUI
 {
-    internal class AdvisePanelWrapper
+    internal sealed class AdvisePanelWrapper : BaseWrapper
     {
         private readonly Button button;
         private readonly TextBlock textBlock;
@@ -12,12 +12,12 @@ namespace Congo.GUI
             this.textBlock = textBlock;
         }
 
-        public void Init()
+        public override void Init()
         {
             button.IsEnabled = false;
             textBlock.Text = string.Empty;
         }
 
-        public void 
+        public override void Reset() => Init();
     }
 }

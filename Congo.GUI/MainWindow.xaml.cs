@@ -1,183 +1,56 @@
-﻿using System;
-using System.ComponentModel;
+﻿using Congo.Core;
+using Congo.Server;
+using Congo.Utils;
+using Grpc.Net.Client;
+using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Linq;
-using Congo.Core;
 
 namespace Congo.GUI
 {
-    public static class TileExtensions
-    {
-        private static readonly double tileSize = MainWindow.tileSize;
-        private static readonly double accentBoardThickness = 5.0;
-        private static readonly double standardBoardThickness = 1.0;
-
-        private static readonly ImmutableDictionary<Type, string> type2suffix = new Dictionary<Type, string>
-        {
-            { typeof(Superpawn), "super-pawn" }, { typeof(Monkey), "monkey" },
-            { typeof(Crocodile), "crocodile"  }, { typeof(Zebra),  "zebra"  },
-            { typeof(Elephant),  "elephant"   }, { typeof(Lion),   "lion"   },
-            { typeof(Giraffe),   "giraffe"    }, { typeof(Pawn),   "pawn"   }
-        }.ToImmutableDictionary();
-
-        private static Canvas WithBoard(this Canvas tile, Brush brush, double thickness)
-        {
-            var border = new Border
-            {
-                Width = tileSize,
-                Height = tileSize,
-                BorderBrush = brush,
-                BorderThickness = new Thickness(thickness)
-            };
-            _ = tile.Children.Add(border);
-
-            return tile;
-        }
-
-        public static Canvas WithMoveFrBorder(this Canvas tile)
-            => tile.WithBoard(Brushes.White, accentBoardThickness);
-
-        public static Canvas WithMoveToBorder(this Canvas tile)
-            => tile.WithBoard(Brushes.Red, accentBoardThickness);
-
-        public static Canvas WithStandardBorder(this Canvas tile)
-            => tile.WithBoard(Brushes.Black, standardBoardThickness);
-
-        public static Canvas WithPiece(this Canvas tile, CongoColor color, Type type)
-        {
-            var pfx = color.IsWhite() ? "white" : "black";
-            var sfx = type2suffix[type];
-            var ext = ".png";
-
-            var image = new Image
-            {
-                Width = tileSize,
-                Height = tileSize,
-                Source = new BitmapImage(new Uri("/Congo.GUI;component/Resources/" + pfx + "-" + sfx + ext, UriKind.Relative))
-            };
-            _ = tile.Children.Add(image);
-
-            return tile;
-        }
-    }
-
-    public static class ButtonExtensions
-    {
-        public static void PerformClick(this Button button)
-            => button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent, button));
-    }
+    internal enum MainState : int { INIT, FR, TO, AI, NET, END }
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static readonly double tileSize = 82.0;
-        private static readonly int boardSize = CongoBoard.Size * CongoBoard.Size;
+        // wrappers
+        private readonly BoardWrapper boardWrapper;
+        private readonly UserPanelWrapper userPanelWrapper;
+        private readonly AdvisePanelWrapper advisePanelWrapper;
 
-        private static readonly string whiteColorCode = "#914800";
-        private static readonly string blackColorCode = "#000000";
-        private static readonly string riverColorCode = "#65b9f8";
-        private static readonly string groundColorCode = "#67de79";
-        private static readonly string castleColorCode = "#f2d377";
+        private readonly List<BaseWrapper> wrappers;
 
-        private static readonly ImmutableList<string> moveViews = new List<string>
-        {
-            "a7", "b7", "c7", "d7", "e7", "f7", "g7",
-            "a6", "b6", "c6", "d6", "e6", "f6", "g6",
-            "a5", "b5", "c5", "d5", "e5", "f5", "g5",
-            "a4", "b4", "c4", "d4", "e4", "f4", "g4",
-            "a3", "b3", "c3", "d3", "e3", "f3", "g3",
-            "a2", "b2", "c2", "d2", "e2", "f2", "g2",
-            "a1", "b1", "c1", "d1", "e1", "f1", "g1"
-        }.ToImmutableList();
+        // local game
 
-        private static string getMoveView(CongoMove move)
-        {
-            if (move == null) { return null; }
-
-            else if (move is MonkeyJump jump) {
-                return "(" + moveViews[jump.Fr] + ", " + moveViews[jump.Bt] + ", " + moveViews[jump.To] + ")";
-            }
-
-            else { return "(" + moveViews[move.Fr] + ", " + moveViews[move.To] + ")"; }
-        }
-
-        private enum State : int { INIT, AI, FR, TO, END }
+        // network game
 
         private int moveFr;
         private int moveTo;
-        private State state;
+        private MainState state;
         private CongoGame game;
-        private CongoUser white;
-        private CongoUser black;
+        private CongoUser whiteUser, blackUser;
+
+
+        long gameId, moveId = -1;
+        GrpcChannel channel;
+        CongoGrpc.CongoGrpcClient client;
 
         private BackgroundWorker adviceWorker = null;
         private readonly ManualResetEventSlim adviceEvent;
         private readonly ManualResetEventSlim pauseEvent;
 
-        private IEnumerable<CongoMove> getMovesFr(int fr)
-        {
-            return from move in game.ActivePlayer.Moves
-                   where move.Fr == fr
-                   select move;
-        }
-
-        private void replaceTile(int idx, Canvas tile)
-        {
-            panelCongoBoard.Children.RemoveAt(idx);
-            panelCongoBoard.Children.Insert(idx, tile);
-        }
-
-        /// <summary>
-        /// Constructs empty tile with background and <b>event handler</b>.
-        /// @note Event handler is a reason the method cannot be static.
-        /// </summary>
-        private Canvas getEmptyTile(int idx)
-        {
-            string code;
-
-            if (idx >= 21 && idx < 28) {
-                code = riverColorCode;
-            }
-
-            else {
-                code = (idx % 7) switch
-                {
-                    0 or
-                    1 or
-                    5 or
-                    6 => groundColorCode,
-                    _ => castleColorCode,
-                };
-            }
-
-            var canvas = new Canvas
-            {
-                Width = tileSize,
-                Height = tileSize,
-                Background = (SolidColorBrush)new BrushConverter().ConvertFromString(code),
-                Tag = idx.ToString()
-            };
-            canvas.MouseUp += tile_Click;
-
-            return canvas;
-        }
-
         private CongoUser activeUser
-        {
-            get => game.ActivePlayer.IsWhite() ? white : black;
-        }
+            => game.ActivePlayer.IsWhite() ? whiteUser : blackUser;
 
         private void appendMove(CongoMove move)
         {
-            listBoxMoves.Items.Add(getMoveView(move));
+            listBoxMoves.Items.Add(MovePresenter.GetMoveView(move));
             listBoxMoves.ScrollIntoView(listBoxMoves.Items[^1]);
         }
 
@@ -188,10 +61,10 @@ namespace Congo.GUI
             /* Avoid too fast switching between players. Safe to access 
              * variables, because only reset could remove users, but is
              * waiting for adviceEvent. */
-            if (white is Ai && black is Ai) { Thread.Sleep(1000); }
+            if (whiteUser is Ai && blackUser is Ai) { Thread.Sleep(1000); }
 
             var g = (CongoGame)e.Argument;
-            var user = g.ActivePlayer.IsWhite() ? white : black;
+            var user = g.ActivePlayer.IsWhite() ? whiteUser : blackUser;
             e.Result = user.Advise(g);
 
             adviceEvent.Set();
@@ -244,7 +117,7 @@ namespace Congo.GUI
 
                 buttonAdvise.IsEnabled = true;
                 buttonMenuCancel.IsEnabled = false;
-                textBlockAdvice.Text = getMoveView(move);
+                textBlockAdvise.Text = MovePresenter.GetMoveView(move);
             }
 
             adviceWorker = null;
@@ -258,11 +131,11 @@ namespace Congo.GUI
         {
             switch (state) {
 
-                case State.INIT:
-                case State.AI:
+                case MainState.INIT:
+                case MainState.AI:
                     break;
 
-                case State.FR:
+                case MainState.FR:
 
                     if (sender is Canvas tileFrom) {
                         moveFr = int.Parse((string)tileFrom.Tag);
@@ -270,7 +143,7 @@ namespace Congo.GUI
                     }
                     break;
 
-                case State.TO:
+                case MainState.TO:
 
                     if (sender is Canvas tileTo) {
                         moveTo = int.Parse((string)tileTo.Tag);
@@ -278,7 +151,7 @@ namespace Congo.GUI
                     }
                     break;
 
-                case State.END:
+                case MainState.END:
                     break;
 
                 default:
@@ -298,12 +171,14 @@ namespace Congo.GUI
             if (dialog.ShowDialog() == true) {
                 resetGame();
 
-                game = dialog.Game; white = dialog.White; black = dialog.Black;
+                game = dialog.Game;
+                whiteUser = dialog.WhiteUser;
+                blackUser = dialog.BlackUser;
 
                 buttonMenuLocal.IsEnabled = false;
                 buttonMenuNetwork.IsEnabled = false;
                 buttonMenuSave.IsEnabled = true;
-                buttonMenuPause.IsEnabled = (white is Ai) && (black is Ai);
+                buttonMenuPause.IsEnabled = (whiteUser is Ai) && (blackUser is Ai);
 
                 initGame();
             }
@@ -318,7 +193,8 @@ namespace Congo.GUI
         private void buttonMenuSave_Click(object sender, RoutedEventArgs e)
         {
             var g = game;
-            if (g != null) { Clipboard.SetText(CongoFen.ToFen(g)); }
+            var r = (g is not null) ? CongoFen.ToFen(g) : string.Empty;
+            Clipboard.SetText(r);
         }
 
         private void buttonMenuPause_Click(object sender, RoutedEventArgs e)
@@ -367,69 +243,7 @@ namespace Congo.GUI
         #region Draw Game
 
         private void cleanAdvice()
-            => textBlockAdvice.Text = "";
-
-        private void cleanBoard()
-        {
-            panelCongoBoard.Children.RemoveRange(0, panelCongoBoard.Children.Count);
-
-            for (int i = 0; i < boardSize; ++i) {
-                panelCongoBoard.Children.Add(getEmptyTile(i).WithStandardBorder());
-            }
-        }
-
-        private void drawPieces(CongoColor color)
-        {
-            var e = game.Board.GetEnumerator(color);
-
-            while (e.MoveNext()) {
-                var tile = getEmptyTile(e.Current)
-                    .WithPiece(color, game.Board.GetPiece(e.Current).GetType())
-                    .WithStandardBorder();
-                replaceTile(e.Current, tile);
-            }
-        }
-
-        /// <summary>
-        /// Draw selections on the tiles based on game state.
-        /// @note Selections are possible only if <b>state == State.TO</b>!
-        /// </summary>
-        private void drawSelect()
-        {
-            if (state == State.TO) {
-                foreach (var move in getMovesFr(moveFr)) {
-
-                    // excludes monkey interrupt vs. ordinary selection
-                    if (move.Fr != move.To) {
-                        panelCongoBoard.Children[move.To] = ((Canvas)panelCongoBoard.Children[move.To]).WithMoveToBorder();
-                    }
-                }
-
-                var tile = (Canvas)panelCongoBoard.Children[moveFr];
-
-                panelCongoBoard.Children[moveFr] = (game.FirstMonkeyJump == null)
-                    ? tile.WithMoveFrBorder()
-                    : tile.WithMoveToBorder();
-            }
-        }
-
-        private void drawBoard()
-        {
-            cleanBoard();
-            drawPieces(White.Color);
-            drawPieces(Black.Color);
-            drawSelect();
-        }
-
-        private void drawPanel()
-        {
-            var w = game.ActivePlayer.IsWhite();
-
-            borderWhitePlayer.BorderBrush = w ? Brushes.Red : Brushes.Transparent;
-            borderBlackPlayer.BorderBrush = w ? Brushes.Transparent : Brushes.Red;
-
-            cleanAdvice();
-        }
+            => textBlockAdvise.Text = "";
 
         #endregion
 
@@ -437,30 +251,30 @@ namespace Congo.GUI
 
         private void initState()
         {
-            if (game.HasEnded()) { state = State.END; }
+            if (game.HasEnded()) { state = MainState.END; }
 
-            else if (activeUser is Ai) { state = State.AI; }
+            else if (activeUser is Ai) { state = MainState.AI; }
 
-            else if (game.FirstMonkeyJump != null) { state = State.TO; buttonAdvise.IsEnabled = true; }
+            else if (game.FirstMonkeyJump != null) { state = MainState.TO; buttonAdvise.IsEnabled = true; }
 
-            else { state = State.FR; buttonAdvise.IsEnabled = true; }
+            else { state = MainState.FR; buttonAdvise.IsEnabled = true; }
         }
 
         private void updateState()
         {
             // determine new state
 
-            if (game.HasEnded()) { state = State.END; }
+            if (game.HasEnded()) { state = MainState.END; }
 
-            else if (activeUser is Ai) { state = State.AI; }
+            else if (activeUser is Ai) { state = MainState.AI; }
 
-            else if (state == State.FR && game.Board.IsOccupied(moveFr)
+            else if (state == MainState.FR && game.Board.IsOccupied(moveFr)
                 && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFr)) {
-                state = State.TO;
+                state = MainState.TO;
             }
 
             // end of game | monkey jump | move ~> opponent
-            else if (state == State.TO) {
+            else if (state == MainState.TO) {
 
                 var move = game.ActivePlayer.Accept(new CongoMove(moveFr, moveTo));
 
@@ -468,13 +282,13 @@ namespace Congo.GUI
                 if (move != null) {
                     game = game.Transition(move);
 
-                    if (game.HasEnded()) { state = State.END; }
+                    if (game.HasEnded()) { state = MainState.END; }
 
                     else if (move is MonkeyJump) { moveFr = moveTo; /* State.TO remains */ }
 
                     // opponent will turn
                     else {
-                        state = (activeUser is Ai) ? State.AI : State.FR;
+                        state = (activeUser is Ai) ? MainState.AI : MainState.FR;
                     }
 
                     cleanAdvice();
@@ -483,12 +297,12 @@ namespace Congo.GUI
                 }
 
                 // not a move, but reset
-                else if (moveFr == moveTo) { state = State.FR; }
+                else if (moveFr == moveTo) { state = MainState.FR; }
 
                 else { /* do nothing */ }
             }
 
-            else { state = State.FR; }
+            else { state = MainState.FR; }
         }
 
         private void finalizeState()
@@ -497,17 +311,17 @@ namespace Congo.GUI
 
             switch (state) {
 
-                case State.AI:
+                case MainState.AI:
                     buttonAdvise.IsEnabled = false;
                     aiAdvice_Init();
                     break;
 
-                case State.FR:
-                case State.TO:
+                case MainState.FR:
+                case MainState.TO:
                     buttonAdvise.IsEnabled = true;
                     break;
 
-                case State.END:
+                case MainState.END:
                     buttonAdvise.IsEnabled = false;
                     borderWhitePlayer.BorderBrush = Brushes.Transparent;
                     borderBlackPlayer.BorderBrush = Brushes.Transparent;
@@ -518,7 +332,7 @@ namespace Congo.GUI
                     buttonMenuNetwork.IsEnabled = true;
                     break;
 
-                case State.INIT:
+                case MainState.INIT:
                 default:
                     break;
             }
@@ -550,6 +364,11 @@ namespace Congo.GUI
 
         #region Reset and Exit Game
 
+        private void initGame()
+        {
+
+        }
+
         private void finalizeAdviceWorker()
         {
             /* Algorithm can be disabled __only if__ ongoing advice exist,
@@ -571,10 +390,10 @@ namespace Congo.GUI
 
             finalizeAdviceWorker();
 
-            state = State.INIT;
+            state = MainState.INIT;
             game = null;
-            white = null;
-            black = null;
+            whiteUser = null;
+            blackUser = null;
 
             /* Gui entities */
 
@@ -620,11 +439,14 @@ namespace Congo.GUI
         {
             InitializeComponent();
 
+            boardWrapper = new(panelCongoBoard, tile_Click);
+            userPanelWrapper = new(borderWhitePlayer, borderBlackPlayer);
+            advisePanelWrapper = new(buttonAdvise, textBlockAdvise);
+
+            wrappers = new() { boardWrapper, userPanelWrapper, advisePanelWrapper, };
+
             adviceEvent = new ManualResetEventSlim(true);
             pauseEvent = new ManualResetEventSlim(true);
-
-            panelWhitePlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(whiteColorCode);
-            panelBlackPlayer.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(blackColorCode);
 
             resetGame();
         }

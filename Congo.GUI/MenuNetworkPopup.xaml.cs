@@ -14,8 +14,11 @@ namespace Congo.GUI
     public partial class MenuNetworkPopup : Window, IPlayable
     {
         public CongoGame Game { get; private set; }
-        public CongoUser White { get; private set; }
-        public CongoUser Black { get; private set; }
+        public CongoUser WhiteUser { get; private set; }
+        public CongoUser BlackUser { get; private set; }
+        public GrpcChannel Channel { get; private set; }
+        public CongoGrpc.CongoGrpcClient Client { get; private set; }
+        public long GameId { get; private set; }
 
         private static void OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
@@ -76,15 +79,15 @@ namespace Congo.GUI
                 errorBuf.WriteLine("Fen is selected, but valid CongoFen string is not provided.");
             }
 
-            if (radioButtonId.IsChecked == true && !UserInput.IsBoardIdValid(textBoxId.Text)) {
+            if (radioButtonId.IsChecked == true && !UserInput.IsValidGameId(textBoxId.Text)) {
                 errorBuf.WriteLine("Id is selected, but valid gameId is not provided.");
             }
 
-            if (!UserInput.IsIpAddressValid(textBoxHost.Text)) {
+            if (!UserInput.IsValidHost(textBoxHost.Text)) {
                 errorBuf.WriteLine("Entered host address is invalid.");
             }
 
-            if (!UserInput.IsPortValid(textBoxPort.Text)) {
+            if (!UserInput.IsValidPort(textBoxPort.Text)) {
                 errorBuf.WriteLine("Entered port is invalid.");
             }
 
@@ -97,46 +100,38 @@ namespace Congo.GUI
 
             #endregion
 
-            #region create network primitives
+            #region check network capabilities
 
-            GrpcChannel channel = null;
-            CongoGrpc.CongoGrpcClient client = null;
-
-            // no exceptions could arise while creating channel and client
             if (errorBuf.ToString() == string.Empty) {
-                channel = NetworkPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text);
-                client = new CongoGrpc.CongoGrpcClient(channel);
+                Channel = GrpcPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text);
+                Client = new CongoGrpc.CongoGrpcClient(Channel);
             }
 
-            #endregion
-
-            #region check game
-
-            long gameId = -1;
+            GameId = -1;
 
             try {
 
                 if (radioButtonStandard.IsChecked == true) {
-                    gameId = client.PostBoard(new PostBoardRequest() { Board = CongoFen.ToFen(CongoGame.Standard()) }).GameId;
+                    GameId = Client.PostFen(new PostFenRequest() { Fen = CongoFen.ToFen(CongoGame.Standard()) }).GameId;
                 }
 
                 if (radioButtonFen.IsChecked == true) {
-                    gameId = client.PostBoard(new PostBoardRequest() { Board = textBoxFen.Text }).GameId;
+                    GameId = Client.PostFen(new PostFenRequest() { Fen = textBoxFen.Text }).GameId;
                 }
             } catch (Exception) {
                 errorBuf.WriteLine("New board cannot be posted on the server.");
             }
 
             if (radioButtonId.IsChecked == true) {
-                gameId = long.Parse(textBoxId.Text);
+                GameId = long.Parse(textBoxId.Text);
             }
 
             try {
-                if (!client.CheckGameId(new CheckGameIdRequest() { GameId = gameId}).Exist) {
+                if (!Client.CheckGameId(new CheckGameIdRequest() { GameId = GameId }).Exist) {
                     errorBuf.WriteLine("gameId doesn't exist on the server.");
                 }
             } catch (Exception) {
-                errorBuf.WriteLine("gameId cannot be checked on the server.");
+                errorBuf.WriteLine(string.Format($"gameId {GameId} cannot be checked on the server."));
             }
 
             #endregion
@@ -147,6 +142,8 @@ namespace Congo.GUI
                 MessageBox.Show(error, "Wrong communication", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+
         }
 
         public MenuNetworkPopup()

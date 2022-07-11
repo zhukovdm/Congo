@@ -13,6 +13,9 @@
         <Style TargetType="{x:Type Button}">
             <Setter Property="FontSize" Value="35"/>
         </Style>
+        <Style TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Vertical"/>
+        </Style>
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="FontSize" Value="35"/>
             <EventSetter Event="LostKeyboardFocus" Handler="textBox_LostKeyboardFocus"/>
@@ -26,13 +29,13 @@
         </Style>
     </Window.Resources>
     <Grid>
-        <StackPanel Orientation="Vertical" Grid.RowSpan="2" Grid.ColumnSpan="2">
+        <StackPanel>
             <GroupBox>
                 <GroupBox.Header>
                     <TextBlock Text="Board" FontSize="20"/>
                 </GroupBox.Header>
-                <StackPanel Orientation="Vertical">
-                    <Viewbox HorizontalAlignment="Left">
+                <StackPanel>
+                    <Viewbox>
                         <RadioButton
                             GroupName="board_type"
                             Name="radioButtonStandard"
@@ -81,7 +84,7 @@
                 <GroupBox.Header>
                     <TextBlock Text="Player" FontSize="20"/>
                 </GroupBox.Header>
-                <StackPanel Orientation="Vertical">
+                <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="0.50*"/>
@@ -145,7 +148,7 @@
                 <GroupBox.Header>
                     <TextBlock Text="Connection" FontSize="20"/>
                 </GroupBox.Header>
-                <StackPanel Orientation="Vertical">
+                <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="0.25*"/>

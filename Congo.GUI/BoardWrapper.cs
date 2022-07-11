@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace Congo.GUI
 {
-    internal sealed class BoardWrapper
+    internal sealed class BoardWrapper : BaseWrapper
     {
         public const double TileSize = 82.0;
         private const string riverColorCode = "#65b9f8";
@@ -97,7 +97,7 @@ namespace Congo.GUI
             this.handler = handler;
         }
 
-        public void Init()
+        public override void Init()
         {
             panel.Children.RemoveRange(0, panel.Children.Count);
 
@@ -114,6 +114,6 @@ namespace Congo.GUI
             drawSelect(game, state, fr);
         }
 
-        public void Reset() => Init();
+        public override void Reset() => Init();
     }
 }

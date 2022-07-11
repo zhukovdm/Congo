@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace Congo.GUI
 {
-    internal class UserPanelWrapper
+    internal sealed class UserPanelWrapper : BaseWrapper
     {
         private static readonly SolidColorBrush activeBrush = Brushes.Red;
         private static readonly SolidColorBrush inactiveBrush = Brushes.Transparent;
@@ -17,7 +17,7 @@ namespace Congo.GUI
             this.borderBlack = borderBlack;
         }
 
-        public void Init()
+        public override void Init()
         {
             borderWhite.BorderBrush = inactiveBrush;
             borderBlack.BorderBrush = inactiveBrush;
@@ -31,6 +31,6 @@ namespace Congo.GUI
             borderBlack.BorderBrush = w ? inactiveBrush : activeBrush;
         }
 
-        public void Reset() => Init();
+        public override void Reset() => Init();
     }
 }

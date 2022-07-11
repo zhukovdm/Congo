@@ -2,6 +2,8 @@
 using System.Windows.Media;
 using System.Windows.Input;
 using Congo.Core;
+using Grpc.Net.Client;
+using Congo.Server;
 
 namespace Congo.GUI
 {
@@ -11,8 +13,11 @@ namespace Congo.GUI
     public partial class MenuLocalPopup : Window, IPlayable
     {
         public CongoGame Game { get; private set; }
-        public CongoUser White { get; private set; }
-        public CongoUser Black { get; private set; }
+        public CongoUser WhiteUser { get; private set; }
+        public CongoUser BlackUser { get; private set; }
+        public GrpcChannel Channel { get; private set; }
+        public CongoGrpc.CongoGrpcClient Client { get; private set; }
+        public long GameId { get; private set; }
 
         private void Esc_PushButton(object sender, KeyEventArgs e)
         {
@@ -51,15 +56,15 @@ namespace Congo.GUI
                 ? Algorithm.Negamax
                 : (AlgorithmDelegate) Algorithm.Random;
 
-            White = (radioButtonWhiteHi.IsChecked == true)
+            WhiteUser = (radioButtonWhiteHi.IsChecked == true)
                 ? new Hi(white_algo)
                 : new Ai(white_algo);
 
             var black_algo = (radioButtonBlackNegamax.IsChecked == true)
                 ? Algorithm.Negamax
-                : (AlgorithmDelegate)Algorithm.Random;
+                : (AlgorithmDelegate) Algorithm.Random;
 
-            Black = (radioButtonBlackHi.IsChecked == true)
+            BlackUser = (radioButtonBlackHi.IsChecked == true)
                 ? new Hi(black_algo)
                 : new Ai(black_algo);
 
