@@ -10,20 +10,20 @@ namespace Congo.CLI
 {
     public class CongoArgs
     {
-        private static readonly string placeOption = "--place";
-        private static readonly string boardOption = "--board";
-        private static readonly string whiteOption = "--white";
-        private static readonly string blackOption = "--black";
-        private static readonly string hostOption = "--host";
-        private static readonly string portOption = "--port";
+        private const string placeOption = "--place";
+        private const string boardOption = "--board";
+        private const string whiteOption = "--white";
+        private const string blackOption = "--black";
+        private const string hostOption = "--host";
+        private const string portOption = "--port";
 
-        private static readonly string localValue = "local";
-        private static readonly string networkValue = "network";
-        private static readonly string aiValue = "ai";
-        private static readonly string hiValue = "hi";
-        private static readonly string randomValue = "random";
-        private static readonly string negamaxValue = "negamax";
-        private static readonly string standardValue = "standard";
+        private const string localValue = "local";
+        private const string networkValue = "network";
+        private const string aiValue = "ai";
+        private const string hiValue = "hi";
+        private const string randomValue = "random";
+        private const string negamaxValue = "negamax";
+        private const string standardValue = "standard";
 
         public static class Parser
         {
@@ -210,10 +210,6 @@ namespace Congo.CLI
                 : Black.Color;
         }
 
-        /// <summary>
-        /// The method looks for a player definition. Returns Algorithm.Random
-        /// if player is not found.
-        /// </summary>
         public AlgorithmDelegate GetAdvisingDelegate(CongoColor color)
         {
             AlgorithmDelegate result = Algorithm.Random;
