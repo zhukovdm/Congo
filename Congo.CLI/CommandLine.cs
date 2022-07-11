@@ -9,15 +9,17 @@ using Congo.Utils;
 
 namespace Congo.CLI
 {
+    public class ExitException : Exception { }
+
     public abstract class CongoCommandLine
     {
         #region create game
 
         private static CongoCommandLine createLocalGame(CongoArgs args)
         {
-            var game = args.IsBoardStandard()
+            var game = args.IsGameStandard()
                 ? CongoGame.Standard()
-                : CongoFen.FromFen(args.GetMaybeBoardValue());
+                : CongoFen.FromFen(args.GetMaybeGameValue());
 
             return new LocalCommandLine(game, args);
         }
@@ -28,17 +30,17 @@ namespace Congo.CLI
             var client = new CongoGrpc.CongoGrpcClient(channel);
 
             long gameId = -1;
-            var board = args.GetMaybeBoardValue();
+            var game = args.GetMaybeGameValue();
 
-            if (args.IsBoardStandard() || args.IsBoardValidCongoFen()) {
-                gameId = client.PostBoard(new PostBoardRequest() { Board = board }).GameId;
+            if (args.IsGameStandard() || args.IsGameValidCongoFen()) {
+                gameId = client.PostFen(new PostFenRequest() { Fen = game }).GameId;
             }
 
-            if (args.IsBoardValidId()) {
-                gameId = long.Parse(board);
+            if (args.IsGameValidId()) {
+                gameId = long.Parse(game);
                 
                 if (!client.CheckGameId(new CheckGameIdRequest() { GameId = gameId }).Exist) {
-                    throw new RpcException(new Status(StatusCode.NotFound, "GameId does not exist."));
+                    throw new RpcException(new Status(StatusCode.NotFound, string.Format($"game {gameId} does not exist.")));
                 }
             }
 
@@ -47,7 +49,7 @@ namespace Congo.CLI
 
         public static CongoCommandLine Create(CongoArgs args)
         {
-            return args.IsGameLocal()
+            return args.IsPlaceLocal()
                 ? createLocalGame(args)
                 : createNetworkGame(args);
         }
@@ -142,7 +144,7 @@ namespace Congo.CLI
                         break;
 
                     case Verifier.ExitLiteral:
-                        throw new ArgumentException("The program is terminated...");
+                        throw new ExitException();
 
                     case Verifier.HelpLiteral:
                         if (command.Length == 1) { command = new string[] { Verifier.HelpLiteral, Verifier.HelpLiteral, }; }
@@ -237,10 +239,10 @@ namespace Congo.CLI
             => CongoFen.FromFen(client.GetFirstFen(new GetFirstFenRequest() { GameId = gameId }).Fen);
 
         private CongoGame getLatestGame()
-            => CongoFen.FromFen(client.GetLastFen(new GetLastFenRequest() { GameId = gameId }).Fen);
+            => CongoFen.FromFen(client.GetLatestFen(new GetLatestFenRequest() { GameId = gameId }).Fen);
 
         private GetDbMovesReply getLatestTransitions()
-            => client.GetDbMovesFrom(new GetDbMovesFromRequest() { GameId = gameId, From = moveId });
+            => client.GetDbMovesFrom(new GetDbMovesFromRequest() { GameId = gameId, MoveId = moveId });
 
         private void showTransitions(GetDbMovesReply reply)
         {

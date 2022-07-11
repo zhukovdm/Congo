@@ -7,23 +7,23 @@ namespace Congo.Utils.MSTest
     {
         [TestMethod]
         public void Null()
-            => Assert.IsFalse(UserInput.IsValidBoardId(null));
+            => Assert.IsFalse(UserInput.IsValidGameId(null));
 
         [TestMethod]
         public void Empty()
-            => Assert.IsFalse(UserInput.IsValidBoardId(""));
+            => Assert.IsFalse(UserInput.IsValidGameId(""));
 
         [TestMethod]
         public void NonDigitChar()
-            => Assert.IsFalse(UserInput.IsValidBoardId("12a"));
+            => Assert.IsFalse(UserInput.IsValidGameId("12a"));
 
         [TestMethod]
         public void TrailingZero()
-            => Assert.IsFalse(UserInput.IsValidBoardId("01"));
+            => Assert.IsFalse(UserInput.IsValidGameId("01"));
 
         [TestMethod]
         public void Valid()
-            => Assert.IsTrue(UserInput.IsValidBoardId("123"));
+            => Assert.IsTrue(UserInput.IsValidGameId("123"));
     }
 
     [TestClass]

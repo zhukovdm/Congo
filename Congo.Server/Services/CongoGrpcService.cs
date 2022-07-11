@@ -196,7 +196,7 @@ internal static class CongoState
         return nextId;
     }
 
-    internal static List<DbMove> GetDbMovesFrom(long gameId, long from)
+    internal static List<DbMove> GetDbMovesFrom(long gameId, long moveId)
     {
         var moves = new List<DbMove>();
 
@@ -204,7 +204,7 @@ internal static class CongoState
         conn.Open();
         using var command = conn.CreateCommand();
         command.CommandText = commandTextGetMovesFrom();
-        command.Parameters.AddWithValue("$moveId", from);
+        command.Parameters.AddWithValue("$moveId", moveId);
 
         var result = command.ExecuteReader();
 
@@ -231,12 +231,12 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// Create new record with @b request.Game in the database.
     /// @return Assigned game identifier or -1 on failure.
     /// </summary>
-    public override Task<PostBoardReply> PostBoard(PostBoardRequest request, ServerCallContext context)
+    public override Task<PostFenReply> PostFen(PostFenRequest request, ServerCallContext context)
     {
         string fen = null;
 
-        if (request.Board == "standard") { fen = CongoFen.ToFen(CongoGame.Standard()); }
-        if (CongoFen.FromFen(request.Board) is not null) { fen = request.Board; }
+        if (request.Fen == "standard") { fen = CongoFen.ToFen(CongoGame.Standard()); }
+        if (CongoFen.FromFen(request.Fen) is not null) { fen = request.Fen; }
 
         long gameId = -1;
 
@@ -245,7 +245,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
             logger.LogInformation("Game {fen} created with gameId {response}.", fen, gameId);
         }
 
-        return Task.FromResult(new PostBoardReply { GameId = gameId });
+        return Task.FromResult(new PostFenReply { GameId = gameId });
     }
 
     /// <summary>
@@ -292,7 +292,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// <summary>
     /// Get last available Congo FEN for a certain gameId.
     /// </summary>
-    public override Task<GetLastFenReply> GetLastFen(GetLastFenRequest request, ServerCallContext context)
+    public override Task<GetLatestFenReply> GetLatestFen(GetLatestFenRequest request, ServerCallContext context)
     {
         string fen = "";
 
@@ -302,19 +302,19 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
             }
         }
 
-        return Task.FromResult(new GetLastFenReply { Fen = fen });
+        return Task.FromResult(new GetLatestFenReply { Fen = fen });
     }
 
     public override Task<CheckGameIdReply> CheckGameId(CheckGameIdRequest request, ServerCallContext context)
         => Task.FromResult(new CheckGameIdReply { Exist = CongoState.lockDb.TryGetValue(request.GameId, out _) });
 
-    private static Task<GetDbMovesReply> getDbMovesFrom(long gameId, long from)
+    private static Task<GetDbMovesReply> getDbMovesFrom(long gameId, long moveId)
     {
         var reply = new GetDbMovesReply();
 
         if (CongoState.lockDb.TryGetValue(gameId, out var l)) {
             lock (l) {
-                reply.Moves.AddRange(CongoState.GetDbMovesFrom(gameId, from));
+                reply.Moves.AddRange(CongoState.GetDbMovesFrom(gameId, moveId));
             }
         }
 
@@ -322,5 +322,5 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     }
 
     public override Task<GetDbMovesReply> GetDbMovesFrom(GetDbMovesFromRequest request, ServerCallContext context)
-        => getDbMovesFrom(request.GameId, request.From);
+        => getDbMovesFrom(request.GameId, request.MoveId);
 }

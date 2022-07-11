@@ -16,6 +16,10 @@ namespace Congo.CLI
                 ui.ReportResult();
             }
 
+            catch (ExitException) {
+                Console.WriteLine("The program is terminated...");
+            }
+
             catch (ArgumentException ex) {
                 Console.WriteLine("Argument exception: " + ex.Message);
             }

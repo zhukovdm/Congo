@@ -30,7 +30,7 @@ namespace Congo.Utils
         /// Verifies entered game id, pattern [0-9]+
         /// Trailing zeros are <b>not</b> allowed.
         /// </summary>
-        public static bool IsValidBoardId(string id)
+        public static bool IsValidGameId(string id)
         {
             return id is not null
                 && id.Length > 0

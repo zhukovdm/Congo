@@ -207,7 +207,7 @@ namespace Congo.CLI.MSTest
                 "--white=hi/random",
                 "--black=ai/negamax",
             };
-            Assert.IsTrue(CongoArgs.Parser.Parse(args).IsGameLocal());
+            Assert.IsTrue(CongoArgs.Parser.Parse(args).IsPlaceLocal());
         }
 
         [TestMethod]
@@ -220,7 +220,7 @@ namespace Congo.CLI.MSTest
                 "--board=standard",
                 "--white=hi/random",
             };
-            Assert.IsTrue(CongoArgs.Parser.Parse(args).IsGameNetwork());
+            Assert.IsTrue(CongoArgs.Parser.Parse(args).IsPlaceNetwork());
         }
     }
 }

@@ -11,9 +11,9 @@ namespace Congo.CLI
     public class CongoArgs
     {
         private const string placeOption = "--place";
-        private const string boardOption = "--board";
         private const string whiteOption = "--white";
         private const string blackOption = "--black";
+        private const string gameOption = "--game";
         private const string hostOption = "--host";
         private const string portOption = "--port";
 
@@ -43,16 +43,16 @@ namespace Congo.CLI
                     : null;
             }
 
-            private static string[] acceptLocalBoard(string arg)
+            private static string[] acceptLocalGame(string arg)
             {
                 return arg == standardValue || CongoFen.FromFen(arg) != null
                     ? new string[] { arg }
                     : null;
             }
 
-            private static string[] acceptNetworkBoard(string arg)
+            private static string[] acceptNetworkGame(string arg)
             {
-                return arg == standardValue || CongoFen.FromFen(arg) != null || Utils.UserInput.IsValidBoardId(arg)
+                return arg == standardValue || CongoFen.FromFen(arg) != null || Utils.UserInput.IsValidGameId(arg)
                     ? new string[] { arg }
                     : null;
             }
@@ -118,17 +118,17 @@ namespace Congo.CLI
                 var localAcceptors = new AcceptDict
                 {
                     { placeOption, acceptLocalPlace },
-                    { boardOption, acceptLocalBoard },
                     { whiteOption, acceptPlayer },
                     { blackOption, acceptPlayer },
+                    { gameOption, acceptLocalGame },
                 };
 
                 var networkAcceptors = new AcceptDict
                 {
                     { placeOption, acceptNetworkPlace },
-                    { boardOption, acceptNetworkBoard },
                     { whiteOption, acceptPlayer },
                     { blackOption, acceptPlayer },
+                    { gameOption, acceptNetworkGame },
                     { hostOption, acceptHost },
                     { portOption, acceptPort },
                 };
@@ -179,23 +179,23 @@ namespace Congo.CLI
             this.parsedArgs = parsedArgs;
         }
 
-        public bool IsGameLocal()
+        public bool IsPlaceLocal()
             => isExpectedValue(placeOption, 0, localValue);
 
-        public bool IsGameNetwork()
+        public bool IsPlaceNetwork()
             => isExpectedValue(placeOption, 0, networkValue);
 
-        public bool IsBoardStandard()
-            => isExpectedValue(boardOption, 0, standardValue);
+        public bool IsGameStandard()
+            => isExpectedValue(gameOption, 0, standardValue);
 
-        public bool IsBoardValidCongoFen()
-            => CongoFen.FromFen(getMaybeValue(boardOption, 0)) is not null;
+        public bool IsGameValidCongoFen()
+            => CongoFen.FromFen(getMaybeValue(gameOption, 0)) is not null;
 
-        public bool IsBoardValidId()
-            => Utils.UserInput.IsValidBoardId(getMaybeValue(boardOption, 0));
+        public bool IsGameValidId()
+            => Utils.UserInput.IsValidGameId(getMaybeValue(gameOption, 0));
 
-        public string GetMaybeBoardValue()
-            => getMaybeValue(boardOption, 0);
+        public string GetMaybeGameValue()
+            => getMaybeValue(gameOption, 0);
 
         public bool IsPlayerAi(CongoColor color)
             => isPlayerType(color, aiValue);

@@ -6,20 +6,20 @@ package congo;
 
 service CongoGrpc
 {
-    rpc PostBoard (PostBoardRequest) returns (PostBoardReply);
+    rpc PostFen (PostFenRequest) returns (PostFenReply);
     rpc PostMove (PostMoveRequest) returns (PostMoveReply);
-    rpc GetFirstFen (GetFirstFenRequest) returns (GetFirstFenReply);
-    rpc GetLastFen (GetLastFenRequest) returns (GetLastFenReply);
     rpc CheckGameId (CheckGameIdRequest) returns (CheckGameIdReply);
+    rpc GetFirstFen (GetFirstFenRequest) returns (GetFirstFenReply);
+    rpc GetLatestFen (GetLatestFenRequest) returns (GetLatestFenReply);
     rpc GetDbMovesFrom (GetDbMovesFromRequest) returns (GetDbMovesReply);
 }
 
-message PostBoardRequest
+message PostFenRequest
 {
-    string board = 1;
+    string fen = 1;
 }
 
-message PostBoardReply
+message PostFenReply
 {
     sint64 gameId = 1;
 }
@@ -36,6 +36,16 @@ message PostMoveReply
     sint64 moveId = 1;
 }
 
+message CheckGameIdRequest
+{
+    sint64 gameId = 1;
+}
+
+message CheckGameIdReply
+{
+    bool exist = 1;
+}
+
 message GetFirstFenRequest
 {
     sint64 gameId = 1;
@@ -46,24 +56,14 @@ message GetFirstFenReply
     string fen = 1;
 }
 
-message GetLastFenRequest
+message GetLatestFenRequest
 {
     sint64 gameId = 1;
 }
 
-message GetLastFenReply
+message GetLatestFenReply
 {
     string fen = 1;
-}
-
-message CheckGameIdRequest
-{
-    sint64 gameId = 1;
-}
-
-message CheckGameIdReply
-{
-    bool exist = 1;
 }
 
 message DbMove
@@ -75,7 +75,7 @@ message DbMove
 message GetDbMovesFromRequest
 {
     sint64 gameId = 1;
-    sint64 from = 2;
+    sint64 moveId = 2;
 }
 
 message GetDbMovesReply
