@@ -9,7 +9,7 @@ how to install the application on different platforms (currently Windows and
 Linux are supported) or build and run it from source code.
 
 See [User's Manual](Congo.Assets/Resources/um.md) for rules, gameplay and
-user interface.
+user interface, both graphical and terminal-based.
 
 Consult [Programmer's Guide](Congo.Assets/Resources/pg.md) to learn more about
 application architecture, algorithms and data structures used throughout `Congo`
