@@ -195,6 +195,7 @@ namespace Congo.CLI
     public sealed class LocalCommandLine : CongoCommandLine
     {
         public LocalCommandLine(CongoGame game, CongoArgs args)
+            : base()
         {
             this.args = args;
             this.game = game;
@@ -274,6 +275,7 @@ namespace Congo.CLI
         }
 
         public NetworkCommandLine(GrpcChannel channel, CongoGrpc.CongoGrpcClient client, CongoArgs args, long gameId)
+            : base()
         {
             this.args = args;
             this.gameId = gameId;

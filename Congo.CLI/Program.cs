@@ -17,11 +17,11 @@ namespace Congo.CLI
             }
 
             catch (ArgumentException ex) {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Argument exception: " + ex.Message);
             }
 
             catch (RpcException ex) {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("gRPC exception: " + ex.Status.Detail);
             }
 
             catch (Exception ex) {
