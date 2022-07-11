@@ -6,6 +6,7 @@ using Grpc.Net.Client;
 using Congo.Core;
 using Congo.Server;
 using Congo.Utils;
+using System.Collections.Generic;
 
 namespace Congo.CLI
 {
@@ -131,6 +132,13 @@ namespace Congo.CLI
         private CongoMove getHiValidMove()
         {
             CongoMove move = null;
+            var showDelegates = new Dictionary<string, Action<CongoGame>>()
+            {
+                { TextPresenter.GameLiteral, presenter.ShowGame },
+                { TextPresenter.BoardLiteral, presenter.ShowBoard },
+                { TextPresenter.MovesLiteral, presenter.ShowMoves },
+                { TextPresenter.PlayersLiteral, presenter.ShowPlayers },
+            };
 
             do {
                 var command = getUserCommand();
@@ -157,7 +165,7 @@ namespace Congo.CLI
                         break;
 
                     case Verifier.ShowLiteral:
-                        presenter.ExecuteShowCommand(command[1], game);
+                        showDelegates[command[1]].Invoke(game);
                         break;
 
                     default:

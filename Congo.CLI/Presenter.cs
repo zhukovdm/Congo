@@ -37,17 +37,17 @@ namespace Congo.CLI
                 { typeof(Lion),     "l" }, { typeof(Monkey),    "m" },
             }.ToImmutableDictionary();
 
-        private const string boardShow = "board";
-        private const string gameShow = "game";
-        private const string movesShow = "moves";
-        private const string playersShow = "players";
+        public const string BoardLiteral = "board";
+        public const string GameLiteral = "game";
+        public const string MovesLiteral = "moves";
+        public const string PlayersLiteral = "players";
 
         public static readonly ImmutableHashSet<string> SupportedShows =
             new HashSet<string>() {
-                boardShow,
-                playersShow,
-                movesShow,
-                gameShow
+                BoardLiteral,
+                PlayersLiteral,
+                MovesLiteral,
+                GameLiteral
             }.ToImmutableHashSet();
 
         private static int[] countPieces(CongoBoard board, CongoColor color)
@@ -171,31 +171,6 @@ namespace Congo.CLI
         {
             writer.WriteLine();
             writer.WriteLine(" transitions " + string.Join(" -> ", reply.Moves.Select(x => GetMoveView(new CongoMove(x.Fr, x.To)))));
-        }
-
-        public void ExecuteShowCommand(string token, CongoGame game)
-        {
-            switch (token) {
-
-                case boardShow:
-                    ShowBoard(game);
-                    break;
-
-                case playersShow:
-                    ShowPlayers(game);
-                    break;
-
-                case movesShow:
-                    ShowMoves(game);
-                    break;
-
-                case gameShow:
-                    ShowGame(game);
-                    break;
-
-                default:
-                    throw new InvalidOperationException(GetType().FullName);
-            }
         }
     }
 }
