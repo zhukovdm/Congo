@@ -1,4 +1,7 @@
-﻿namespace Congo.Core
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace Congo.Core
 {
     /// <summary>
     /// Central object defines the current game.
@@ -42,7 +45,7 @@
 
         #region Standard game
 
-        private static CongoBoard SetMixedRank(CongoBoard board, CongoColor color, int rank)
+        private static CongoBoard setMixedRank(CongoBoard board, CongoColor color, int rank)
         {
             board = board.With(color, Giraffe.Piece,   rank * CongoBoard.Size + 0)
                          .With(color, Monkey.Piece,    rank * CongoBoard.Size + 1)
@@ -55,7 +58,7 @@
             return board;
         }
 
-        private static CongoBoard SetPawnRank(CongoBoard board, CongoColor color, int rank)
+        private static CongoBoard setPawnRank(CongoBoard board, CongoColor color, int rank)
         {
             for (int file = 0; file < CongoBoard.Size; ++file) {
                 board = board.With(color, Pawn.Piece, rank * CongoBoard.Size + file);
@@ -71,10 +74,10 @@
         public static CongoGame Standard()
         {
             var b = CongoBoard.Empty;
-            b = SetMixedRank(b, Black.Color, 0);
-            b = SetPawnRank (b, Black.Color, 1);
-            b = SetPawnRank (b, White.Color, 5);
-            b = SetMixedRank(b, White.Color, 6);
+            b = setPawnRank(b, Black.Color, 1);
+            b = setPawnRank(b, White.Color, 5);
+            b = setMixedRank(b, Black.Color, 0);
+            b = setMixedRank(b, White.Color, 6);
 
             var wp = new CongoPlayer(White.Color, b, null);
             var bp = new CongoPlayer(Black.Color, b, null);
@@ -93,17 +96,23 @@
         private readonly CongoPlayer activePlayer;
         private readonly MonkeyJump firstMonkeyJump;
 
-        private bool IsInterruptedMonkeyJump(CongoMove move)
-            => board.GetPiece(move.Fr).IsMonkey() && move.Fr == move.To;
-
-        private bool IsPawnPromotion(CongoMove move)
+        private bool isInterruptedMonkeyJump(CongoMove move)
         {
-            return board.GetPiece(move.Fr).IsPawn() &&
-                CongoBoard.IsUpDownBorder(activePlayer.Color, move.To);
+            return board.GetPiece(move.Fr).IsMonkey()
+                && move.Fr == move.To;
         }
 
-        private bool IsFriendlyAnimal(CongoPiece piece, CongoColor color)
-            => piece.IsAnimal() && color == activePlayer.Color;
+        private bool isPawnPromotion(CongoMove move)
+        {
+            return board.GetPiece(move.Fr).IsPawn()
+                && CongoBoard.IsUpDownBorder(activePlayer.Color, move.To);
+        }
+
+        private bool isFriendlyAnimal(CongoPiece piece, CongoColor color)
+        {
+            return piece.IsAnimal()
+                && color == activePlayer.Color;
+        }
 
         /// <summary>
         /// Game constructor is private. Game is either unattached, standard
@@ -141,6 +150,13 @@
 
         public CongoMove FirstMonkeyJump => firstMonkeyJump;
 
+        public IEnumerable<CongoMove> GetMovesFrom(int fr)
+        {
+            return from move in ActivePlayer.Moves
+                   where move.Fr == fr
+                   select move;
+        }
+
         /// <summary>
         /// Generates new game based on current board, players, current player
         /// and a given move. <b>Move must be retrieved from the set of active
@@ -172,10 +188,10 @@
             }
 
             // interrupted monkey jump
-            else if (IsInterruptedMonkeyJump(move)) { newFirstMonkeyJump = null; }
+            else if (isInterruptedMonkeyJump(move)) { newFirstMonkeyJump = null; }
 
             // pawn -> superpawn promotion
-            else if (IsPawnPromotion(move)) {
+            else if (isPawnPromotion(move)) {
                 newBoard = newBoard.With(activePlayer.Color, Superpawn.Piece, move.To)
                                    .Without(move.Fr);
             }
@@ -196,7 +212,7 @@
                 var color = newBoard.IsWhitePiece(square) ? White.Color : Black.Color;
 
                 // consider only friendly non-crocodiles
-                if (!IsFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }
+                if (!isFriendlyAnimal(piece, color) || piece.IsCrocodile()) { }
 
                 // not-moved piece -> stayed at the river -> drown
                 else if (move.To != square) { newBoard = newBoard.Without(square); }
@@ -254,17 +270,19 @@
                 newBlackPlayer, newActivePlayer, newFirstMonkeyJump);
         }
 
-        public bool IsNew() => distance == 0;
+        public bool IsNew()
+            => distance == 0;
 
-        public bool IsInvalid() => !ActivePlayer.HasLion && !Opponent.HasLion;
+        public bool IsInvalid()
+            => !ActivePlayer.HasLion && !Opponent.HasLion;
 
         public bool IsWin()
         {
-            return
-                (ActivePlayer.HasLion && !Opponent.HasLion) ||
-                (!ActivePlayer.HasLion && Opponent.HasLion);
+            return (ActivePlayer.HasLion && !Opponent.HasLion)
+                || (!ActivePlayer.HasLion && Opponent.HasLion);
         }
 
-        public bool HasEnded() => IsInvalid() || IsWin();
+        public bool HasEnded()
+            => IsInvalid() || IsWin();
     }
 }
