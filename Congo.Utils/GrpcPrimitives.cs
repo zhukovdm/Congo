@@ -3,7 +3,7 @@ using Grpc.Net.Client;
 
 namespace Congo.Utils
 {
-    public static class NetworkPrimitives
+    public static class GrpcPrimitives
     {
         public static GrpcChannel CreateRpcChannel(string host, string port)
         {
