@@ -73,7 +73,7 @@ namespace Congo.Core
             CongoMove move = null;
             int score = -CongoEvaluator.INF;
 
-            if (state != State.ENABLED) { /* do nothing, cancel or invalidate */ }
+            if (state != State.ENABLED) { /* skip branches, cancelled or disabled calc. */ }
 
             // recursion bottom
             else if (game.HasEnded() || depth <= 0) {
@@ -200,9 +200,10 @@ namespace Congo.Core
 
         public static CongoMove Negamax(CongoGame game)
         {
-            if (state == State.DISABLED) { return null; }
+            if (IsDisabled()) { return null; }
 
-            if (state != State.DISABLED) { state = State.ENABLED; }
+            // resets _only_ cancel, disable is reset manually
+            if (!IsDisabled()) { Enable(); }
 
             /* negamax recursion bottom assumes game predecessor
              * and non-zero depth at first call */

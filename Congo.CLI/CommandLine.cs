@@ -183,6 +183,8 @@ namespace Congo.CLI
 
         #endregion
 
+        #region public interface
+
         public bool End()
             => game.HasEnded();
 
@@ -192,6 +194,8 @@ namespace Congo.CLI
 
         public void ReportResult()
             => reporter.ReportResult(game);
+
+        #endregion
     }
 
     public sealed class LocalCommandLine : CongoCommandLine
