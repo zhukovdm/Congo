@@ -11,7 +11,6 @@ service CongoGrpc
     rpc GetFirstFen (GetFirstFenRequest) returns (GetFirstFenReply);
     rpc GetLastFen (GetLastFenRequest) returns (GetLastFenReply);
     rpc CheckGameId (CheckGameIdRequest) returns (CheckGameIdReply);
-    rpc GetDbMovesAll (GetDbMovesAllRequest) returns (GetDbMovesReply);
     rpc GetDbMovesFrom (GetDbMovesFromRequest) returns (GetDbMovesReply);
 }
 
@@ -77,11 +76,6 @@ message GetDbMovesFromRequest
 {
     sint64 gameId = 1;
     sint64 from = 2;
-}
-
-message GetDbMovesAllRequest
-{
-    sint64 gameId = 1;
 }
 
 message GetDbMovesReply

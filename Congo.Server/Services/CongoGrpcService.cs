@@ -308,7 +308,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     public override Task<CheckGameIdReply> CheckGameId(CheckGameIdRequest request, ServerCallContext context)
         => Task.FromResult(new CheckGameIdReply { Exist = CongoState.lockDb.TryGetValue(request.GameId, out _) });
 
-    private static Task<GetDbMovesReply> getDbMovesFromImpl(long gameId, long from)
+    private static Task<GetDbMovesReply> getDbMovesFrom(long gameId, long from)
     {
         var reply = new GetDbMovesReply();
 
@@ -322,8 +322,5 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     }
 
     public override Task<GetDbMovesReply> GetDbMovesFrom(GetDbMovesFromRequest request, ServerCallContext context)
-        => getDbMovesFromImpl(request.GameId, request.From);
-
-    public override Task<GetDbMovesReply> GetDbMovesAll(GetDbMovesAllRequest request, ServerCallContext context)
-        => getDbMovesFromImpl(request.GameId, -1);
+        => getDbMovesFrom(request.GameId, request.From);
 }
