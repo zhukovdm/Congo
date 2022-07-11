@@ -5,22 +5,12 @@ using System.IO;
 using System.Linq;
 using Congo.Core;
 using Congo.Server;
+using Congo.Utils;
 
 namespace Congo.CLI
 {
     public sealed class TextPresenter
     {
-        public static readonly ImmutableList<string> SquareViews =
-            new List<string> {
-                "a7", "b7", "c7", "d7", "e7", "f7", "g7",
-                "a6", "b6", "c6", "d6", "e6", "f6", "g6",
-                "a5", "b5", "c5", "d5", "e5", "f5", "g5",
-                "a4", "b4", "c4", "d4", "e4", "f4", "g4",
-                "a3", "b3", "c3", "d3", "e3", "f3", "g3",
-                "a2", "b2", "c2", "d2", "e2", "f2", "g2",
-                "a1", "b1", "c1", "d1", "e1", "f1", "g1",
-            }.ToImmutableList();
-
         private static readonly ImmutableList<Type> pieceTypes =
             new Type[] {
                 typeof(Ground), typeof(River), typeof(Elephant), typeof(Zebra),
@@ -63,9 +53,6 @@ namespace Congo.CLI
             return counter;
         }
 
-        public static string GetMoveView(CongoMove move)
-            => "(" + SquareViews[move.Fr] + "," + SquareViews[move.To] + ")";
-
         private readonly TextWriter writer;
 
         public TextPresenter(TextWriter writer)
@@ -98,7 +85,7 @@ namespace Congo.CLI
         public void ShowTransition(CongoGame game)
         {
             writer.WriteLine();
-            writer.WriteLine($" transition {GetMoveView(game.TransitionMove)}");
+            writer.WriteLine($" transition {MovePresenter.GetMoveView(game.TransitionMove)}");
         }
 
         public void ShowNetworkGameId(long gameId)
@@ -143,7 +130,7 @@ namespace Congo.CLI
             writer.WriteLine();
             int cnt = 0;
             foreach (var move in game.ActivePlayer.Moves) {
-                var repr = " " + GetMoveView(move);
+                var repr = " " + MovePresenter.GetMoveView(move);
                 if (cnt + repr.Length > 40) {
                     cnt = 0;
                     writer.WriteLine();
@@ -170,7 +157,7 @@ namespace Congo.CLI
         public void ShowNetworkTransitions(GetDbMovesReply reply)
         {
             writer.WriteLine();
-            writer.WriteLine(" transitions " + string.Join(" -> ", reply.Moves.Select(x => GetMoveView(new CongoMove(x.Fr, x.To)))));
+            writer.WriteLine(" transitions " + string.Join(" -> ", reply.Moves.Select(x => MovePresenter.GetMoveView(new CongoMove(x.Fr, x.To)))));
         }
     }
 }

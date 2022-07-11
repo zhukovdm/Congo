@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Congo.Core;
+using Congo.Utils;
 
 namespace Congo.CLI
 {
@@ -46,7 +47,7 @@ namespace Congo.CLI
             => writer.WriteLine($" Wrong command format. Consult \"help {command}\".");
 
         public void ReportAdvisedMove(CongoMove move)
-            => writer.WriteLine($" Advised move is {TextPresenter.GetMoveView(move)}.");
+            => writer.WriteLine($" Advised move is {MovePresenter.GetMoveView(move)}.");
 
         public void ReportWrongMove()
             => writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");

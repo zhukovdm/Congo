@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Congo.Utils;
 
 namespace Congo.CLI
 {
@@ -52,7 +53,7 @@ namespace Congo.CLI
         private static string[] verifyMoveCommand(string[] input)
         {
             static bool predicate(string[] arr)
-                => arr.Length != 3 || TextPresenter.SquareViews.IndexOf(arr[1]) < 0 || TextPresenter.SquareViews.IndexOf(arr[1]) < 0;
+                => arr.Length != 3 || MovePresenter.SquareViews.IndexOf(arr[1]) < 0 || MovePresenter.SquareViews.IndexOf(arr[1]) < 0;
             return verifyCommand(predicate, input);
         }
 

@@ -160,8 +160,8 @@ namespace Congo.CLI
                         break;
 
                     case Verifier.MoveLiteral:
-                        move = new CongoMove(TextPresenter.SquareViews.IndexOf(command[1]),
-                                             TextPresenter.SquareViews.IndexOf(command[2]));
+                        move = new CongoMove(MovePresenter.SquareViews.IndexOf(command[1]),
+                                             MovePresenter.SquareViews.IndexOf(command[2]));
                         break;
 
                     case Verifier.ShowLiteral:

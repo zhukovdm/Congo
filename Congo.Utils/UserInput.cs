@@ -7,8 +7,8 @@ namespace Congo.Utils
     /// </summary>
     public static class UserInput
     {
-        private static readonly string zero = "0";
-        private static readonly string localhostValue = "localhost";
+        private const string zero = "0";
+        private const string localhostValue = "localhost";
 
         /// <summary>
         /// Verifies IPv4 address holder is an integer number between 0 and 255.
