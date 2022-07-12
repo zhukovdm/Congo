@@ -6,7 +6,7 @@ namespace Congo.Core
     /// <summary>
     /// Central object defines the current game.
     /// </summary>
-    public class CongoGame
+    public sealed class CongoGame
     {
         public static void Initialize()
         {
@@ -161,8 +161,8 @@ namespace Congo.Core
         /// Generates new game based on current board, players, current player
         /// and a given move. <b>Move must be retrieved from the set of active
         /// player moves due to monkey jumps!</b> Malformed and manually
-        /// constructed moves are not checked ~> method call has an undefined
-        /// behavior.
+        /// constructed moves are not checked ~> method call could have
+        /// an undefined behavior.
         /// </summary>
         public CongoGame Transition(CongoMove move)
         {
@@ -270,11 +270,13 @@ namespace Congo.Core
                 newBlackPlayer, newActivePlayer, newFirstMonkeyJump);
         }
 
-        public bool IsNew()
-            => distance == 0;
+        public bool IsNew() => distance == 0;
 
         public bool IsInvalid()
-            => !ActivePlayer.HasLion && !Opponent.HasLion;
+        {
+            return !ActivePlayer.HasLion
+                && !Opponent.HasLion;
+        }
 
         public bool IsWin()
         {
@@ -282,7 +284,6 @@ namespace Congo.Core
                 || (!ActivePlayer.HasLion && Opponent.HasLion);
         }
 
-        public bool HasEnded()
-            => IsInvalid() || IsWin();
+        public bool HasEnded() => IsInvalid() || IsWin();
     }
 }
