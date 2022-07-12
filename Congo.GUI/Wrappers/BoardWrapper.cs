@@ -3,15 +3,16 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Congo.GUI
+namespace Congo.GUI.Wrappers
 {
-    internal sealed class BoardWrapper : BaseWrapper
+    internal sealed class BoardWrapper : IPanelWrapper
     {
         public const double TileSize = 82.0;
         private const string riverColorCode = "#65b9f8";
         private const string groundColorCode = "#67de79";
         private const string castleColorCode = "#f2d377";
         private static readonly int boardSize = CongoBoard.Size * CongoBoard.Size;
+
         private readonly WrapPanel panel;
         private readonly MouseButtonEventHandler handler;
 
@@ -72,10 +73,10 @@ namespace Congo.GUI
         /// Draw selections on the tiles based on game state.
         /// @note Selections are possible only if <b>state == State.TO</b>!
         /// </summary>
-        private void drawSelect(CongoGame game, MainState state, int fr)
+        private void drawSelect(CongoGame game, MainState state, int moveFr)
         {
             if (state == MainState.TO) {
-                foreach (var move in game.GetMovesFrom(fr)) {
+                foreach (var move in game.GetMovesFrom(moveFr)) {
 
                     // excludes monkey interrupt vs. ordinary selection
                     if (move.Fr != move.To) {
@@ -83,9 +84,9 @@ namespace Congo.GUI
                     }
                 }
 
-                var tile = (Canvas)panel.Children[fr];
+                var tile = (Canvas)panel.Children[moveFr];
 
-                panel.Children[fr] = (game.FirstMonkeyJump == null)
+                panel.Children[moveFr] = game.FirstMonkeyJump == null
                     ? tile.WithMoveFrBorder()
                     : tile.WithMoveToBorder();
             }
@@ -97,7 +98,7 @@ namespace Congo.GUI
             this.handler = handler;
         }
 
-        public override void Init()
+        public void Init()
         {
             panel.Children.RemoveRange(0, panel.Children.Count);
 
@@ -106,14 +107,14 @@ namespace Congo.GUI
             }
         }
 
-        public void Draw(CongoGame game, MainState state, int fr)
+        public void Reset() => Init();
+
+        public void Draw(CongoGame game, MainState state, int moveFr)
         {
             Reset();
             drawPieces(game.Board, White.Color);
             drawPieces(game.Board, Black.Color);
-            drawSelect(game, state, fr);
+            drawSelect(game, state, moveFr);
         }
-
-        public override void Reset() => Init();
     }
 }

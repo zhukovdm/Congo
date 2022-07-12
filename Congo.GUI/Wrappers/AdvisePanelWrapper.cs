@@ -1,8 +1,8 @@
 ﻿using System.Windows.Controls;
 
-namespace Congo.GUI
+namespace Congo.GUI.Wrappers
 {
-    internal sealed class AdvisePanelWrapper : BaseWrapper
+    internal sealed class AdvisePanelWrapper : IPanelWrapper
     {
         private readonly Button button;
         private readonly TextBlock textBlock;
@@ -12,12 +12,12 @@ namespace Congo.GUI
             this.textBlock = textBlock;
         }
 
-        public override void Init()
+        public void Init()
         {
             button.IsEnabled = false;
             textBlock.Text = string.Empty;
         }
 
-        public override void Reset() => Init();
+        public void Reset() => Init();
     }
 }

@@ -2,9 +2,9 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Congo.GUI
+namespace Congo.GUI.Wrappers
 {
-    internal sealed class UserPanelWrapper : BaseWrapper
+    internal sealed class UserPanelWrapper : IPanelWrapper
     {
         private static readonly SolidColorBrush activeBrush = Brushes.Red;
         private static readonly SolidColorBrush inactiveBrush = Brushes.Transparent;
@@ -17,11 +17,13 @@ namespace Congo.GUI
             this.borderBlack = borderBlack;
         }
 
-        public override void Init()
+        public void Init()
         {
             borderWhite.BorderBrush = inactiveBrush;
             borderBlack.BorderBrush = inactiveBrush;
         }
+
+        public void Reset() => Init();
 
         public void Draw(CongoGame game)
         {
@@ -30,7 +32,5 @@ namespace Congo.GUI
             borderWhite.BorderBrush = w ? activeBrush : inactiveBrush;
             borderBlack.BorderBrush = w ? inactiveBrush : activeBrush;
         }
-
-        public override void Reset() => Init();
     }
 }
