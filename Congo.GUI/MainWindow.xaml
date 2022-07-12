@@ -14,17 +14,17 @@
             <StackPanel Orientation="Horizontal">
                 <Menu Background="Transparent">
                     <MenuItem Header="_Game">
-                        <MenuItem Name="buttonMenuLocal" Header="Local" Click="buttonMenuLocal_Click"/>
-                        <MenuItem Name="buttonMenuNetwork" Header="Network" Click="buttonMenuNetwork_Click"/>
+                        <MenuItem Name="menuItemLocal" Header="Local" Click="menuItemLocal_Click"/>
+                        <MenuItem Name="menuItemNetwork" Header="Network" Click="menuItemNetwork_Click"/>
                         <Separator/>
-                        <MenuItem Name="buttonMenuSave" Header="_Save" Click="buttonMenuSave_Click"/>
+                        <MenuItem Header="_Save" Click="menuItemSave_Click"/>
                         <Separator/>
-                        <MenuItem Name="buttonMenuReset" Header="_Reset" Click="buttonMenuReset_Click"/>
-                        <MenuItem Name="buttonMenuExit" Header="_Exit" Click="buttonMenuExit_Click"/>
+                        <MenuItem Name="buttonMenuReset" Header="_Reset" Click="menuItemReset_Click"/>
+                        <MenuItem Name="buttonMenuExit" Header="_Exit" Click="menuItemExit_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Control">
-                        <MenuItem Name="buttonMenuPause" Header="Pause" Click="buttonMenuPause_Click"/>
-                        <MenuItem Name="buttonMenuCancel" Header="Cancel" Click="buttonMenuCancel_Click"/>
+                        <MenuItem Name="menuItemPause" Header="Pause" Click="menuItemPause_Click"/>
+                        <MenuItem Name="menuItemCancel" Header="Cancel" Click="menuItemCancel_Click"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
@@ -119,16 +119,17 @@
                     <Style TargetType="{x:Type TextBlock}">
                         <Setter Property="FontSize" Value="40"/>
                         <Setter Property="TextAlignment" Value="Center"/>
+                        <Setter Property="Width" Value="82"/>
                     </Style>
                 </StackPanel.Resources>
-                <DockPanel Width="50"/>
-                <TextBlock Width="83" Text="a"/>
-                <TextBlock Width="82" Text="b"/>
-                <TextBlock Width="82" Text="c"/>
-                <TextBlock Width="82" Text="d"/>
-                <TextBlock Width="82" Text="e"/>
-                <TextBlock Width="82" Text="f"/>
-                <TextBlock Width="83" Text="g"/>
+                <DockPanel Width="51"/>
+                <TextBlock Text="a"/>
+                <TextBlock Text="b"/>
+                <TextBlock Text="c"/>
+                <TextBlock Text="d"/>
+                <TextBlock Text="e"/>
+                <TextBlock Text="f"/>
+                <TextBlock Text="g"/>
             </StackPanel>
             <Button Name="buttonMoveGenerator" Visibility="Hidden" Click="buttonMoveGenerator_Click"/>
         </StackPanel>

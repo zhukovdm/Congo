@@ -1,7 +1,6 @@
 ﻿using Congo.Core;
-using Congo.Server;
+using Congo.GUI.Wrappers;
 using Congo.Utils;
-using Grpc.Net.Client;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +11,7 @@ using System.Windows.Media;
 
 namespace Congo.GUI
 {
-    internal enum MainState : int { INIT, FR, TO, AI, NET, END }
+    internal enum MainState { INIT, FR, TO, AI, NET, END }
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -20,234 +19,119 @@ namespace Congo.GUI
     public partial class MainWindow : Window
     {
         // wrappers
-        private readonly BoardWrapper boardWrapper;
-        private readonly UserPanelWrapper userPanelWrapper;
         private readonly AdvisePanelWrapper advisePanelWrapper;
+        private readonly BoardWrapper boardWrapper;
+        private readonly ControlMenuWrapper controlMenuWrapper;
+        private readonly GameMenuWrapper gameMenuWrapper;
+        private readonly StatusPanelWrapper statusPanelWrapper;
+        private readonly UserPanelWrapper userPanelWrapper;
+        private readonly List<IPanelWrapper> wrappers;
 
-        private readonly List<BaseWrapper> wrappers;
-
-        // local game
-
-        // network game
-
+        // state
         private int moveFr;
-        private int moveTo;
-        private MainState state;
         private CongoGame game;
+        private MainState state;
         private CongoUser whiteUser, blackUser;
+        private CongoNetworkPack networkPack;
 
-
-        long gameId, moveId = -1;
-        GrpcChannel channel;
-        CongoGrpc.CongoGrpcClient client;
-
-        private BackgroundWorker adviceWorker = null;
-        private readonly ManualResetEventSlim adviceEvent;
-        private readonly ManualResetEventSlim pauseEvent;
+        // async
+        private AsyncJob job = null;
 
         private CongoUser activeUser
             => game.ActivePlayer.IsWhite() ? whiteUser : blackUser;
 
-        private void appendMove(CongoMove move)
-        {
-            listBoxMoves.Items.Add(MovePresenter.GetMoveView(move));
-            listBoxMoves.ScrollIntoView(listBoxMoves.Items[^1]);
-        }
+        #region async control
 
-        private void adviceWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            pauseEvent.Wait();
+        private void worker_DoWork(object sender, DoWorkEventArgs e)
+            => e.Result = ((AsyncJob)e.Argument).Run();
 
-            /* Avoid too fast switching between players. Safe to access 
-             * variables, because only reset could remove users, but is
-             * waiting for adviceEvent. */
-            if (whiteUser is Ai && blackUser is Ai) { Thread.Sleep(1000); }
-
-            var g = (CongoGame)e.Argument;
-            var user = g.ActivePlayer.IsWhite() ? whiteUser : blackUser;
-            e.Result = user.Advise(g);
-
-            adviceEvent.Set();
-        }
-
-        private BackgroundWorker getAdviceWorker()
+        private BackgroundWorker getWorker()
         {
             var worker = new BackgroundWorker();
-            worker.DoWork += adviceWorker_DoWork;
+            worker.DoWork += worker_DoWork;
 
             return worker;
         }
 
-        private void aiAdvice_Init()
+        private void aiAdvise_Init()
         {
-            adviceEvent.Wait();
-            adviceEvent.Reset(); // ensure mutual exclusion
+            AsyncJob.Acquire();
+            job = new AsyncAdvise(game, whiteUser, blackUser);
 
-            buttonMenuCancel.IsEnabled = true;
-            adviceWorker = getAdviceWorker();
-            adviceWorker.RunWorkerCompleted += aiAdvice_Finalize;
+            menuItemCancel.IsEnabled = true;
 
-            adviceWorker.RunWorkerAsync(argument: game);
+            var worker = getWorker();
+            worker.RunWorkerCompleted += aiAdvise_Finalize;
+
+            worker.RunWorkerAsync(argument: job);
         }
 
-        private void aiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
+        private void aiAdvise_Finalize(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (!Algorithm.IsDisabled()) {
-                var move = (CongoMove)e.Result;
-                if (move == null) { move = Algorithm.Random(game); }
+            var advise = (AsyncAdvise)e.Result;
+            var move = advise.Move;
 
+            if (!advise.IsAbandoned()) {
+                game = advise.Game;
+
+                if (move is null) { move = Algorithm.Random(game); }
                 game = game.Transition(move);
 
-                if (activeUser is Hi) { buttonAdvise.IsEnabled = true; }
+                menuItemCancel.IsEnabled = false;
+                statusPanelWrapper.AppendMove(move);
 
-                buttonMenuCancel.IsEnabled = false;
-                appendMove(move);
                 updateGame();
             }
 
-            adviceWorker = null;
-            Algorithm.Enable();
+            job = null;
+            AsyncJob.Release();
         }
 
-        private void hiAdvice_Finalize(object sender, RunWorkerCompletedEventArgs e)
+        private void hiAdvise_Init()
         {
-            if (!Algorithm.IsDisabled()) {
+            job = AsyncAdvise.GetInstance(game, whiteUser, blackUser);
+
+            buttonAdvise.IsEnabled = false;
+            menuItemCancel.IsEnabled = true;
+
+            var worker = getWorker();
+            worker.RunWorkerCompleted += hiAdvise_Finalize;
+
+            worker.RunWorkerAsync(argument: job);
+        }
+
+        private void hiAdvise_Finalize(object sender, RunWorkerCompletedEventArgs e)
+        {
+            job = null;
+
+            if (!Algorithm.IsAbandoned()) {
                 var move = (CongoMove)e.Result;
                 if (move == null) { move = Algorithm.Random(game); }
 
                 buttonAdvise.IsEnabled = true;
-                buttonMenuCancel.IsEnabled = false;
+                menuItemCancel.IsEnabled = false;
                 textBlockAdvise.Text = MovePresenter.GetMoveView(move);
             }
 
-            adviceWorker = null;
-            Algorithm.Enable();
+            job = null;
         }
 
-        /// <summary>
-        /// Event handler for clicks on all board tiles.
-        /// </summary>
-        private void tile_Click(object sender, RoutedEventArgs e)
+        private void netMove_Init()
         {
-            switch (state) {
 
-                case MainState.INIT:
-                case MainState.AI:
-                    break;
-
-                case MainState.FR:
-
-                    if (sender is Canvas tileFrom) {
-                        moveFr = int.Parse((string)tileFrom.Tag);
-                        updateGame();
-                    }
-                    break;
-
-                case MainState.TO:
-
-                    if (sender is Canvas tileTo) {
-                        moveTo = int.Parse((string)tileTo.Tag);
-                        updateGame();
-                    }
-                    break;
-
-                case MainState.END:
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
-            }
         }
 
-        #region Ui Buttons
-
-        /// <summary>
-        /// Dialog with game and both users always starts new game.
-        /// </summary>
-        private void buttonNewGameDialog<T>(object sender, EventArgs e)
-            where T : Window, IPlayable, new()
+        private void netMove_Finalize(object sender, RunWorkerCompletedEventArgs e)
         {
-            var dialog = new T();
-            if (dialog.ShowDialog() == true) {
-                resetGame();
 
-                game = dialog.Game;
-                whiteUser = dialog.WhiteUser;
-                blackUser = dialog.BlackUser;
-
-                buttonMenuLocal.IsEnabled = false;
-                buttonMenuNetwork.IsEnabled = false;
-                buttonMenuSave.IsEnabled = true;
-                buttonMenuPause.IsEnabled = (whiteUser is Ai) && (blackUser is Ai);
-
-                initGame();
-            }
         }
-
-        private void buttonMenuLocal_Click(object sender, RoutedEventArgs e)
-            => buttonNewGameDialog<MenuLocalPopup>(sender, e);
-
-        private void buttonMenuNetwork_Click(object sender, RoutedEventArgs e)
-            => buttonNewGameDialog<MenuNetworkPopup>(sender, e);
-
-        private void buttonMenuSave_Click(object sender, RoutedEventArgs e)
-        {
-            var g = game;
-            var r = (g is not null) ? CongoFen.ToFen(g) : string.Empty;
-            Clipboard.SetText(r);
-        }
-
-        private void buttonMenuPause_Click(object sender, RoutedEventArgs e)
-        {
-            // .IsSet means no pause
-
-            if (pauseEvent.IsSet) {
-                pauseEvent.Reset();
-                buttonMenuPause.Header = "Resu_me";
-            }
-
-            else {
-                pauseEvent.Set();
-                buttonMenuPause.Header = "_Pause";
-            }
-        }
-
-        private void buttonMenuCancel_Click(object sender, RoutedEventArgs e)
-            => Algorithm.Cancel();
-
-        private void buttonMenuReset_Click(object sender, RoutedEventArgs e)
-            => resetGame();
-
-        private void buttonMenuExit_Click(object sender, RoutedEventArgs e)
-            => exitGame();
-
-        private void buttonAdvise_Click(object sender, RoutedEventArgs e)
-        {
-            adviceEvent.Wait();
-            adviceEvent.Reset(); // ensure mutual exclusion
-
-            buttonAdvise.IsEnabled = false;
-            buttonMenuCancel.IsEnabled = true;
-
-            adviceWorker = getAdviceWorker();
-            adviceWorker.RunWorkerCompleted += hiAdvice_Finalize;
-
-            adviceWorker.RunWorkerAsync(argument: game);
-        }
-
-        private void buttonMoveGenerator_Click(object sender, RoutedEventArgs e)
-            => finalizeState();
 
         #endregion
 
-        #region Draw Game
+        #region window control
 
         private void cleanAdvice()
             => textBlockAdvise.Text = "";
-
-        #endregion
-
-        #region Update Game state
 
         private void initState()
         {
@@ -268,40 +152,6 @@ namespace Congo.GUI
 
             else if (activeUser is Ai) { state = MainState.AI; }
 
-            else if (state == MainState.FR && game.Board.IsOccupied(moveFr)
-                && game.Board.IsFriendlyPiece(game.ActivePlayer.Color, moveFr)) {
-                state = MainState.TO;
-            }
-
-            // end of game | monkey jump | move ~> opponent
-            else if (state == MainState.TO) {
-
-                var move = game.ActivePlayer.Accept(new CongoMove(moveFr, moveTo));
-
-                /* Move exists, also includes monkey jump interrupt (Fr == To)! */
-                if (move != null) {
-                    game = game.Transition(move);
-
-                    if (game.HasEnded()) { state = MainState.END; }
-
-                    else if (move is MonkeyJump) { moveFr = moveTo; /* State.TO remains */ }
-
-                    // opponent will turn
-                    else {
-                        state = (activeUser is Ai) ? MainState.AI : MainState.FR;
-                    }
-
-                    cleanAdvice();
-                    appendMove(move);
-                    Algorithm.Cancel(); // maybe running advice
-                }
-
-                // not a move, but reset
-                else if (moveFr == moveTo) { state = MainState.FR; }
-
-                else { /* do nothing */ }
-            }
-
             else { state = MainState.FR; }
         }
 
@@ -313,11 +163,10 @@ namespace Congo.GUI
 
                 case MainState.AI:
                     buttonAdvise.IsEnabled = false;
-                    aiAdvice_Init();
+                    aiAdvise_Init();
                     break;
 
                 case MainState.FR:
-                case MainState.TO:
                     buttonAdvise.IsEnabled = true;
                     break;
 
@@ -328,25 +177,13 @@ namespace Congo.GUI
 
                     var c = game.Opponent.Color.IsWhite() ? "White" : "Black";
                     MessageBox.Show($"{c} wins.");
-                    buttonMenuLocal.IsEnabled = true;
-                    buttonMenuNetwork.IsEnabled = true;
+                    menuItemLocal.IsEnabled = true;
+                    menuItemNetwork.IsEnabled = true;
                     break;
 
-                case MainState.INIT:
                 default:
                     break;
             }
-        }
-
-        private void initGame()
-        {
-            initState();
-            drawBoard();
-            drawPanel();
-
-            Dispatcher.BeginInvoke(new Action(() => {
-                buttonMoveGenerator.PerformClick();
-            }));
         }
 
         private void updateGame()
@@ -360,56 +197,33 @@ namespace Congo.GUI
             }));
         }
 
-        #endregion
-
-        #region Reset and Exit Game
-
-        private void initGame()
+        private void finalizeWorkers()
         {
+            if (worker is not null || networkWorker is not null) { syncPrimitive.Disable(); }
 
-        }
+            syncPrimitive.Wait();
 
-        private void finalizeAdviceWorker()
-        {
-            /* Algorithm can be disabled __only if__ ongoing advice exist,
-             * and will be re-enabled in the advice finalize procedure.
-             */
-            if (adviceWorker is not null) { Algorithm.Disable(); }
-
-            pauseEvent.Set(); // maybe worker on a break
+            pauseEvent.Set(); // maybe paused worker
             adviceEvent.Wait();
         }
 
-        /// <summary>
-        /// Upon call, the window reaches predictable state. Remove all code
-        /// entities, clean up the board, enable or disable buttons.
-        /// </summary>
+        private void initGame()
+        {
+            Dispatcher.BeginInvoke(new Action(() => {
+                buttonMoveGenerator.PerformClick();
+            }));
+        }
+
         private void resetGame()
         {
-            /* Code entities */
+            finalizeWorkers();
 
-            finalizeAdviceWorker();
+            foreach (var wrapper in wrappers) { wrapper.Reset(); }
 
             state = MainState.INIT;
-            game = null;
-            whiteUser = null;
-            blackUser = null;
+            networkPack = null;
 
-            /* Gui entities */
-
-            // menu
-            buttonMenuLocal.IsEnabled = true;
-            buttonMenuNetwork.IsEnabled = true;
-            buttonMenuSave.IsEnabled = false;
-            buttonMenuCancel.IsEnabled = false;
-            buttonMenuReset.IsEnabled = true;
-            buttonMenuExit.IsEnabled = true;
-
-            buttonMenuPause.IsEnabled = false;
-            buttonMenuPause.Header = "_Pause";
-
-            // board and pieces
-            cleanBoard();
+            GC.Collect();
 
             // panel
             borderWhitePlayer.BorderBrush = Brushes.Transparent;
@@ -420,18 +234,140 @@ namespace Congo.GUI
             textBlockStatus.Text = "";
         }
 
-        /// <summary>
-        /// Exits the game. Ensure worker is finalized and resources are
-        /// released, no further drawing actions are necessary.
-        /// </summary>
         private void exitGame()
         {
-            finalizeAdviceWorker();
-
-            // TODO: Congo.GUI.WainWindow.exitGame() releases resources if game is network.
-
+            finalizeWorkers();
             Application.Current.Shutdown();
         }
+
+        private void updateGameTileFr(int fr)
+        {
+            if (game.Board.IsFriendlyPiece(game.ActivePlayer.Color, fr)) {
+                moveFr = fr;
+                state = MainState.TO;
+                boardWrapper.Draw(game, state, fr);
+            }
+        }
+
+        private void updateGameTileTo(int to)
+        {
+            var move = game.ActivePlayer.Accept(new CongoMove(moveFr, to));
+
+            // also covers monkey jump termination, when moveFr == to
+            if (move is not null) {
+
+                game = game.Transition(move); // global game is replaced!
+
+                if (game.HasEnded()) { state = MainState.END; }
+
+                else if (move is MonkeyJump) { moveFr = to; }
+
+                else {
+                    if (activeUser is Ai) { state = MainState.AI; }
+                    if (activeUser is Hi) { state = MainState.FR; }
+                    if (activeUser is Net) { state = MainState.NET; }
+                }
+
+                Algorithm.Cancel(); // maybe running advise
+                cleanAdvice();
+                statusPanelWrapper.AppendMove(move);
+            }
+
+            // not a move, but reset
+            else if (moveFr == to) { state = MainState.FR; }
+
+            else { /* do nothing */ }
+
+            boardWrapper.Draw(game, state, moveFr);
+        }
+
+        #endregion
+
+        #region event control
+
+        private void spawnNewGameDialog<T>(object sender, EventArgs e)
+            where T : Window, IPlayable, new()
+        {
+            var dialog = new T();
+            if (dialog.ShowDialog() == true) {
+                resetGame();
+
+                game = dialog.Game;
+                whiteUser = dialog.WhiteUser;
+                blackUser = dialog.BlackUser;
+                networkPack = dialog.NetworkPack;
+
+                gameMenuWrapper.Disable();
+
+                menuItemPause.IsEnabled = (whiteUser is Ai) && (blackUser is Ai);
+
+                initGame();
+            }
+        }
+
+        private void menuItemLocal_Click(object sender, RoutedEventArgs e)
+            => spawnNewGameDialog<MenuLocalPopup>(sender, e);
+
+        private void menuItemNetwork_Click(object sender, RoutedEventArgs e)
+            => spawnNewGameDialog<MenuNetworkPopup>(sender, e);
+
+        private void menuItemSave_Click(object sender, RoutedEventArgs e)
+        {
+            var g = game;
+            var r = (g is not null) ? CongoFen.ToFen(g) : string.Empty;
+            Clipboard.SetText(r);
+        }
+
+        private void menuItemPause_Click(object sender, RoutedEventArgs e)
+        {
+            // .IsSet means no pause
+
+            if (pauseEvent.IsSet) {
+                pauseEvent.Reset();
+                menuItemPause.Header = "Resu_me";
+            }
+
+            else {
+                pauseEvent.Set();
+                menuItemPause.Header = "_Pause";
+            }
+        }
+
+        private void menuItemCancel_Click(object sender, RoutedEventArgs e)
+            => Algorithm.Cancel();
+
+        private void menuItemReset_Click(object sender, RoutedEventArgs e)
+            => resetGame();
+
+        private void menuItemExit_Click(object sender, RoutedEventArgs e)
+            => exitGame();
+
+        private void tile_Click(object sender, RoutedEventArgs e)
+        {
+            switch (state) {
+
+                case MainState.FR:
+                    if (sender is Canvas tileFr) {
+                        updateGameTileFr(int.Parse((string)tileFr.Tag));
+                    }
+                    break;
+
+                case MainState.TO:
+                    if (sender is Canvas tileTo) {
+                        updateGameTileTo(int.Parse((string)tileTo.Tag));
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void buttonAdvise_Click(object sender, RoutedEventArgs e)
+            => hiAdvise_Init();
+
+        private void buttonMoveGenerator_Click(object sender, RoutedEventArgs e)
+            => finalizeState();
 
         #endregion
 
@@ -439,16 +375,20 @@ namespace Congo.GUI
         {
             InitializeComponent();
 
-            boardWrapper = new(panelCongoBoard, tile_Click);
-            userPanelWrapper = new(borderWhitePlayer, borderBlackPlayer);
             advisePanelWrapper = new(buttonAdvise, textBlockAdvise);
+            boardWrapper = new(panelCongoBoard, tile_Click);
+            controlMenuWrapper = new(menuItemPause, menuItemCancel);
+            gameMenuWrapper = new(menuItemLocal, menuItemNetwork);
+            statusPanelWrapper = new(textBlockGameId, listBoxMoves, textBlockStatus);
+            userPanelWrapper = new(borderWhitePlayer, borderBlackPlayer);
 
-            wrappers = new() { boardWrapper, userPanelWrapper, advisePanelWrapper, };
+            wrappers = new() {
+                advisePanelWrapper, boardWrapper, controlMenuWrapper,
+                gameMenuWrapper, statusPanelWrapper, userPanelWrapper,
+            };
+            foreach (var wrapper in wrappers) { wrapper.Init(); }
 
-            adviceEvent = new ManualResetEventSlim(true);
-            pauseEvent = new ManualResetEventSlim(true);
-
-            resetGame();
+            state = MainState.INIT;
         }
     }
 }
