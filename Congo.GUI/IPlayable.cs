@@ -4,13 +4,19 @@ using Grpc.Net.Client;
 
 namespace Congo.GUI
 {
+    internal record CongoNetworkPack
+    {
+        public long GameId { get; }
+        public long MoveId { get; set; }
+        public GrpcChannel Channel { get; }
+        public CongoGrpc.CongoGrpcClient Client { get; }
+    }
+
     internal interface IPlayable
     {
         CongoGame Game { get; }
         CongoUser WhiteUser { get; }
         CongoUser BlackUser { get; }
-        long GameId { get; }
-        GrpcChannel Channel { get; }
-        CongoGrpc.CongoGrpcClient Client { get; }
+        CongoNetworkPack NetworkPack { get; }
     }
 }
