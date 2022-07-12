@@ -6,17 +6,8 @@ namespace Congo.Core
 {
     public delegate CongoMove AlgorithmDelegate(CongoGame game);
 
-    /// <summary>
-    /// Static class holds different algorithms for @b Move selection.
-    /// </summary>
     public static class Algorithm
     {
-        private enum State { ENABLED, CANCELLED, DISABLED };
-
-        private static volatile State state;
-
-        static Algorithm() { state = State.ENABLED; }
-
         #region Random
 
         private static readonly Random rnd = new();
@@ -26,34 +17,20 @@ namespace Congo.Core
         /// </summary>
         public static CongoMove Random(CongoGame game)
         {
-            var upperBound = game.ActivePlayer.Moves.Length;
-            return game.ActivePlayer.Moves[rnd.Next(upperBound)];
+            var bound = game.ActivePlayer.Moves.Length;
+            return game.ActivePlayer.Moves[rnd.Next(bound)];
         }
 
         #endregion
 
         #region Negamax
 
-        public static void Cancel() => state = State.CANCELLED;
-
-        /// <summary>
-        /// @note This method shall be used only in one situation, namely
-        /// reset of the current Gui. Disabled algorithm is supposed to be
-        /// enabled again by the advice finalizer.
-        /// </summary>
-        public static void Disable() => state = State.DISABLED;
-
-        public static void Enable() => state = State.ENABLED;
-
-        public static bool IsDisabled() => state == State.DISABLED;
-
+        private static bool cancel;
+        private static CongoHashTable hT;
         private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
-        private static CongoHashTable hT;
+        public static void Cancel() => cancel = true;
 
-        /// <summary>
-        /// Picks pair with maximum out of two scores.
-        /// </summary>
         private static (CongoMove, int) Max((CongoMove, int score) p1, (CongoMove, int score) p2)
             => p1.score >= p2.score ? p1 : p2;
 
@@ -73,7 +50,7 @@ namespace Congo.Core
             CongoMove move = null;
             int score = -CongoEvaluator.INF;
 
-            if (state != State.ENABLED) { /* skip branches, cancelled or disabled calc. */ }
+            if (cancel) { /* skip branches if cancelled */ }
 
             // recursion bottom
             else if (game.HasEnded() || depth <= 0) {
@@ -138,10 +115,10 @@ namespace Congo.Core
              * player and current active player are of the same color) ->
              * no score inversion. */
 
-            var condition = (depth == negamaxDepth) ||
-                (game.Predecessor.ActivePlayer.Color == game.ActivePlayer.Color);
+            var cond = (depth == negamaxDepth)
+                    || (game.Predecessor.ActivePlayer.Color == game.ActivePlayer.Color);
 
-            return condition ? (move, score) : (move, -score);
+            return cond ? (move, score) : (move, -score);
         }
 
         /// <summary>
@@ -200,10 +177,7 @@ namespace Congo.Core
 
         public static CongoMove Negamax(CongoGame game)
         {
-            if (IsDisabled()) { return null; }
-
-            // resets _only_ cancel, disable is reset manually
-            if (!IsDisabled()) { Enable(); }
+            cancel = false;
 
             /* negamax recursion bottom assumes game predecessor
              * and non-zero depth at first call */
