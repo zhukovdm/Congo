@@ -16,6 +16,8 @@ internal static class CongoState
 
     #region SQL
 
+    #region execute query
+
     private static void executeNonQuery(string dataSource, string commandText, string[] pars, object[] objs)
     {
         using var conn = new SqliteConnection(dataSource);
@@ -47,6 +49,8 @@ internal static class CongoState
 
         return result;
     }
+
+    #endregion
 
     #region games commands
 
@@ -222,6 +226,19 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
 {
     private readonly ILogger<CongoGrpcService> logger;
 
+    private static Task<GetDbMovesReply> getDbMovesFrom(long gameId, long moveId)
+    {
+        var reply = new GetDbMovesReply();
+
+        if (CongoState.lockDb.TryGetValue(gameId, out var l)) {
+            lock (l) {
+                reply.Moves.AddRange(CongoState.GetDbMovesFrom(gameId, moveId));
+            }
+        }
+
+        return Task.FromResult(reply);
+    }
+
     public CongoGrpcService(ILogger<CongoGrpcService> logger)
     {
         this.logger = logger;
@@ -278,7 +295,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// </summary>
     public override Task<GetFirstFenReply> GetFirstFen(GetFirstFenRequest request, ServerCallContext context)
     {
-        string fen = "";
+        var fen = string.Empty;
 
         if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
             lock (l) {
@@ -294,7 +311,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
     /// </summary>
     public override Task<GetLatestFenReply> GetLatestFen(GetLatestFenRequest request, ServerCallContext context)
     {
-        string fen = "";
+        var fen = string.Empty;
 
         if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
             lock (l) {
@@ -305,22 +322,17 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         return Task.FromResult(new GetLatestFenReply { Fen = fen });
     }
 
+    /// <summary>
+    /// <returns><b>true</b> if gameId exists in the database, otherwise
+    /// <b>false</b>.</returns>
+    /// </summary>
     public override Task<CheckGameIdReply> CheckGameId(CheckGameIdRequest request, ServerCallContext context)
         => Task.FromResult(new CheckGameIdReply { Exist = CongoState.lockDb.TryGetValue(request.GameId, out _) });
 
-    private static Task<GetDbMovesReply> getDbMovesFrom(long gameId, long moveId)
-    {
-        var reply = new GetDbMovesReply();
-
-        if (CongoState.lockDb.TryGetValue(gameId, out var l)) {
-            lock (l) {
-                reply.Moves.AddRange(CongoState.GetDbMovesFrom(gameId, moveId));
-            }
-        }
-
-        return Task.FromResult(reply);
-    }
-
+    /// <summary>
+    /// Moves made by the players are ordered in the database. The request
+    /// returns moves made <b>after</b> the latest known move with <b>moveId</b>.
+    /// </summary>
     public override Task<GetDbMovesReply> GetDbMovesFrom(GetDbMovesFromRequest request, ServerCallContext context)
         => getDbMovesFrom(request.GameId, request.MoveId);
 }
