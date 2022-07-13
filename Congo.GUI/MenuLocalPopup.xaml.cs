@@ -1,9 +1,7 @@
-﻿using System.Windows;
+﻿using Congo.Core;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Input;
-using Congo.Core;
-using Grpc.Net.Client;
-using Congo.Server;
 
 namespace Congo.GUI
 {
@@ -65,6 +63,8 @@ namespace Congo.GUI
             BlackUser = (radioButtonBlackHi.IsChecked == true)
                 ? new Hi(black_algo)
                 : new Ai(black_algo);
+
+            NetworkPack = null;
 
             DialogResult = true;
             Close();

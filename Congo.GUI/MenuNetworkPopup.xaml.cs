@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Congo.Core;
+using Congo.Server;
+using Congo.Utils;
+using Grpc.Net.Client;
+using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Grpc.Net.Client;
-using Congo.Core;
-using Congo.Server;
-using Congo.Utils;
 
 namespace Congo.GUI
 {
