@@ -25,7 +25,7 @@ namespace Congo.Core
 
         #region Negamax
 
-        private static bool cancel;
+        private static volatile bool cancel;
         private static CongoHashTable hT;
         private static readonly int negamaxDepth = 5; ///< Maximum distance from the initial node in the decision tree
 
