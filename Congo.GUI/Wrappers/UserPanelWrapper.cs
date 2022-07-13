@@ -23,8 +23,6 @@ namespace Congo.GUI.Wrappers
             borderBlack.BorderBrush = inactiveBrush;
         }
 
-        public void Reset() => Init();
-
         public void Draw(CongoGame game)
         {
             var w = game.ActivePlayer.IsWhite();

@@ -18,8 +18,6 @@ namespace Congo.GUI.Wrappers
             buttonNetwork.IsEnabled = true;
         }
 
-        public void Reset() => Init();
-
         public void Disable()
         {
             buttonLocal.IsEnabled = false;

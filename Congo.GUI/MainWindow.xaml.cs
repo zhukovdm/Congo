@@ -14,10 +14,15 @@ namespace Congo.GUI
 
     internal sealed record Step
     {
-        public MainState State;
+        public int MoveFr;
         public CongoGame Game;
         public CongoMove Move;
-        public int MoveFr;
+        public MainState State;
+
+        public Step(MainState s, CongoGame g, CongoMove m, int f)
+        {
+            State = s; Game = g; Move = m; MoveFr = f;
+        }
     }
 
     public sealed partial class MainWindow : Window
@@ -43,13 +48,9 @@ namespace Congo.GUI
         private readonly UserPanelWrapper userPanelWrapper;
 
         // specific wrappers
-        private readonly AiAdviseWrapper aiAdviseWrapper;
         private readonly HiAdviseWrapper hiAdviseWrapper;
 
-        private CongoUser activeUser
-            => game.ActivePlayer.IsWhite() ? whiteUser : blackUser;
-
-        private MainState nextState(CongoGame g)
+        private MainState gameToState(CongoGame g)
         {
             MainState s;
 
@@ -62,6 +63,9 @@ namespace Congo.GUI
 
             return s;
         }
+
+        private CongoUser gameToUser(CongoGame g)
+            => g.ActivePlayer.IsWhite() ? whiteUser : blackUser;
 
         #region async control
 
@@ -81,20 +85,20 @@ namespace Congo.GUI
                 if (m is null) { m = Algorithm.Random(g); }
                 g = g.Transition(m);
 
-                aiAdviseWrapper.End();
-                applyStep(nextState(g), g, m, -1);
+                applyStep(gameToState(g), g, m, -1);
             }
 
             else {
                 applyStep(step.State, step.Game, step.Move, step.MoveFr);
             }
+
+            step = null;
         }
 
         private void aiAdvise_Init()
         {
             if (job is null) {
-                job = new AsyncAdvise(game, activeUser, whiteUser is Ai && blackUser is Ai);
-                aiAdviseWrapper.Begin();
+                job = new AsyncAdvise(game, gameToUser(game), whiteUser is Ai && blackUser is Ai);
                 AsyncPrimitives.GetWorker(worker_DoWork, aiAdvise_Complete)
                                .RunWorkerAsync(argument: job);
             }
@@ -116,12 +120,14 @@ namespace Congo.GUI
             else {
                 applyStep(step.State, step.Game, step.Move, step.MoveFr);
             }
+
+            step = null;
         }
 
         private void hiAdvise_Init()
         {
             if (job is null) {
-                job = new AsyncAdvise(game, activeUser, false);
+                job = new AsyncAdvise(game, gameToUser(game), false);
                 hiAdviseWrapper.Begin();
                 AsyncPrimitives.GetWorker(worker_DoWork, hiAdvise_Complete)
                                .RunWorkerAsync(argument: job);
@@ -129,10 +135,26 @@ namespace Congo.GUI
         }
 
         private void netMove_Complete(object sender, RunWorkerCompletedEventArgs e)
-            => throw new NotImplementedException();
+        {
+            job = null;
+
+            if (step is null) {
+                // TODO: network move completer
+            }
+
+            else {
+                applyStep(step.State, step.Game, step.Move, step.MoveFr);
+            }
+
+            step = null;
+        }
 
         private void netMove_Init()
-            => throw new NotImplementedException();
+        {
+            if (job is null) {
+                // TODO: network move initializer
+            }
+        }
 
         #endregion
 
@@ -166,46 +188,45 @@ namespace Congo.GUI
         {
             if (job is not null && step is null) {
                 job.Cancel();
-                step = new() { State = s, Game = g, Move = m, MoveFr = f, };
+                step = new(s, g, m, f);
             }
 
             else if (job is null) {
+
+                var oldState = state;
+                state = s; game = g; moveFr = f;
 
                 if (m is not null) { statusPanelWrapper.AppendMove(m); }
 
                 switch (s) {
 
                     case MainState.INIT:
-                        state = s;
                         networkPack = null;
                         foreach (var wrapper in wrappers) { wrapper.Init(); }
                         GC.Collect();
                         break;
 
                     case MainState.FR:
-                        game = g;
-                        state = s;
-                        boardWrapper.Draw(g, s, -1);
+                        userPanelWrapper.Draw(g);
+                        boardWrapper.Draw(g, s, f);
+                        advisePanelWrapper.Activate(oldState, s);
                         break;
 
                     case MainState.TO:
-                        state = s;
-                        moveFr = f;
-                        boardWrapper.Draw(game, s, f);
+                        boardWrapper.Draw(g, s, f);
+                        advisePanelWrapper.Activate(oldState, s);
                         break;
 
                     case MainState.AI:
                     case MainState.NET:
-                        game = g;
-                        state = s;
-                        boardWrapper.Draw(g, s, -1);
+                        userPanelWrapper.Draw(g);
+                        boardWrapper.Draw(g, s, f);
+                        advisePanelWrapper.Deactivate();
                         click();
                         break;
 
                     case MainState.END:
-                        state = s;
-                        game = g;
-                        boardWrapper.Draw(g, s, -1);
+                        boardWrapper.Draw(g, s, f);
 
                         gameMenuWrapper.Init();
                         controlMenuWrapper.Init();
@@ -233,31 +254,28 @@ namespace Congo.GUI
 
         private void resetGame()
         {
-            if (job is not null) {
-                step = new Step()
-                {
-                    State = MainState.INIT,
-                    Game = null,
-                    Move = null,
-                    MoveFr = -1,
-                };
-            }
+            int f = -1;
+            CongoGame g = null;
+            CongoMove m = null;
+            var s = MainState.INIT;
+
+            if (job is not null) { step = new Step(s, g, m, f); }
 
             else {
                 applyStep(MainState.INIT, null, null, -1);
             }
         }
 
-        private void stepTileFr(int f)
+        private void stepTileFr(int fr)
         {
-            if (game.Board.IsFriendlyPiece(game.ActivePlayer.Color, f)) {
-                applyStep(MainState.TO, null, null, f);
+            if (game.Board.IsFriendlyPiece(game.ActivePlayer.Color, fr)) {
+                applyStep(MainState.TO, game, null, fr);
             }
         }
 
         private void stepTileTo(int to)
         {
-            var g = game; var s = state; var f = moveFr;
+            var s = state; var g = game; var f = moveFr;
             var m = game.ActivePlayer.Accept(new CongoMove(moveFr, to));
 
             // also covers monkey jump termination, when moveFr == to
@@ -270,9 +288,11 @@ namespace Congo.GUI
                 else if (m is MonkeyJump) { f = to; }
 
                 else {
-                    if (activeUser is Ai) { s = MainState.AI; }
-                    if (activeUser is Hi) { s = MainState.FR; }
-                    if (activeUser is Net) { s = MainState.NET; }
+                    var u = g.ActivePlayer.IsWhite() ? whiteUser : blackUser;
+
+                    if (u is Ai) { s = MainState.AI; }
+                    if (u is Hi) { s = MainState.FR; }
+                    if (u is Net) { s = MainState.NET; }
                 }
             }
 
@@ -296,15 +316,16 @@ namespace Congo.GUI
 
                 resetGame();
 
-                game = dialog.Game;
                 whiteUser = dialog.WhiteUser;
                 blackUser = dialog.BlackUser;
                 networkPack = dialog.NetworkPack;
 
                 gameMenuWrapper.Disable();
+
+                menuItemCancel.IsEnabled = true;
                 menuItemPause.IsEnabled = (whiteUser is Ai) && (blackUser is Ai);
 
-                click();
+                applyStep(gameToState(dialog.Game), dialog.Game, null, -1);
             }
         }
 
@@ -377,8 +398,7 @@ namespace Congo.GUI
                 gameMenuWrapper, statusPanelWrapper, userPanelWrapper,
             };
 
-            aiAdviseWrapper = new(menuItemCancel);
-            hiAdviseWrapper = new(menuItemCancel, buttonAdvise, textBlockAdvise);
+            hiAdviseWrapper = new(buttonAdvise, textBlockAdvise);
 
             applyStep(MainState.INIT, null, null, -1);
         }

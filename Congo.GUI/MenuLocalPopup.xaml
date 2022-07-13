@@ -8,7 +8,7 @@
     xmlns:local="clr-namespace:Congo.GUI"
     mc:Ignorable="d"
     Icon="Resources/icon.png"
-    Title="Local Game" MinHeight="500" Height="500" MinWidth="600" Width="600">
+    Title="Local Game" MinHeight="490" Height="490" MinWidth="600" Width="600">
     <Window.Resources>
         <System:Double x:Key="viewboxHeight">40.0</System:Double>
     </Window.Resources>

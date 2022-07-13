@@ -80,12 +80,12 @@
                 </StackPanel>
                 <DockPanel Grid.Column="2" Width="10"/>
                 <StackPanel Grid.Column="3" Orientation="Vertical">
-                    <DockPanel Height="50">
-                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="5" Background="#000000"/>
+                    <DockPanel Height="50" Background="#000000">
+                        <Border Name="borderBlackPlayer" BorderBrush="Transparent" BorderThickness="5"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
-                    <DockPanel Height="50">
-                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="5" Background="#914800"/>
+                    <DockPanel Height="50" Background="#914800">
+                        <Border Name="borderWhitePlayer" BorderBrush="Transparent" BorderThickness="5"/>
                     </DockPanel>
                     <DockPanel Height="10"/>
                     <Grid>

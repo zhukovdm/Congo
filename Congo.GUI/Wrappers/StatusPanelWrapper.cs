@@ -28,6 +28,8 @@ namespace Congo.GUI.Wrappers
             moves.ScrollIntoView(moves.Items[^1]);
         }
 
+        public void SetId(string id) => gameId.Text = id;
+
         public void SetStatus(string message) => status.Text = message;
     }
 }
