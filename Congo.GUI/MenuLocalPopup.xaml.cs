@@ -12,12 +12,10 @@ namespace Congo.GUI
     /// </summary>
     public partial class MenuLocalPopup : Window, IPlayable
     {
-        public CongoGame Game { get; private set; }
-        public CongoUser WhiteUser { get; private set; }
-        public CongoUser BlackUser { get; private set; }
-        public GrpcChannel Channel { get; private set; }
-        public CongoGrpc.CongoGrpcClient Client { get; private set; }
-        public long GameId { get; private set; }
+        public CongoGame Game { get; set; }
+        public CongoUser WhiteUser { get; set; }
+        public CongoUser BlackUser { get; set; }
+        public CongoNetworkPack NetworkPack { get; set; }
 
         private void Esc_PushButton(object sender, KeyEventArgs e)
         {

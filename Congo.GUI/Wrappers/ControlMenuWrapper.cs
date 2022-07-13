@@ -2,7 +2,7 @@
 
 namespace Congo.GUI.Wrappers
 {
-    internal sealed class ControlMenuWrapper : IPanelWrapper
+    internal sealed class ControlMenuWrapper : IBaseWrapper
     {
         private readonly MenuItem pause, cancel;
 
@@ -17,7 +17,5 @@ namespace Congo.GUI.Wrappers
             pause.IsEnabled = false;
             cancel.IsEnabled = false;
         }
-
-        public void Reset() => Init();
     }
 }

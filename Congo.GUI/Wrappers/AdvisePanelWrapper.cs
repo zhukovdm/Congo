@@ -2,10 +2,11 @@
 
 namespace Congo.GUI.Wrappers
 {
-    internal sealed class AdvisePanelWrapper : IPanelWrapper
+    internal sealed class AdvisePanelWrapper : IBaseWrapper
     {
         private readonly Button button;
         private readonly TextBlock textBlock;
+
         public AdvisePanelWrapper(Button button, TextBlock textBlock)
         {
             this.button = button;
@@ -17,7 +18,5 @@ namespace Congo.GUI.Wrappers
             button.IsEnabled = false;
             textBlock.Text = string.Empty;
         }
-
-        public void Reset() => Init();
     }
 }

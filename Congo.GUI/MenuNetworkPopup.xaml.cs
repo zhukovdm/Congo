@@ -13,12 +13,10 @@ namespace Congo.GUI
 {
     public partial class MenuNetworkPopup : Window, IPlayable
     {
-        public CongoGame Game { get; private set; }
-        public CongoUser WhiteUser { get; private set; }
-        public CongoUser BlackUser { get; private set; }
-        public GrpcChannel Channel { get; private set; }
-        public CongoGrpc.CongoGrpcClient Client { get; private set; }
-        public long GameId { get; private set; }
+        public CongoGame Game { get; set; }
+        public CongoUser WhiteUser { get; set; }
+        public CongoUser BlackUser { get; set; }
+        public CongoNetworkPack NetworkPack { get; set; }
 
         private static void OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
@@ -100,38 +98,38 @@ namespace Congo.GUI
 
             #endregion
 
-            #region check network capabilities
-
             if (errorBuf.ToString() == string.Empty) {
-                Channel = GrpcPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text);
-                Client = new CongoGrpc.CongoGrpcClient(Channel);
+                NetworkPack.Channel = GrpcPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text);
+                NetworkPack.Client = new CongoGrpc.CongoGrpcClient(NetworkPack.Channel);
             }
 
-            GameId = -1;
+            NetworkPack.GameId = -1;
+
+            #region check network capabilities
 
             try {
 
                 if (radioButtonStandard.IsChecked == true) {
-                    GameId = Client.PostFen(new PostFenRequest() { Fen = CongoFen.ToFen(CongoGame.Standard()) }).GameId;
+                    NetworkPack.GameId = NetworkPack.Client.PostFen(new PostFenRequest() { Fen = CongoFen.ToFen(CongoGame.Standard()) }).GameId;
                 }
 
                 if (radioButtonFen.IsChecked == true) {
-                    GameId = Client.PostFen(new PostFenRequest() { Fen = textBoxFen.Text }).GameId;
+                    NetworkPack.GameId = NetworkPack.Client.PostFen(new PostFenRequest() { Fen = textBoxFen.Text }).GameId;
                 }
             } catch (Exception) {
                 errorBuf.WriteLine("New board cannot be posted on the server.");
             }
 
             if (radioButtonId.IsChecked == true) {
-                GameId = long.Parse(textBoxId.Text);
+                NetworkPack.GameId = long.Parse(textBoxId.Text);
             }
 
             try {
-                if (!Client.CheckGameId(new CheckGameIdRequest() { GameId = GameId }).Exist) {
+                if (!NetworkPack.Client.CheckGameId(new CheckGameIdRequest() { GameId = NetworkPack.GameId }).Exist) {
                     errorBuf.WriteLine("gameId doesn't exist on the server.");
                 }
             } catch (Exception) {
-                errorBuf.WriteLine(string.Format($"gameId {GameId} cannot be checked on the server."));
+                errorBuf.WriteLine(string.Format($"gameId {NetworkPack.GameId} cannot be checked on the server."));
             }
 
             #endregion
@@ -142,8 +140,6 @@ namespace Congo.GUI
                 MessageBox.Show(error, "Wrong communication", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
-
         }
 
         public MenuNetworkPopup()

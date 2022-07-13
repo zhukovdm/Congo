@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Congo.Core;
+using Congo.GUI.Wrappers;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Congo.Core;
 
 namespace Congo.GUI
 {
@@ -13,7 +14,7 @@ namespace Congo.GUI
     {
         private const double accentBoardThickness = 5.0;
         private const double standardBoardThickness = 1.0;
-        private static readonly double tileSize = MainWindow.tileSize;
+        private static readonly double tileSize = BoardWrapper.TileSize;
 
         private static readonly ImmutableDictionary<Type, string> type2suffix = new Dictionary<Type, string>
         {

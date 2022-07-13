@@ -1,71 +1,71 @@
 ﻿using Congo.Core;
 using System.Threading;
+using System.Windows.Controls;
 
 namespace Congo.GUI
 {
     internal abstract class AsyncJob
     {
-        protected static ManualResetEventSlim waitEvent, pauseEvent;
+        protected static ManualResetEventSlim pauseEvent;
 
-        static AsyncJob() { waitEvent = new(true); pauseEvent = new(true); }
+        static AsyncJob() { pauseEvent = new(true); }
 
-        protected bool abandon = false;
-
-        public static void Wait() => waitEvent.Wait();
-
-        public static void Acquire()
+        private static void Pause(MenuItem item)
         {
-            waitEvent.Wait();
-            waitEvent.Reset();
+            pauseEvent.Reset();
+            item.Header = "Resu_me";
         }
 
-        public static void Release() => waitEvent.Set();
+        public static void Resume(MenuItem item)
+        {
+            pauseEvent.Set();
+            item.Header = "_Pause";
+        }
 
-        public static void Pause() => pauseEvent.Reset();
-
-        public static void Resume() => pauseEvent.Set();
-
-        public bool IsAbandoned() => abandon == true;
+        public static void Invert(MenuItem item)
+        {
+            if (pauseEvent.IsSet) { Pause(item); } else { Resume(item); }
+        }
 
         public abstract AsyncJob Run();
 
         public abstract void Cancel();
-
-        public abstract void Abandon();
     }
 
     internal sealed class AsyncAdvise : AsyncJob
     {
-        public CongoGame Game;
-        public CongoUser White, Black;
-        public CongoMove Move;
+        private readonly bool sleep;
+        private readonly CongoUser User;
 
-        public AsyncAdvise(CongoGame game, CongoUser white, CongoUser black)
+        public readonly CongoGame Game;
+        public CongoMove Move { get; private set; }
+
+        public AsyncAdvise(CongoGame game, CongoUser user, bool sleep)
         {
             Game = game;
-            White = white;
-            Black = black;
+            User = user;
+            this.sleep = sleep;
         }
 
         public override AsyncJob Run()
         {
             pauseEvent.Wait();
+            if (sleep) { Thread.Sleep(1000); } // avoid too fast user switching
 
-            // avoid too fast user switching
-            if (White is Ai && Black is Ai) { Thread.Sleep(1000); }
-
-            var user = Game.ActivePlayer.IsWhite() ? White : Black;
-            Move = user.Advise(Game);
+            Move = User.Advise(Game);
 
             return this;
         }
 
         public override void Cancel() => Algorithm.Cancel();
-
-        public override void Abandon()
-        {
-            abandon = true;
-            Algorithm.Cancel();
-        }
     }
+
+    /*
+    internal sealed class AsyncNetMove : AsyncJob
+    {
+        private volatile bool cancel = false;
+
+        public AsyncNetMove() { }
+    }
+    */
 }

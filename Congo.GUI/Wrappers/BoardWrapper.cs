@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace Congo.GUI.Wrappers
 {
-    internal sealed class BoardWrapper : IPanelWrapper
+    internal sealed class BoardWrapper : IBaseWrapper
     {
         public const double TileSize = 82.0;
         private const string riverColorCode = "#65b9f8";

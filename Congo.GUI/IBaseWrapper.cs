@@ -1,8 +1,7 @@
 ﻿namespace Congo.GUI
 {
-    internal interface IPanelWrapper
+    internal interface IBaseWrapper
     {
         void Init();
-        void Reset();
     }
 }

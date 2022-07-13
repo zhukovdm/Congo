@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace Congo.GUI.Wrappers
 {
-    internal sealed class UserPanelWrapper : IPanelWrapper
+    internal sealed class UserPanelWrapper : IBaseWrapper
     {
         private static readonly SolidColorBrush activeBrush = Brushes.Red;
         private static readonly SolidColorBrush inactiveBrush = Brushes.Transparent;

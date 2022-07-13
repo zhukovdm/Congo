@@ -2,7 +2,7 @@
 
 namespace Congo.GUI.Wrappers
 {
-    internal class GameMenuWrapper : IPanelWrapper
+    internal class GameMenuWrapper : IBaseWrapper
     {
         private readonly MenuItem buttonLocal, buttonNetwork;
 

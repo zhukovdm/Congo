@@ -131,7 +131,7 @@
                 <TextBlock Text="f"/>
                 <TextBlock Text="g"/>
             </StackPanel>
-            <Button Name="buttonMoveGenerator" Visibility="Hidden" Click="buttonMoveGenerator_Click"/>
+            <Button Name="buttonMoveGenerator" Visibility="Hidden" Click="buttonStepGenerator_Click"/>
         </StackPanel>
     </Grid>
 </Window>
