@@ -107,11 +107,9 @@ namespace Congo.GUI.Wrappers
             }
         }
 
-        public void Reset() => Init();
-
         public void Draw(CongoGame game, MainState state, int moveFr)
         {
-            Reset();
+            Init();
             drawPieces(game.Board, White.Color);
             drawPieces(game.Board, Black.Color);
             drawSelect(game, state, moveFr);

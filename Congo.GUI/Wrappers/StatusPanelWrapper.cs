@@ -18,6 +18,7 @@ namespace Congo.GUI.Wrappers
 
         public void Init()
         {
+            moves.Items.Clear();
             gameId.Text = string.Empty;
             status.Text = string.Empty;
         }

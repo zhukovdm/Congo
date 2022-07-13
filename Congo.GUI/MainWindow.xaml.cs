@@ -27,6 +27,9 @@ namespace Congo.GUI
 
     public sealed partial class MainWindow : Window
     {
+        private const string whiteLiteral = "white";
+        private const string blackLiteral = "black";
+
         // state
         private int moveFr;
         private CongoGame game;
@@ -226,17 +229,15 @@ namespace Congo.GUI
                         break;
 
                     case MainState.END:
-                        boardWrapper.Draw(g, s, f);
-
                         gameMenuWrapper.Init();
                         controlMenuWrapper.Init();
                         userPanelWrapper.Init();
                         advisePanelWrapper.Init();
+                        boardWrapper.Draw(g, s, f);
 
-                        var message = game.Opponent.Color.IsWhite()
-                            ? "white"
-                            : "black";
-
+                        var message = g.WhitePlayer.HasLion
+                            ? whiteLiteral
+                            : blackLiteral;
                         statusPanelWrapper.SetStatus(message + " wins");
                         break;
 
@@ -321,7 +322,6 @@ namespace Congo.GUI
                 networkPack = dialog.NetworkPack;
 
                 gameMenuWrapper.Disable();
-
                 menuItemCancel.IsEnabled = true;
                 menuItemPause.IsEnabled = (whiteUser is Ai) && (blackUser is Ai);
 
