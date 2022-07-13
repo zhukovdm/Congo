@@ -16,7 +16,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=standard",
+                "--game=standard",
                 "--white=hi/random",
                 "--white=hi/random",
                 "--black=ai/negamax",
@@ -30,7 +30,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=",
-                "--board=standard",
+                "--game=standard",
                 "--white=hi/random",
                 "--black=ai/negamax",
             });
@@ -41,7 +41,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=word",
-                "--board=standard",
+                "--game=standard",
                 "--white=hi/random",
                 "--black=ai/negamax",
             });
@@ -50,33 +50,33 @@ namespace Congo.CLI.MSTest
         //
 
         [TestMethod, ExpectedException(typeof(System.ArgumentException))]
-        public void EmptyLocalBoard()
+        public void EmptyLocalGame()
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=",
+                "--game=",
                 "--white=hi/random",
                 "--black=ai/negamax",
             });
         }
 
         [TestMethod, ExpectedException(typeof(System.ArgumentException))]
-        public void MalformedLocalBoardRandom()
+        public void MalformedLocalGameRandom()
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=new",
+                "--game=new",
                 "--white=hi/random",
                 "--black=ai/negamax",
             });
         }
 
         [TestMethod, ExpectedException(typeof(System.ArgumentException))]
-        public void MalformedLocalBoardId()
+        public void MalformedLocalGameId()
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/random",
                 "--black=ai/negamax",
             });
@@ -89,7 +89,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=",
                 "--black=ai/negamax",
             });
@@ -100,7 +100,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/",
                 "--black=ai/negamax",
             });
@@ -111,7 +111,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=/random",
                 "--black=ai/negamax",
             });
@@ -122,7 +122,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=xx/random",
                 "--black=ai/negamax",
             });
@@ -133,7 +133,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/xx",
                 "--black=ai/negamax",
             });
@@ -146,7 +146,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/random",
                 "--black=",
             });
@@ -157,7 +157,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/random",
                 "--black=ai/",
             });
@@ -168,7 +168,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/random",
                 "--black=/negamax",
             });
@@ -179,7 +179,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/random",
                 "--black=xx/negamax",
             });
@@ -190,7 +190,7 @@ namespace Congo.CLI.MSTest
         {
             CongoArgs.Parser.Parse(new string[] {
                 "--place=local",
-                "--board=123",
+                "--game=123",
                 "--white=hi/random",
                 "--black=xx/negamax",
             });
@@ -199,11 +199,11 @@ namespace Congo.CLI.MSTest
         //
 
         [TestMethod]
-        public void GameIsLocal()
+        public void PlaceIsLocal()
         {
             var args = new string[] {
                 "--place=local",
-                "--board=standard",
+                "--game=standard",
                 "--white=hi/random",
                 "--black=ai/negamax",
             };
@@ -211,13 +211,13 @@ namespace Congo.CLI.MSTest
         }
 
         [TestMethod]
-        public void GameIsNetwork()
+        public void PlaceIsNetwork()
         {
             var args = new string[] {
                 "--place=network",
                 "--host=127.0.0.1",
                 "--port=4765",
-                "--board=standard",
+                "--game=standard",
                 "--white=hi/random",
             };
             Assert.IsTrue(CongoArgs.Parser.Parse(args).IsPlaceNetwork());
