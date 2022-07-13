@@ -300,3 +300,10 @@ TBA
 ## Start server instance
 
 TBA
+
+# References
+
+- [Chess variants/Congo](https://www.chessvariants.com/ms.dir/congo.html)
+- [Wikipedia/Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess)
+- [Wikipedia/Congo (chess variant)](https://en.wikipedia.org/wiki/Congo_(chess_variant))
+- [Mindsports/Interesting game/Congo](https://www.mindsports.nl/index.php/side-dishes/interesting-games?start=2)
