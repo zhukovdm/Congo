@@ -5,20 +5,9 @@ using System.Windows.Input;
 
 namespace Congo.GUI
 {
-    /// <summary>
-    /// Interaction logic for MenuLocalPopup.xaml
-    /// </summary>
-    public partial class MenuLocalPopup : Window, IPlayable
+    public partial class MenuLocalPopup : MenuBasePopup
     {
-        public CongoGame Game { get; set; }
-        public CongoUser WhiteUser { get; set; }
-        public CongoUser BlackUser { get; set; }
-        public CongoNetworkPack NetworkPack { get; set; }
-
-        private void Esc_PushButton(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Escape) { Close(); }
-        }
+        #region event control
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -28,6 +17,7 @@ namespace Congo.GUI
         private void radioButtonFen_Checked(object sender, RoutedEventArgs e)
         {
             textBoxFen.Visibility = Visibility.Visible;
+            textBoxFen.Focus();
         }
 
         private void radioButtonFen_Unchecked(object sender, RoutedEventArgs e)
@@ -41,8 +31,6 @@ namespace Congo.GUI
                 textBoxFen.BorderBrush = Brushes.Red;
                 return;
             }
-
-            textBoxFen.BorderBrush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFABADB3");
 
             Game = radioButtonStandardGame.IsChecked == true
                 ? CongoGame.Standard()
@@ -70,10 +58,11 @@ namespace Congo.GUI
             Close();
         }
 
+        #endregion
+
         public MenuLocalPopup()
         {
             InitializeComponent();
-            PreviewKeyDown += new KeyEventHandler(Esc_PushButton);
         }
     }
 }
