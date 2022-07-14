@@ -11,7 +11,7 @@ service CongoGrpc
     rpc CheckGameId (CheckGameIdRequest) returns (CheckGameIdReply);
     rpc GetFirstFen (GetFirstFenRequest) returns (GetFirstFenReply);
     rpc GetLatestFen (GetLatestFenRequest) returns (GetLatestFenReply);
-    rpc GetDbMovesFrom (GetDbMovesFromRequest) returns (GetDbMovesReply);
+    rpc GetDbMovesAfter (GetDbMovesAfterRequest) returns (GetDbMovesAfterReply);
 }
 
 message PostFenRequest
@@ -72,13 +72,13 @@ message DbMove
     sint32 to = 2;
 }
 
-message GetDbMovesFromRequest
+message GetDbMovesAfterRequest
 {
     sint64 gameId = 1;
     sint64 moveId = 2;
 }
 
-message GetDbMovesReply
+message GetDbMovesAfterReply
 {
     repeated DbMove moves = 1;
 }

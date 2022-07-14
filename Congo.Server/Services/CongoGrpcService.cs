@@ -1,7 +1,7 @@
-using System.Collections.Concurrent;
-using Microsoft.Data.Sqlite;
-using Grpc.Core;
 using Congo.Core;
+using Grpc.Core;
+using Microsoft.Data.Sqlite;
+using System.Collections.Concurrent;
 
 namespace Congo.Server.Services;
 
@@ -54,10 +54,6 @@ internal static class CongoState
 
     #region games commands
 
-    /// <summary>
-    /// Create database with @b games table and ensure at least one row.
-    /// Avoid edge cases with empty db.
-    /// </summary>
     private static string commandTextCreateGamesTable()
         => @"CREATE TABLE IF NOT EXISTS games(
                 [gameId] INTEGER NOT NULL PRIMARY KEY,
@@ -81,13 +77,13 @@ internal static class CongoState
     private static string commandTextGetFirstFen()
         => @"SELECT firstFen FROM games WHERE gameId = $gameId;";
 
-    private static string commandTextGetLastFen()
+    private static string commandTextGetLatestFen()
         => @"SELECT lastFen FROM games WHERE gameId = $gameId;";
 
-    private static string commandTextSetLastFen()
+    private static string commandTextSetLatestFen()
         => @"UPDATE games SET lastFen = $lastFen WHERE gameId = $gameId;";
 
-    private static string commandtextGetGameIdentifiers()
+    private static string commandTextGetGameIdentifiers()
         => @"SELECT gameId FROM games ORDER BY gameId ASC;";
 
     #endregion
@@ -108,7 +104,7 @@ internal static class CongoState
     private static string commandTextAppendMove()
         => @"INSERT INTO moves (moveId, fromSquare, toSquare) VALUES ($moveId, $fromSquare, $toSquare);";
 
-    private static string commandTextGetMovesFrom()
+    private static string commandTextGetMovesAfter()
         => @"SELECT moveId, fromSquare, toSquare FROM moves WHERE moveId > $moveId ORDER BY moveId ASC;";
 
     #endregion
@@ -123,7 +119,7 @@ internal static class CongoState
         using var conn = new SqliteConnection(mainDbDataSource);
         conn.Open();
         using var command = conn.CreateCommand();
-        command.CommandText = commandtextGetGameIdentifiers();
+        command.CommandText = commandTextGetGameIdentifiers();
 
         var result = command.ExecuteReader();
 
@@ -152,12 +148,6 @@ internal static class CongoState
         id = (long)executeScalarQuery(mainDbDataSource, commandTextGetMaxGameId(), Array.Empty<string>(), Array.Empty<object>());
     }
 
-    /// <summary>
-    /// Create new game record in the database for a @b valid Fen.
-    /// @note This method does not use transactions, because SQLite buffer is
-    /// intended to be used by at most one transaction and other could timeout
-    /// in between. Better to decide new @b id manually.
-    /// </summary>
     internal static long Create(string fen)
     {
         var newId = Interlocked.Increment(ref id);
@@ -169,26 +159,14 @@ internal static class CongoState
         return newId;
     }
 
-    /// <summary>
-    /// Get first Fen assoc. with @b gameId.
-    /// @note @b gameId shall exist!
-    /// </summary>
     internal static string GetFirstFen(long gameId)
         => (string)executeScalarQuery(mainDbDataSource, commandTextGetFirstFen(), new string[] { "$gameId" }, new object[] { gameId });
 
-    /// <summary>
-    /// Get latest Fen assoc. with @b gameId.
-    /// @note @b gameId shall exist!
-    /// </summary>
-    internal static string GetLastFen(long gameId)
-        => (string)executeScalarQuery(mainDbDataSource, commandTextGetLastFen(), new string[] { "$gameId" }, new object[] { gameId });
+    internal static string GetLatestFen(long gameId)
+        => (string)executeScalarQuery(mainDbDataSource, commandTextGetLatestFen(), new string[] { "$gameId" }, new object[] { gameId });
 
-    /// <summary>
-    /// Set the latest Fen assoc. with @b gameId.
-    /// @note @b gameId shall exist!
-    /// </summary>
-    internal static void SetLastFen(long gameId, string lst)
-        => executeNonQuery(mainDbDataSource, commandTextSetLastFen(), new string[] { "$gameId", "$lastFen" }, new object[] { gameId, lst });
+    internal static void SetLatestFen(long gameId, string lst)
+        => executeNonQuery(mainDbDataSource, commandTextSetLatestFen(), new string[] { "$gameId", "$lastFen" }, new object[] { gameId, lst });
 
     internal static long AppendMove(long gameId, CongoMove move)
     {
@@ -200,14 +178,14 @@ internal static class CongoState
         return nextId;
     }
 
-    internal static List<DbMove> GetDbMovesFrom(long gameId, long moveId)
+    internal static List<DbMove> GetDbMovesAfter(long gameId, long moveId)
     {
         var moves = new List<DbMove>();
 
         using var conn = new SqliteConnection(getGameDbDataSource(gameId));
         conn.Open();
         using var command = conn.CreateCommand();
-        command.CommandText = commandTextGetMovesFrom();
+        command.CommandText = commandTextGetMovesAfter();
         command.Parameters.AddWithValue("$moveId", moveId);
 
         var result = command.ExecuteReader();
@@ -226,13 +204,13 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
 {
     private readonly ILogger<CongoGrpcService> logger;
 
-    private static Task<GetDbMovesReply> getDbMovesFrom(long gameId, long moveId)
+    private static Task<GetDbMovesAfterReply> getDbMovesAfter(long gameId, long moveId)
     {
-        var reply = new GetDbMovesReply();
+        var reply = new GetDbMovesAfterReply();
 
         if (CongoState.lockDb.TryGetValue(gameId, out var l)) {
             lock (l) {
-                reply.Moves.AddRange(CongoState.GetDbMovesFrom(gameId, moveId));
+                reply.Moves.AddRange(CongoState.GetDbMovesAfter(gameId, moveId));
             }
         }
 
@@ -244,10 +222,6 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         this.logger = logger;
     }
 
-    /// <summary>
-    /// Create new record with @b request.Game in the database.
-    /// @return Assigned game identifier or -1 on failure.
-    /// </summary>
     public override Task<PostFenReply> PostFen(PostFenRequest request, ServerCallContext context)
     {
         string fen = null;
@@ -265,23 +239,18 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         return Task.FromResult(new PostFenReply { GameId = gameId });
     }
 
-    /// <summary>
-    /// Introduce new move into current game.
-    /// @return New game as Congo FEN string if move is possible.
-    ///     Otherwise empty string.
-    /// </summary>
     public override Task<PostMoveReply> PostMove(PostMoveRequest request, ServerCallContext context)
     {
         long moveId = -1;
 
         if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
             lock (l) {
-                var game = CongoFen.FromFen(CongoState.GetLastFen(request.GameId));
+                var game = CongoFen.FromFen(CongoState.GetLatestFen(request.GameId));
                 var move = game.ActivePlayer.Accept(new CongoMove(request.Fr, request.To));
 
                 if (move != null) {
                     var fen = CongoFen.ToFen(game.Transition(move));
-                    CongoState.SetLastFen(request.GameId, fen);
+                    CongoState.SetLatestFen(request.GameId, fen);
                     moveId = CongoState.AppendMove(request.GameId, move);
                 }
             }
@@ -290,9 +259,6 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         return Task.FromResult(new PostMoveReply { MoveId = moveId });
     }
 
-    /// <summary>
-    /// Get first available Congo FEN for a certain gameId.
-    /// </summary>
     public override Task<GetFirstFenReply> GetFirstFen(GetFirstFenRequest request, ServerCallContext context)
     {
         var fen = string.Empty;
@@ -306,33 +272,22 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         return Task.FromResult(new GetFirstFenReply { Fen = fen });
     }
 
-    /// <summary>
-    /// Get last available Congo FEN for a certain gameId.
-    /// </summary>
     public override Task<GetLatestFenReply> GetLatestFen(GetLatestFenRequest request, ServerCallContext context)
     {
         var fen = string.Empty;
 
         if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
             lock (l) {
-                fen = CongoState.GetLastFen(request.GameId);
+                fen = CongoState.GetLatestFen(request.GameId);
             }
         }
 
         return Task.FromResult(new GetLatestFenReply { Fen = fen });
     }
 
-    /// <summary>
-    /// <returns><b>true</b> if gameId exists in the database, otherwise
-    /// <b>false</b>.</returns>
-    /// </summary>
     public override Task<CheckGameIdReply> CheckGameId(CheckGameIdRequest request, ServerCallContext context)
         => Task.FromResult(new CheckGameIdReply { Exist = CongoState.lockDb.TryGetValue(request.GameId, out _) });
 
-    /// <summary>
-    /// Moves made by the players are ordered in the database. The request
-    /// returns moves made <b>after</b> the latest known move with <b>moveId</b>.
-    /// </summary>
-    public override Task<GetDbMovesReply> GetDbMovesFrom(GetDbMovesFromRequest request, ServerCallContext context)
-        => getDbMovesFrom(request.GameId, request.MoveId);
+    public override Task<GetDbMovesAfterReply> GetDbMovesAfter(GetDbMovesAfterRequest request, ServerCallContext context)
+        => getDbMovesAfter(request.GameId, request.MoveId);
 }
