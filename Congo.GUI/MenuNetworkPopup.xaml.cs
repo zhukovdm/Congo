@@ -38,6 +38,12 @@ namespace Congo.GUI
             return err;
         }
 
+        private StringWriter setMoveId(StringWriter err)
+        {
+            NetworkPack.MoveId = -1;
+            return err;
+        }
+
         private StringWriter createUsers(StringWriter err)
         {
             var algo = radioButtonRandom.IsChecked == true
@@ -159,11 +165,12 @@ namespace Congo.GUI
             }
 
             err = err
-                . AndThen(createUsers)
-                . AndThen(createRpcPrimitives)
-                . AndThen(determineGameId)
-                . AndThen(checkGameIdExist)
-                . AndThen(obtainGameById);
+                .AndThen(setMoveId)
+                .AndThen(createUsers)
+                .AndThen(createRpcPrimitives)
+                .AndThen(determineGameId)
+                .AndThen(checkGameIdExist)
+                .AndThen(obtainGameById);
 
             if (err is not null) {
                 reportError(err.ToString(), "Communication Error");
