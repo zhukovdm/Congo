@@ -129,8 +129,8 @@ namespace Congo.Core
         /// </summary>
         public static string ToFen(CongoGame game)
         {
-            var result = "";
             var sep = "/";
+            var result = string.Empty;
 
             var typeViews = new Dictionary<Type, string>() {
                 { typeof(Elephant), "e" }, { typeof(Zebra),     "z" },
