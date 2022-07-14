@@ -1,4 +1,4 @@
-﻿<Window
+﻿<local:MenuBasePopup
     x:Class="Congo.GUI.MenuNetworkPopup"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -175,8 +175,8 @@
                     <ColumnDefinition Width="0.40*"/>
                     <ColumnDefinition Width="0.30*"/>
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="1" Click="buttonConfirm_Click">Confirm</Button>
+                <Button Name="buttonConfirm" Grid.Column="1" Click="buttonConfirm_Click">Confirm</Button>
             </Grid>
         </StackPanel>
     </Grid>
-</Window>
+</local:MenuBasePopup>
