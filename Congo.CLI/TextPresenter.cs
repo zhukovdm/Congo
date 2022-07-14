@@ -154,7 +154,7 @@ namespace Congo.CLI
             ShowBoard(game);
         }
 
-        public void ShowNetworkTransitions(GetDbMovesReply reply)
+        public void ShowNetworkTransitions(GetDbMovesAfterReply reply)
         {
             writer.WriteLine();
             writer.WriteLine(" transitions " + string.Join(" -> ", reply.Moves.Select(x => MovePresenter.GetMoveView(new CongoMove(x.Fr, x.To)))));

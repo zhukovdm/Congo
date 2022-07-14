@@ -253,10 +253,10 @@ namespace Congo.CLI
         private CongoGame getLatestGame()
             => CongoFen.FromFen(client.GetLatestFen(new GetLatestFenRequest() { GameId = gameId }).Fen);
 
-        private GetDbMovesReply getLatestTransitions()
-            => client.GetDbMovesFrom(new GetDbMovesFromRequest() { GameId = gameId, MoveId = moveId });
+        private GetDbMovesAfterReply getLatestTransitions()
+            => client.GetDbMovesAfter(new GetDbMovesAfterRequest() { GameId = gameId, MoveId = moveId });
 
-        private void showTransitions(GetDbMovesReply reply)
+        private void showTransitions(GetDbMovesAfterReply reply)
         {
             presenter.ShowNetworkTransitions(reply);
             moveId += reply.Moves.Count;
