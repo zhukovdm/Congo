@@ -1,14 +1,15 @@
 ﻿using Congo.Core;
 using Congo.Server;
 using Grpc.Net.Client;
+using System.Collections.Generic;
 
 namespace Congo.GUI
 {
     public record CongoNetworkPack
     {
         public long GameId { get; set; }
-        public long MoveId { get; set; }
         public GrpcChannel Channel { get; set; }
+        public IEnumerable<CongoMove> Moves { get; set; }
         public CongoGrpc.CongoGrpcClient Client { get; set; }
     }
 
