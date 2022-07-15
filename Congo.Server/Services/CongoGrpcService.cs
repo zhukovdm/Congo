@@ -65,8 +65,7 @@ internal static class CongoState
                 0,
                 'gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1',
                 'gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1'
-            );
-        ";
+            );";
 
     private static string commandTextGetMaxGameId()
         => @"SELECT MAX(gameId) FROM games;";
@@ -95,8 +94,7 @@ internal static class CongoState
                 [moveId] INTEGER NOT NULL PRIMARY KEY,
                 [fromSquare] INTEGER NOT NULL,
                 [toSquare] INTEGER NOT NULL
-            );
-        ";
+            );";
 
     private static string commandTextGetMaxMoveId()
         => @"SELECT MAX(moveId) FROM moves;";
@@ -148,7 +146,7 @@ internal static class CongoState
         id = (long)executeScalarQuery(mainDbDataSource, commandTextGetMaxGameId(), Array.Empty<string>(), Array.Empty<object>());
     }
 
-    internal static long Create(string fen)
+    internal static long CreateGame(string fen)
     {
         var newId = Interlocked.Increment(ref id);
 
@@ -232,7 +230,7 @@ public class CongoGrpcService : CongoGrpc.CongoGrpcBase
         long gameId = -1;
 
         if (fen is not null) {
-            gameId = CongoState.Create(fen);
+            gameId = CongoState.CreateGame(fen);
             logger.LogInformation("Game {fen} created with gameId {response}.", fen, gameId);
         }
 
