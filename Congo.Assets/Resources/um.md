@@ -25,8 +25,8 @@ from the board.
 special behavior towards animal pieces, which is described in the next chapter.
 
 `Castle` is a $3 \times 3$ square at each side of the board, namely cartesian
-product $\lbrace C, D, E \rbrace \times \lbrace 1, 2, 3 \rbrace$ for black lion
-and $\lbrace C, D, E \rbrace \times \lbrace 5, 6, 7 \rbrace$ for white lion.
+product $\lbrace C, D, E \rbrace \times \lbrace 1, 2, 3 \rbrace$ for black
+lion and $\lbrace C, D, E \rbrace \times \lbrace 5, 6, 7 \rbrace$ for white.
 
 `User name` is any non-empty sequence of **alphanumeric** chars.
 
@@ -37,54 +37,27 @@ the subjects at [Congo FEN](#congo-fen).
 
 # Rules
 
-There are two competing players in the game, black and white. Players alternate
-turns, passing is not possible. Further, we describe the behavior of each piece
-and the aim of a game.
+There are two competing players in the game,
+<span style="background-color: #000000; color: white">&nbsp;black&nbsp;</span> and
+<span style="background-color: #914800; color: white">&nbsp;white&nbsp;</span>.
+Players alternate turns, passing is not possible. Further, we describe the behavior
+of each piece and the aim of a game.
 
-`[L]ion` is the King of the Jungle. It may not leave $3 \times 3$ castle around
-it. Inside castle, it moves and captures as the King in Chess. If there is
-a vertical or diagonal line with no pieces between the two lions, the lion may
-jump to the other lion and capture it.
-
-`[Z]ebra` moves as the Knight in classic chess.
-
-`[E]lephant` moves one or two squares in the horizontal or vertical direction.
-It may jump over the nearest square (also river) and capture the piece on the
-next square.
-
-`[G]iraffe` perform non-capturing moves in any direction (as the chess
-King). It can move or capture two steps away in any straight direction.
-
-`[C]rocodile` moves as the King in Chess when on land. Outside the river it
-can move straight towards the river (including the river square) as a rook.
-Inside the river it move to another river square as a rook. A crocodile
-**cannot** drown.
-
-`[P]awn` moves and captures both straight and diagonally forward. Being on the
-other side of the river, a pawn may also move one or two squares straight back,
-without the right to capture or jump. If a pawn moves to the last row, it is
-promoted to a superpawn.
-
-`[S]uperpawn` has the additional powers of moving and capturing one square
-straight sideways and going one or two square straight backwards or diagonally
-backward. When going backwards, it may neither capture nor jump. A superpawns
-right to go backwards does not depend on its position: they may go backwards
-at both sides and on the river.
-
-`[M]onkey` moves as the King in Chess while not capturing. It captures a piece
-by jumping over it in any direction to the square immediately beyond, which
-must be vacant. A monkey may capture multiple pieces in the same turn, but is
-not obliged to do so. Monkey jump can be interrupted at any time. Once a
-monkey jumps over a piece, the piece immediately disappears. If a monkey
-starts multiple capture being at a river square and ends at any river square,
-it immediately drowns. If a monkey starts its jump on the ground and ends in
-the river or opposite, it is not drown. Captures before drowning are legal.
-The monkey captured opponent's Lion terminates the move and the game.
+| Picture | Symbol | Description |
+| :---: | :---: | :--- |
+| ![lion.png](./Pics/lion.png) | `L,l` | `Lion` is the King of the Jungle. It may not leave $3 \times 3$ castle around it. Inside castle, it moves and captures as the King in Chess. If there is a vertical or diagonal line with no pieces between the two lions, the lion may jump to the other lion and capture it. |
+| ![zebra.png](./Pics/zebra.png) | `Z,z` | `Zebra` moves as the Knight in classic chess. |
+| ![elephant.png](./Pics/elephant.png) | `E,e` | `Elephant` moves one or two squares in the horizontal or vertical direction. It may jump over the nearest square (also river) and capture the piece on the next square. |
+| ![giraffe.png](./Pics/giraffe.png) | `G,g` | `Giraffe` perform non-capturing moves in any direction (as the chess King). It can move or capture two steps away in any straight direction. |
+| ![crocodile.png](./Pics/crocodile.png) | `C,c` | `Crocodile` moves as the King in Chess when on land. Outside the river it can move straight towards the river (including the river square) as a rook. Inside the river it move to another river square as a rook. A crocodile **cannot** drown. |
+| ![pawn.png](./Pics/pawn.png) | `P,p` | `Pawn` moves and captures both straight and diagonally forward. Being on the other side of the river, a pawn may also move one or two squares straight back, without the right to capture or jump. If a pawn moves to the last row, it is promoted to a superpawn. |
+| ![super-pawn.png](./Pics/super-pawn.png) | `S,s` | `Superpawn` has the additional powers of moving and capturing one square straight sideways and going one or two square straight backwards or diagonally backward. When going backwards, it may neither capture nor jump. A superpawns right to go backwards does not depend on its position: they may go backwards at both sides and on the river. |
+| ![monkey.png](./Pics/monkey.png) | `M,m` | `Monkey` moves as the King in Chess while not capturing. It captures a piece by jumping over it in any direction to the square immediately beyond, which must be vacant. A monkey may capture multiple pieces in the same turn, but is not obliged to do so. Monkey jump can be interrupted at any time. Once a monkey jumps over a piece, the piece immediately disappears. If a monkey starts multiple capture being at a river square and ends at any river square, it immediately drowns. If a monkey starts its jump on the ground and ends in the river or opposite, it is not drown. Captures before drowning are legal. The monkey captured opponent's Lion terminates the move and the game. |
 
 The aim of the game is to win by capturing opponent's `Lion` as there is only
-one King of the Jungle. The game immediately ends once opponent's lion is
-captured. There is no chess-like check in `Congo`, so a lion may move to an
-already attacked square. Consequently, `Congo` has no draw by stalemate.
+one King of the Jungle. The game immediately ends once any lion is captured.
+There is no chess-like check in `Congo`, so a lion may move to an already attacked
+square. Consequently, `Congo` has no draw by a stalemate.
 
 A non-crocodile piece that ends its move standing on the river square must reach
 a ground square in the next turn, otherwise the piece disappears as being drown.
@@ -94,10 +67,10 @@ Crocodiles cannot drown.
 
 Any board can be encoded into a string with $9$ sections `rank/rank/rank/rank/rank/rank/rank/color/jump`.
 
-- 7x ranks. Squares are described from left to right. Numbers indicate empty
+- $7$ ranks. Squares are described from left to right. Numbers indicate empty
   squares, letters indicate pieces.
-- 1x active player color. `w` stands for `white` and `b` stands for `black`.
-- 1x active monkey jump started at a position. If monkey jump doesn't happen, 
+- $1$ active player color. White player is denoted by `w` and black  `white` and `b` stands for `black`.
+- $1$ active monkey jump started at a position. If monkey jump doesn't happen, 
   then the last field is $-1$. Otherwise, there should be a square, from which
   monkey has started its jump.
 
@@ -113,7 +86,7 @@ Standard board.
 gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1
 ```
 
-$3$-long white monkey jump and white wins.
+$3$-long white monkey jump, white wins.
 ```txt
 7/4l2/7/4c2/7/2p4/1M1L3/w/-1
 ```
