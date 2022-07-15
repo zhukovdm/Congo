@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Congo.Core;
+using Congo.Utils;
+using Grpc.Net.Client;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Grpc.Core;
-using Grpc.Net.Client;
-using Congo.Core;
-using Congo.Server;
-using Congo.Utils;
-using System.Collections.Generic;
+
+using CongoClient = Congo.Server.CongoGrpc.CongoGrpcClient;
 
 namespace Congo.CLI
 {
@@ -27,33 +27,25 @@ namespace Congo.CLI
 
         private static CongoCommandLine createNetworkGame(CongoArgs args)
         {
-            var channel = GrpcPrimitives.CreateRpcChannel(args.GetMaybeHost(), args.GetMaybePort());
-            var client = new CongoGrpc.CongoGrpcClient(channel);
+            var channel = GrpcPrimitives.CreateGrpcChannel(args.GetMaybeHost(), args.GetMaybePort());
+            var client = new CongoClient(channel);
 
             long gameId = -1;
             var game = args.GetMaybeGameValue();
 
             if (args.IsGameStandard() || args.IsGameValidCongoFen()) {
-                gameId = client.PostFen(new PostFenRequest() { Fen = game }).GameId;
+                gameId = GrpcRoutines.PostFen(client, game);
             }
 
-            if (args.IsGameValidId()) {
-                gameId = long.Parse(game);
-                
-                if (!client.CheckGameId(new CheckGameIdRequest() { GameId = gameId }).Exist) {
-                    throw new RpcException(new Status(StatusCode.NotFound, string.Format($"game {gameId} does not exist.")));
-                }
-            }
+            if (args.IsGameValidId()) { gameId = long.Parse(game); }
+
+            GrpcRoutines.ConfirmGameId(client, gameId);
 
             return new NetworkCommandLine(channel, client, args, gameId);
         }
 
         public static CongoCommandLine Create(CongoArgs args)
-        {
-            return args.IsPlaceLocal()
-                ? createLocalGame(args)
-                : createNetworkGame(args);
-        }
+            => args.IsPlaceLocal() ? createLocalGame(args) : createNetworkGame(args);
 
         #endregion
 
@@ -64,13 +56,6 @@ namespace Congo.CLI
         protected TextWriter writer;
         protected TextReporter reporter;
         protected TextPresenter presenter;
-
-        protected CongoUser activeUser
-        {
-            get => game.ActivePlayer.IsWhite()
-                ? whiteUser
-                : blackUser;
-        }
 
         public CongoCommandLine()
         {
@@ -85,9 +70,7 @@ namespace Congo.CLI
         protected CongoUser createLocalUser(CongoColor color)
         {
             var algo = args.GetAdvisingDelegate(color);
-            return args.IsPlayerAi(color)
-                ? new Ai(algo)
-                : new Hi(algo);
+            return args.IsPlayerAi(color) ? new Ai(algo) : new Hi(algo);
         }
 
         protected CongoUser createMaybeNetworkUser(CongoColor color)
@@ -127,7 +110,7 @@ namespace Congo.CLI
         }
 
         private CongoMove getAiValidMove()
-            => activeUser.Advise(game);
+            => game.GetActiveUser(whiteUser, blackUser).Advise(game);
 
         private CongoMove getHiValidMove()
         {
@@ -146,7 +129,7 @@ namespace Congo.CLI
                 switch (command[0]) {
 
                     case Verifier.AdviseLiteral:
-                        move = activeUser.Advise(game);
+                        move = game.GetActiveUser(whiteUser, blackUser).Advise(game);
                         reporter.ReportAdvisedMove(move);
                         move = null;
                         break;
@@ -184,7 +167,7 @@ namespace Congo.CLI
 
         protected CongoMove getValidMove()
         {
-            return (activeUser is Ai)
+            return game.GetActiveUser(whiteUser, blackUser) is Ai
                 ? getAiValidMove()
                 : getHiValidMove();
         }
@@ -193,15 +176,13 @@ namespace Congo.CLI
 
         #region public interface
 
-        public bool End()
-            => game.HasEnded();
+        public bool End() => game.HasEnded();
+
+        public void ReportResult() => reporter.ReportResult(game);
 
         public abstract CongoCommandLine Init();
 
         public abstract void Step();
-
-        public void ReportResult()
-            => reporter.ReportResult(game);
 
         #endregion
     }
@@ -209,7 +190,6 @@ namespace Congo.CLI
     public sealed class LocalCommandLine : CongoCommandLine
     {
         public LocalCommandLine(CongoGame game, CongoArgs args)
-            : base()
         {
             this.args = args;
             this.game = game;
@@ -236,37 +216,19 @@ namespace Congo.CLI
 
     public sealed class NetworkCommandLine : CongoCommandLine
     {
+        private long moveId = -1;
+        private readonly long gameId;
 #pragma warning disable IDE0052 // Remove unread private members
         private readonly GrpcChannel channel;
 #pragma warning restore IDE0052 // Remove unread private members
-
-        private readonly CongoGrpc.CongoGrpcClient client;
-        private readonly long gameId;
-        private long moveId = -1;
-
-        private CongoUser getGameActiveUser(CongoGame game)
-            => game.ActivePlayer.IsWhite() ? whiteUser : blackUser;
-
-        private CongoGame getFirstGame()
-            => CongoFen.FromFen(client.GetFirstFen(new GetFirstFenRequest() { GameId = gameId }).Fen);
-
-        private CongoGame getLatestGame()
-            => CongoFen.FromFen(client.GetLatestFen(new GetLatestFenRequest() { GameId = gameId }).Fen);
-
-        private GetDbMovesAfterReply getLatestTransitions()
-            => client.GetDbMovesAfter(new GetDbMovesAfterRequest() { GameId = gameId, MoveId = moveId });
-
-        private void showTransitions(GetDbMovesAfterReply reply)
-        {
-            presenter.ShowNetworkTransitions(reply);
-            moveId += reply.Moves.Count;
-        }
+        private readonly CongoClient client;
 
         private CongoGame getNetworkMove()
         {
-            bool predicate(CongoGame game) => getGameActiveUser(game) is Net && !game.HasEnded();
+            bool predicate(CongoGame game)
+                => game.GetActiveUser(whiteUser, blackUser) is Net && !game.HasEnded();
 
-            var newGame = getLatestGame();
+            var newGame = GrpcRoutines.GetLatestGame(client, gameId);
 
             if (predicate(newGame)) {
                 int cnt = 0;
@@ -277,19 +239,19 @@ namespace Congo.CLI
                     writer.Write('.');
                     cnt = (cnt + 1) % 30;
                     Thread.Sleep(1000);
-
-                    newGame = getLatestGame();
+                    newGame = GrpcRoutines.GetLatestGame(client, gameId);
                 } while (predicate(newGame));
 
                 writer.WriteLine();
             }
 
-            showTransitions(getLatestTransitions());
+            moveId = GrpcRoutinesCli.SyncMoves(client, gameId, moveId, presenter);
             return newGame;
         }
 
-        public NetworkCommandLine(GrpcChannel channel, CongoGrpc.CongoGrpcClient client, CongoArgs args, long gameId)
-            : base()
+        
+
+        public NetworkCommandLine(GrpcChannel channel, CongoClient client, CongoArgs args, long gameId)
         {
             this.args = args;
             this.gameId = gameId;
@@ -304,10 +266,9 @@ namespace Congo.CLI
 
             reporter.Greet();
             presenter.ShowNetworkGameId(gameId);
-            presenter.ShowBoard(getFirstGame());
-            showTransitions(getLatestTransitions());
-            game = getLatestGame();
-
+            presenter.ShowBoard(GrpcRoutines.GetFirstGame(client, gameId));
+            moveId = GrpcRoutinesCli.SyncMoves(client, gameId, moveId, presenter);
+            game = GrpcRoutines.GetLatestGame(client, gameId);
             presenter.ShowBoard(game);
             presenter.ShowPlayers(game);
 
@@ -316,10 +277,10 @@ namespace Congo.CLI
 
         public override void Step()
         {
-            if (activeUser is not Net) {
+            if (game.GetActiveUser(whiteUser, blackUser) is not Net) {
                 var move = getValidMove();
                 game = game.Transition(move);
-                moveId = client.PostMove(new PostMoveRequest() { GameId = gameId, Fr = move.Fr, To = move.To }).MoveId;
+                moveId = GrpcRoutines.PostMove(client, gameId, moveId, move);
             }
 
             else {
