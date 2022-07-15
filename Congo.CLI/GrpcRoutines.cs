@@ -6,7 +6,7 @@ using System.Linq;
 
 using CongoClient = Congo.Server.CongoGrpc.CongoGrpcClient;
 
-namespace Congo.GUI
+namespace Congo.CLI
 {
     internal static class GrpcRoutines
     {
