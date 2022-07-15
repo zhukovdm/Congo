@@ -1,11 +1,20 @@
-﻿using System;
+﻿using Congo.Core;
 using Grpc.Core;
-using Congo.Core;
+using System;
+using System.Collections.Generic;
 
 namespace Congo.CLI
 {
     class Program
     {
+        private static void reportException(List<string> messages)
+        {
+            foreach (var message in messages) {
+                Console.WriteLine();
+                Console.WriteLine(message);
+            }
+        }
+
         static void Main(string[] args)
         {
             CongoGame.Initialize();
@@ -17,19 +26,23 @@ namespace Congo.CLI
             }
 
             catch (ExitException) {
-                Console.WriteLine("The program is terminated...");
+                reportException(new() { "The program is terminated..." });
             }
 
             catch (ArgumentException ex) {
-                Console.WriteLine("Argument exception: " + ex.Message);
+                reportException(new() { "Argument exception: " + ex.Message });
             }
 
             catch (RpcException ex) {
-                Console.WriteLine("gRPC exception: " + ex.Status.Detail);
+                reportException(new()
+                {
+                    $"gRPC exception: StatusCode={ex.StatusCode}.",
+                    ex.Status.Detail
+                });
             }
 
             catch (Exception ex) {
-                Console.WriteLine("Unhandled exception: " + ex.Message);
+                reportException(new() { "Unhandled exception: " + ex.Message });
             }
         }
     }

@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
-using Congo.Core;
+﻿using Congo.Core;
 using Congo.Utils;
+using System;
+using System.IO;
 
 namespace Congo.CLI
 {
