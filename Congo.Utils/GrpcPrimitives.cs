@@ -1,11 +1,12 @@
-﻿using System.Net.Http;
-using Grpc.Net.Client;
+﻿using Grpc.Net.Client;
+using System;
+using System.Net.Http;
 
 namespace Congo.Utils
 {
     public static class GrpcPrimitives
     {
-        public static GrpcChannel CreateRpcChannel(string host, string port)
+        public static GrpcChannel CreateGrpcChannel(string host, string port)
         {
             // currently, ssl certificate is not supported!
             var httpHandler = new HttpClientHandler
@@ -14,5 +15,10 @@ namespace Congo.Utils
             };
             return GrpcChannel.ForAddress("https://" + host + ":" + port, new GrpcChannelOptions { HttpHandler = httpHandler });
         }
+    }
+
+    public class CongoServerResponseException : Exception
+    {
+        public CongoServerResponseException(string message) : base(message) { }
     }
 }
