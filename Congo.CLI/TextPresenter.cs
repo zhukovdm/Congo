@@ -154,10 +154,12 @@ namespace Congo.CLI
             ShowBoard(game);
         }
 
-        public void ShowNetworkTransitions(GetDbMovesAfterReply reply)
+        public void ShowNetworkTransitions(ICollection<DbMove> moves)
         {
-            writer.WriteLine();
-            writer.WriteLine(" transitions " + string.Join(" -> ", reply.Moves.Select(x => MovePresenter.GetMoveView(new CongoMove(x.Fr, x.To)))));
+            if (moves.Count > 0) {
+                writer.WriteLine();
+                writer.WriteLine(" transitions " + string.Join(" -> ", moves.Select(move => MovePresenter.GetMoveView(new CongoMove(move.Fr, move.To)))));
+            }
         }
     }
 }
