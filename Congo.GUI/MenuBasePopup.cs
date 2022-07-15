@@ -13,7 +13,7 @@ namespace Congo.GUI
         public CongoGame Game { get; set; }
         public CongoUser WhiteUser { get; set; }
         public CongoUser BlackUser { get; set; }
-        public CongoNetworkPack NetworkPack { get; set; }
+        public PopupPack PopupPack { get; set; }
 
         private static void OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {

@@ -5,12 +5,29 @@ using System.Collections.Generic;
 
 namespace Congo.GUI
 {
-    public record CongoNetworkPack
+    public class NetPack
     {
         public long GameId { get; set; }
+        public long MoveId { get; set; }
         public GrpcChannel Channel { get; set; }
-        public IEnumerable<CongoMove> Moves { get; set; }
         public CongoGrpc.CongoGrpcClient Client { get; set; }
+
+        public NetPack Clone()
+        {
+            return new()
+            {
+                GameId = GameId,
+                MoveId = MoveId,
+                Channel = Channel,
+                Client = Client,
+            };
+        }
+    }
+
+    public class PopupPack
+    {
+        public NetPack NetPack { get; set; }
+        public IEnumerable<CongoMove> Moves { get; set; }
     }
 
     public interface IPlayable
@@ -18,6 +35,6 @@ namespace Congo.GUI
         CongoGame Game { get; set; }
         CongoUser WhiteUser { get; set; }
         CongoUser BlackUser { get; set; }
-        CongoNetworkPack NetworkPack { get; set; }
+        PopupPack PopupPack { get; set; }
     }
 }

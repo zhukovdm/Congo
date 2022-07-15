@@ -57,11 +57,11 @@ namespace Congo.GUI
 
         private StringWriter createRpcPrimitives(StringWriter err)
         {
-            NetworkPack = new()
+            PopupPack.NetPack = new()
             {
                 Channel = GrpcPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text)
             };
-            NetworkPack.Client = new CongoGrpc.CongoGrpcClient(NetworkPack.Channel);
+            PopupPack.NetPack.Client = new CongoGrpc.CongoGrpcClient(PopupPack.NetPack.Channel);
 
             return err;
         }
@@ -70,11 +70,11 @@ namespace Congo.GUI
         {
             try {
                 if (radioButtonStandard.IsChecked == true) {
-                    NetworkPack.GameId = GrpcRoutines.PostFen(NetworkPack.Client, CongoFen.ToFen(CongoGame.Standard()));
+                    PopupPack.NetPack.GameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, CongoFen.ToFen(CongoGame.Standard()));
                 }
 
                 if (radioButtonFen.IsChecked == true) {
-                    NetworkPack.GameId = GrpcRoutines.PostFen(NetworkPack.Client, textBoxFen.Text);
+                    PopupPack.NetPack.GameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, textBoxFen.Text);
                 }
             }
             catch (Exception) {
@@ -82,7 +82,7 @@ namespace Congo.GUI
                     .WriteLine("New board cannot be created.");
             }
             if (radioButtonId.IsChecked == true) {
-                NetworkPack.GameId = long.Parse(textBoxId.Text);
+                PopupPack.NetPack.GameId = long.Parse(textBoxId.Text);
             }
 
             return err;
@@ -91,27 +91,33 @@ namespace Congo.GUI
         private StringWriter checkGameIdExist(StringWriter err)
         {
             try {
-                if (!GrpcRoutines.CheckGameId(NetworkPack.Client, NetworkPack.GameId)) {
+                if (!GrpcRoutines.CheckGameId(PopupPack.NetPack.Client, PopupPack.NetPack.GameId)) {
                     (err ??= new StringWriter())
-                        .WriteLine($"gameId {NetworkPack.GameId} does not exist.");
+                        .WriteLine($"gameId {PopupPack.NetPack.GameId} does not exist.");
                 }
             }
             catch (Exception) {
                 (err ??= new StringWriter())
-                    .WriteLine($"gameId {NetworkPack.GameId} cannot be checked.");
+                    .WriteLine($"gameId {PopupPack.NetPack.GameId} cannot be checked.");
             }
 
+            return err;
+        }
+
+        private StringWriter initMoveId(StringWriter err)
+        {
+            PopupPack.NetPack.MoveId = -1;
             return err;
         }
 
         private StringWriter getKnownMoves(StringWriter err)
         {
             try {
-                NetworkPack.Moves = GrpcRoutines.GetMovesAfter(NetworkPack.Client, NetworkPack.GameId, -1);
+                PopupPack.Moves = GrpcRoutines.GetMovesAfter(PopupPack.NetPack.Client, PopupPack.NetPack.GameId, -1);
             }
             catch (Exception) {
                 (err ??= new StringWriter())
-                    .WriteLine($"Known moves for gameId {NetworkPack.GameId} cannot be obtained.");
+                    .WriteLine($"Known moves for gameId {PopupPack.NetPack.GameId} cannot be obtained.");
             }
 
             return err;
@@ -120,11 +126,11 @@ namespace Congo.GUI
         private StringWriter getLatestGame(StringWriter err)
         {
             try {
-                Game = GrpcRoutines.GetLatestGame(NetworkPack.Client, NetworkPack.GameId);
+                Game = GrpcRoutines.GetLatestGame(PopupPack.NetPack.Client, PopupPack.NetPack.GameId);
             }
             catch (Exception) {
                 (err ??= new StringWriter())
-                    .WriteLine($"Game for gameId {NetworkPack.GameId} cannot be obtained.");
+                    .WriteLine($"Game for gameId {PopupPack.NetPack.GameId} cannot be obtained.");
             }
 
             return err;
@@ -175,6 +181,7 @@ namespace Congo.GUI
                 .AndThen(createRpcPrimitives)
                 .AndThen(determineGameId)
                 .AndThen(checkGameIdExist)
+                .AndThen(initMoveId)
                 .AndThen(getKnownMoves)
                 .AndThen(getLatestGame);
 

@@ -52,7 +52,7 @@ namespace Congo.GUI
                 ? new Hi(black_algo)
                 : new Ai(black_algo);
 
-            NetworkPack = null;
+            PopupPack = null;
 
             DialogResult = true;
             Close();
