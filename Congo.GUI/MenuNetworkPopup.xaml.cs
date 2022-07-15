@@ -38,12 +38,6 @@ namespace Congo.GUI
             return err;
         }
 
-        private StringWriter setMoveId(StringWriter err)
-        {
-            NetworkPack.MoveId = -1;
-            return err;
-        }
-
         private StringWriter createUsers(StringWriter err)
         {
             var algo = radioButtonRandom.IsChecked == true
@@ -110,15 +104,27 @@ namespace Congo.GUI
             return err;
         }
 
-        private StringWriter obtainGameById(StringWriter err)
+        private StringWriter getKnownMoves(StringWriter err)
         {
             try {
-                var fen = GrpcRoutines.GetFirstFen(NetworkPack.Client, NetworkPack.GameId);
-                Game = CongoFen.FromFen(fen);
+                NetworkPack.Moves = GrpcRoutines.GetMovesAfter(NetworkPack.Client, NetworkPack.GameId, -1);
             }
             catch (Exception) {
                 (err ??= new StringWriter())
-                    .WriteLine($"Fen for gameId {NetworkPack.GameId} cannot be obtained.");
+                    .WriteLine($"Known moves for gameId {NetworkPack.GameId} cannot be obtained.");
+            }
+
+            return err;
+        }
+
+        private StringWriter getLatestGame(StringWriter err)
+        {
+            try {
+                Game = GrpcRoutines.GetLatestGame(NetworkPack.Client, NetworkPack.GameId);
+            }
+            catch (Exception) {
+                (err ??= new StringWriter())
+                    .WriteLine($"Game for gameId {NetworkPack.GameId} cannot be obtained.");
             }
 
             return err;
@@ -165,12 +171,12 @@ namespace Congo.GUI
             }
 
             err = err
-                .AndThen(setMoveId)
                 .AndThen(createUsers)
                 .AndThen(createRpcPrimitives)
                 .AndThen(determineGameId)
                 .AndThen(checkGameIdExist)
-                .AndThen(obtainGameById);
+                .AndThen(getKnownMoves)
+                .AndThen(getLatestGame);
 
             if (err is not null) {
                 reportError(err.ToString(), "Communication Error");
