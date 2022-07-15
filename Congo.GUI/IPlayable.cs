@@ -3,6 +3,8 @@ using Congo.Server;
 using Grpc.Net.Client;
 using System.Collections.Generic;
 
+using CongoClient = Congo.Server.CongoGrpc.CongoGrpcClient;
+
 namespace Congo.GUI
 {
     public class NetPack
@@ -10,7 +12,7 @@ namespace Congo.GUI
         public long GameId { get; set; }
         public long MoveId { get; set; }
         public GrpcChannel Channel { get; set; }
-        public CongoGrpc.CongoGrpcClient Client { get; set; }
+        public CongoClient Client { get; set; }
 
         public NetPack Clone()
         {
@@ -27,7 +29,7 @@ namespace Congo.GUI
     public class PopupPack
     {
         public NetPack NetPack { get; set; }
-        public IEnumerable<CongoMove> Moves { get; set; }
+        public ICollection<DbMove> Moves { get; set; }
     }
 
     public interface IPlayable

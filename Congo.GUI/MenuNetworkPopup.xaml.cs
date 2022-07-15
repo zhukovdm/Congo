@@ -1,6 +1,7 @@
 ﻿using Congo.Core;
 using Congo.Server;
 using Congo.Utils;
+using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +33,7 @@ namespace Congo.GUI
                 };
 
             foreach (var (pred, msg) in checks) {
-                if (pred.Invoke()) { (err ??= new StringWriter()).WriteLine(msg); }
+                if (pred.Invoke()) { (err ??= new()).WriteLine(msg); }
             }
 
             return err;
@@ -59,7 +60,7 @@ namespace Congo.GUI
         {
             PopupPack.NetPack = new()
             {
-                Channel = GrpcPrimitives.CreateRpcChannel(textBoxHost.Text, textBoxPort.Text)
+                Channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text)
             };
             PopupPack.NetPack.Client = new CongoGrpc.CongoGrpcClient(PopupPack.NetPack.Channel);
 
@@ -77,10 +78,13 @@ namespace Congo.GUI
                     PopupPack.NetPack.GameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, textBoxFen.Text);
                 }
             }
-            catch (Exception) {
-                (err ??= new StringWriter())
-                    .WriteLine("New board cannot be created.");
+            catch (CongoServerResponseException ex) {
+                (err ??= new()).WriteLine($"{GrpcRoutinesGui.ServerResponseErrorPrefix}{ex.Message}");
             }
+            catch (RpcException ex) {
+                (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
+            }
+
             if (radioButtonId.IsChecked == true) {
                 PopupPack.NetPack.GameId = long.Parse(textBoxId.Text);
             }
@@ -88,17 +92,16 @@ namespace Congo.GUI
             return err;
         }
 
-        private StringWriter checkGameIdExist(StringWriter err)
+        private StringWriter confirmGameId(StringWriter err)
         {
             try {
-                if (!GrpcRoutines.CheckGameId(PopupPack.NetPack.Client, PopupPack.NetPack.GameId)) {
-                    (err ??= new StringWriter())
-                        .WriteLine($"gameId {PopupPack.NetPack.GameId} does not exist.");
-                }
+                GrpcRoutines.ConfirmGameId(PopupPack.NetPack.Client, PopupPack.NetPack.GameId);
             }
-            catch (Exception) {
-                (err ??= new StringWriter())
-                    .WriteLine($"gameId {PopupPack.NetPack.GameId} cannot be checked.");
+            catch (CongoServerResponseException ex) {
+                (err ??= new()).WriteLine($"{GrpcRoutinesGui.ServerResponseErrorPrefix}{ex.Message}");
+            }
+            catch (RpcException ex) {
+                (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
             }
 
             return err;
@@ -113,11 +116,10 @@ namespace Congo.GUI
         private StringWriter getKnownMoves(StringWriter err)
         {
             try {
-                PopupPack.Moves = GrpcRoutines.GetMovesAfter(PopupPack.NetPack.Client, PopupPack.NetPack.GameId, -1);
+                PopupPack.Moves = GrpcRoutines.GetDbMovesAfter(PopupPack.NetPack.Client, PopupPack.NetPack.GameId, -1);
             }
-            catch (Exception) {
-                (err ??= new StringWriter())
-                    .WriteLine($"Known moves for gameId {PopupPack.NetPack.GameId} cannot be obtained.");
+            catch (RpcException ex) {
+                (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
             }
 
             return err;
@@ -128,9 +130,8 @@ namespace Congo.GUI
             try {
                 Game = GrpcRoutines.GetLatestGame(PopupPack.NetPack.Client, PopupPack.NetPack.GameId);
             }
-            catch (Exception) {
-                (err ??= new StringWriter())
-                    .WriteLine($"Game for gameId {PopupPack.NetPack.GameId} cannot be obtained.");
+            catch (RpcException ex) {
+                (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
             }
 
             return err;
@@ -180,7 +181,7 @@ namespace Congo.GUI
                 .AndThen(createUsers)
                 .AndThen(createRpcPrimitives)
                 .AndThen(determineGameId)
-                .AndThen(checkGameIdExist)
+                .AndThen(confirmGameId)
                 .AndThen(initMoveId)
                 .AndThen(getKnownMoves)
                 .AndThen(getLatestGame);

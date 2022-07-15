@@ -1,4 +1,6 @@
 ﻿using Congo.Core;
+using Congo.Server;
+using Congo.Utils;
 using Grpc.Core;
 using System.Collections.Generic;
 using System.Threading;
@@ -6,6 +8,8 @@ using System.Windows.Controls;
 
 namespace Congo.GUI
 {
+    internal enum NetStatus { Ok, GrpcError, ServerRequestError };
+
     internal abstract class AsyncJob
     {
         protected static ManualResetEventSlim pauseEvent;
@@ -77,9 +81,11 @@ namespace Congo.GUI
 
         public NetPack NetPack { get; private set; }
 
-        public IEnumerable<CongoMove> Moves { get; private set; }
+        public ICollection<DbMove> Moves { get; private set; }
 
-        public StatusCode StatusCode { get; private set; }
+        public NetStatus Status { get; private set; }
+
+        public string ErrorMessage { get; private set; }
 
         public AsyncNetMove(NetPack netPack, CongoMove move, CongoUser white, CongoUser black)
         {
@@ -88,27 +94,34 @@ namespace Congo.GUI
             NetPack = netPack;
             this.white = white;
             this.black = black;
-            StatusCode = StatusCode.OK;
+            Status = NetStatus.Ok;
         }
 
         public override AsyncJob Run()
         {
             try {
                 if (move is not null) {
-                    NetPack.MoveId = GrpcRoutines.PostMove(NetPack.Client, NetPack.GameId, move);
+                    NetPack.MoveId = GrpcRoutines.PostMove(NetPack.Client, NetPack.GameId, NetPack.MoveId, move);
                 }
 
                 CongoUser u;
                 do {
 
                     Game = GrpcRoutines.GetLatestGame(NetPack.Client, NetPack.GameId);
-                    u = Game.ActivePlayer.IsWhite() ? white : black;
+                    u = Game.GetActiveUser(white, black);
 
                 } while (!abandon && u is Net && !Game.HasEnded());
 
-                Moves = GrpcRoutines.GetMovesAfter(NetPack.Client, NetPack.GameId, NetPack.MoveId);
+                Moves = GrpcRoutines.GetDbMovesAfter(NetPack.Client, NetPack.GameId, NetPack.MoveId);
             }
-            catch (RpcException ex) { StatusCode = ex.StatusCode; }
+            catch (CongoServerResponseException ex) {
+                Status = NetStatus.ServerRequestError;
+                ErrorMessage = $"{GrpcRoutinesGui.ServerResponseErrorPrefix}{ex.Message}";
+            }
+            catch (RpcException ex) {
+                Status = NetStatus.GrpcError;
+                ErrorMessage = $"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}";
+            }
 
             return this;
         }
