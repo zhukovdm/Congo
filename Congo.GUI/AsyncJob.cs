@@ -107,6 +107,7 @@ namespace Congo.GUI
                 CongoUser u;
                 do {
 
+                    Thread.Sleep(1000);
                     Game = GrpcRoutines.GetLatestGame(NetPack.Client, NetPack.GameId);
                     u = Game.GetActiveUser(white, black);
 
