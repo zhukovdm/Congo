@@ -211,6 +211,7 @@ namespace Congo.GUI
 
                     case MainState.INIT:
                         netPack = null;
+                        movesOut = movesOut.Clear();
                         foreach (var wrapper in wrappers) { wrapper.Init(); }
                         GC.Collect();
                         break;
@@ -254,9 +255,9 @@ namespace Congo.GUI
                         statusPanelWrapper.SetStatus(message + " wins");
 
                         // special case, local winning step
-                        if (g.GetActiveUser(whiteUser, blackUser) is Net && movesOut.Count > 0) {
+                        if (movesOut.Count > 0) {
                             netMove_Init(movesOut);
-                            movesOut.Clear();
+                            movesOut = movesOut.Clear();
                         }
 
                         break;
