@@ -144,6 +144,7 @@ namespace Congo.GUI
 
                     case NetStatus.Ok:
                         netPack = netMove.NetPack;
+                        netPack.MoveId += netMove.Moves.Count;
                         statusPanelWrapper.AppendMoves(netMove.Moves);
                         applyStep(gameToState(netMove.Game), netMove.Game, null, -1);
                         break;
