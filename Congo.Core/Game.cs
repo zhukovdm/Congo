@@ -147,6 +147,9 @@ namespace Congo.Core
         public CongoUser GetActiveUser(CongoUser whiteUser, CongoUser blackUser)
             => ActivePlayer.IsWhite() ? whiteUser : blackUser;
 
+        public CongoUser GetOpponentUser(CongoUser whiteUser, CongoUser blackUser)
+            => ActivePlayer.IsWhite() ? blackUser : whiteUser;
+
         public CongoMove FirstMonkeyJump => firstMonkeyJump;
 
         public IEnumerable<CongoMove> GetMovesFrom(int fr)
