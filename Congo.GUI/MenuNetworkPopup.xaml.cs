@@ -2,16 +2,25 @@
 using Congo.Server;
 using Congo.Utils;
 using Grpc.Core;
+using Grpc.Net.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
 
+using CongoClient = Congo.Server.CongoGrpc.CongoGrpcClient;
+
 namespace Congo.GUI
 {
     public partial class MenuNetworkPopup : MenuBasePopup
     {
+        private GrpcChannel channel;
+        private CongoClient client;
+        private long gameId;
+        private long moveId;
+        private ICollection<DbMove> dbMoves;
+
         #region acceptors
 
         private StringWriter checkUserInput(StringWriter err)
@@ -56,18 +65,10 @@ namespace Congo.GUI
             return err;
         }
 
-        private StringWriter createPopupPack(StringWriter err)
-        {
-            PopupPack = new();
-            PopupPack.NetPack = new();
-
-            return err;
-        }
-
         private StringWriter createRpcPrimitives(StringWriter err)
         {
-            PopupPack.NetPack.Channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text);
-            PopupPack.NetPack.Client = new CongoGrpc.CongoGrpcClient(PopupPack.NetPack.Channel);
+            channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text);
+            client = new(PopupPack.NetPack.Channel);
 
             return err;
         }
@@ -76,11 +77,11 @@ namespace Congo.GUI
         {
             try {
                 if (radioButtonStandard.IsChecked == true) {
-                    PopupPack.NetPack.GameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, CongoFen.ToFen(CongoGame.Standard()));
+                    gameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, CongoFen.ToFen(CongoGame.Standard()));
                 }
 
                 if (radioButtonFen.IsChecked == true) {
-                    PopupPack.NetPack.GameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, textBoxFen.Text);
+                    gameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, textBoxFen.Text);
                 }
             }
             catch (CongoServerResponseException ex) {
@@ -91,7 +92,7 @@ namespace Congo.GUI
             }
 
             if (radioButtonId.IsChecked == true) {
-                PopupPack.NetPack.GameId = long.Parse(textBoxId.Text);
+                gameId = long.Parse(textBoxId.Text);
             }
 
             return err;
@@ -114,14 +115,14 @@ namespace Congo.GUI
 
         private StringWriter initMoveId(StringWriter err)
         {
-            PopupPack.NetPack.MoveId = -1;
+            moveId = -1;
             return err;
         }
 
         private StringWriter getKnownMoves(StringWriter err)
         {
             try {
-                PopupPack.Moves = GrpcRoutines.GetDbMovesAfter(PopupPack.NetPack.Client, PopupPack.NetPack.GameId, -1);
+                dbMoves = GrpcRoutines.GetDbMovesAfter(PopupPack.NetPack.Client, PopupPack.NetPack.GameId, -1);
             }
             catch (RpcException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
@@ -184,7 +185,6 @@ namespace Congo.GUI
 
             err = err
                 .AndThen(createUsers)
-                .AndThen(createPopupPack)
                 .AndThen(createRpcPrimitives)
                 .AndThen(determineGameId)
                 .AndThen(confirmGameId)
@@ -196,6 +196,8 @@ namespace Congo.GUI
                 reportError(err.ToString(), "Communication Error");
                 return;
             }
+
+            PopupPack = new(new(gameId, moveId, channel, client), dbMoves);
 
             DialogResult = true;
             Close();

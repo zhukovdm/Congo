@@ -6,14 +6,14 @@ using System.Windows.Media;
 
 namespace Congo.GUI
 {
-    public class MenuBasePopup : Window, IPlayable
+    public class MenuBasePopup : Window, IPlayablePopup
     {
         private const string defaultBorderBrush = "#FFABADB3";
 
-        public CongoGame Game { get; set; }
-        public CongoUser WhiteUser { get; set; }
-        public CongoUser BlackUser { get; set; }
-        public PopupPack PopupPack { get; set; }
+        public CongoGame Game { get; protected set; }
+        public CongoUser WhiteUser { get; protected set; }
+        public CongoUser BlackUser { get; protected set; }
+        public PopupPack PopupPack { get; protected set; }
 
         private static void OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
