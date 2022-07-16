@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Icon="Resources/icon.png"
     Title="Congo"
-    MinHeight="710" Height="710" MinWidth="900" Width="900">
+    MinHeight="752" Height="752" MinWidth="900" Width="900">
     <Grid>
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
@@ -19,8 +19,8 @@
                         <Separator/>
                         <MenuItem Header="_Save" Click="menuItemSave_Click"/>
                         <Separator/>
-                        <MenuItem Name="buttonMenuReset" Header="_Reset" Click="menuItemReset_Click"/>
-                        <MenuItem Name="buttonMenuExit" Header="_Exit" Click="menuItemExit_Click"/>
+                        <MenuItem Header="_Reset" Click="menuItemReset_Click"/>
+                        <MenuItem Header="_Exit" Click="menuItemExit_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Control">
                         <MenuItem Name="menuItemPause" Header="Pause" Click="menuItemPause_Click"/>
@@ -76,6 +76,24 @@
                                 </Border>
                             </StackPanel>
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="FontSize" Value="40"/>
+                                    <Setter Property="TextAlignment" Value="Center"/>
+                                    <Setter Property="Width" Value="82"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <DockPanel Width="1"/>
+                            <TextBlock Text="a"/>
+                            <TextBlock Text="b"/>
+                            <TextBlock Text="c"/>
+                            <TextBlock Text="d"/>
+                            <TextBlock Text="e"/>
+                            <TextBlock Text="f"/>
+                            <TextBlock Text="g"/>
+                            <DockPanel Width="1"/>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
                 <DockPanel Grid.Column="2" Width="10"/>
@@ -106,7 +124,7 @@
                         </DockPanel>
                     </Grid>
                     <DockPanel Height="10"/>
-                    <TextBlock Height="40" Name="textBlockGameId" Background="LightGray" FontSize="30" TextAlignment="Center"/>
+                    <TextBlock Height="40" Name="textBlockGameId" Background="LightGray" FontSize="30" TextAlignment="Center" MouseUp="textBlockGameId_MouseUp"/>
                     <DockPanel Height="10"/>
                     <ListBox Height="305" Name="listBoxMoves" FontSize="20"/>
                     <DockPanel Height="10"/>
@@ -114,24 +132,17 @@
                 </StackPanel>
                 <DockPanel Grid.Column="4" Width="10"/>
             </Grid>
-            <StackPanel Orientation="Horizontal">
-                <StackPanel.Resources>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="FontSize" Value="40"/>
-                        <Setter Property="TextAlignment" Value="Center"/>
-                        <Setter Property="Width" Value="82"/>
-                    </Style>
-                </StackPanel.Resources>
-                <DockPanel Width="51"/>
-                <TextBlock Text="a"/>
-                <TextBlock Text="b"/>
-                <TextBlock Text="c"/>
-                <TextBlock Text="d"/>
-                <TextBlock Text="e"/>
-                <TextBlock Text="f"/>
-                <TextBlock Text="g"/>
-            </StackPanel>
-            <Button Name="buttonMoveGenerator" Visibility="Hidden" Click="buttonStepGenerator_Click"/>
+            <DockPanel Height="10"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="1.0*"/>
+                    <ColumnDefinition Width="10"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="1" BorderThickness="1" BorderBrush="LightGray">
+                    <TextBlock Name="textBlockErrorMessage" FontSize="25"/>
+                </Border>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>
