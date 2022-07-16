@@ -199,8 +199,7 @@ namespace Congo.GUI
 
             else if (job is null) {
 
-                var oldState = state; var oldGame = game; var oldMoveFr = moveFr;
-
+                var oldState = state;
                 state = s; game = g; moveFr = f;
 
                 if (m is not null) {
@@ -223,19 +222,8 @@ namespace Congo.GUI
                         break;
 
                     case MainState.TO:
-
                         boardWrapper.Draw(g, s, f);
-
-                        // special case 
-                        if (m is MonkeyJump) {
-                            netMove_Init(m);
-                            advisePanelWrapper.Deactivate();
-                        }
-
-                        else {
-                            advisePanelWrapper.Activate(oldState, s);
-                        }
-
+                        advisePanelWrapper.Activate(oldState, s);
                         break;
 
                     case MainState.AI:
@@ -249,7 +237,8 @@ namespace Congo.GUI
                         userPanelWrapper.Draw(g);
                         boardWrapper.Draw(g, s, f);
                         advisePanelWrapper.Deactivate();
-                        netMove_Init(m);
+                        netMove_Init(movesOut);
+                        movesOut = movesOut.Clear();
                         break;
 
                     case MainState.END:
@@ -265,8 +254,9 @@ namespace Congo.GUI
                         statusPanelWrapper.SetStatus(message + " wins");
 
                         // special case, local winning step
-                        if (g.GetActiveUser(whiteUser, blackUser) is Net && m is not null) {
-                            netMove_Init(m);
+                        if (g.GetActiveUser(whiteUser, blackUser) is Net && movesOut.Count > 0) {
+                            netMove_Init(movesOut);
+                            movesOut.Clear();
                         }
 
                         break;

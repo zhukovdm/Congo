@@ -68,7 +68,7 @@ namespace Congo.GUI
         private StringWriter createRpcPrimitives(StringWriter err)
         {
             channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text);
-            client = new(PopupPack.NetPack.Channel);
+            client = new(channel);
 
             return err;
         }
@@ -77,11 +77,11 @@ namespace Congo.GUI
         {
             try {
                 if (radioButtonStandard.IsChecked == true) {
-                    gameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, CongoFen.ToFen(CongoGame.Standard()));
+                    gameId = GrpcRoutines.PostFen(client, CongoFen.ToFen(CongoGame.Standard()));
                 }
 
                 if (radioButtonFen.IsChecked == true) {
-                    gameId = GrpcRoutines.PostFen(PopupPack.NetPack.Client, textBoxFen.Text);
+                    gameId = GrpcRoutines.PostFen(client, textBoxFen.Text);
                 }
             }
             catch (CongoServerResponseException ex) {
@@ -101,7 +101,7 @@ namespace Congo.GUI
         private StringWriter confirmGameId(StringWriter err)
         {
             try {
-                GrpcRoutines.ConfirmGameId(PopupPack.NetPack.Client, PopupPack.NetPack.GameId);
+                GrpcRoutines.ConfirmGameId(client, gameId);
             }
             catch (CongoServerResponseException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.ServerResponseErrorPrefix}{ex.Message}");
@@ -122,7 +122,7 @@ namespace Congo.GUI
         private StringWriter getKnownMoves(StringWriter err)
         {
             try {
-                dbMoves = GrpcRoutines.GetDbMovesAfter(PopupPack.NetPack.Client, PopupPack.NetPack.GameId, -1);
+                dbMoves = GrpcRoutines.GetDbMovesAfter(client, gameId, -1);
             }
             catch (RpcException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
@@ -134,7 +134,7 @@ namespace Congo.GUI
         private StringWriter getLatestGame(StringWriter err)
         {
             try {
-                Game = GrpcRoutines.GetLatestGame(PopupPack.NetPack.Client, PopupPack.NetPack.GameId);
+                Game = GrpcRoutines.GetLatestGame(client, gameId);
             }
             catch (RpcException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
