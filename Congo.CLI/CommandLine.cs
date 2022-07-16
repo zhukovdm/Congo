@@ -216,7 +216,9 @@ namespace Congo.CLI
 
     public sealed class NetworkCommandLine : CongoCommandLine
     {
-        private long moveId = -1;
+        private const long moveIdLowerBound = -1;
+
+        private long moveId = moveIdLowerBound;
         private readonly long gameId;
 #pragma warning disable IDE0052 // Remove unread private members
         private readonly GrpcChannel channel;
@@ -266,10 +268,17 @@ namespace Congo.CLI
 
             reporter.Greet();
             presenter.ShowNetworkGameId(gameId);
-            presenter.ShowBoard(GrpcRoutines.GetFirstGame(client, gameId));
-            moveId = GrpcRoutinesCli.SyncMoves(client, gameId, moveId, presenter);
-            game = GrpcRoutines.GetLatestGame(client, gameId);
+
+            game = GrpcRoutines.GetFirstGame(client, gameId);
             presenter.ShowBoard(game);
+
+            moveId = GrpcRoutinesCli.SyncMoves(client, gameId, moveId, presenter);
+
+            if (moveId > moveIdLowerBound) {
+                game = GrpcRoutines.GetLatestGame(client, gameId);
+                presenter.ShowBoard(game);
+            }
+
             presenter.ShowPlayers(game);
 
             return this;
@@ -280,6 +289,8 @@ namespace Congo.CLI
             if (game.GetActiveUser(whiteUser, blackUser) is not Net) {
                 var move = getValidMove();
                 game = game.Transition(move);
+                presenter.ShowTransition(game);
+                presenter.ShowBoard(game);
                 moveId = GrpcRoutines.PostMove(client, gameId, moveId, move);
             }
 
