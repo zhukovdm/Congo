@@ -56,12 +56,17 @@ namespace Congo.GUI
             return err;
         }
 
+        private StringWriter createPopupPack(StringWriter err)
+        {
+            PopupPack = new();
+            PopupPack.NetPack = new();
+
+            return err;
+        }
+
         private StringWriter createRpcPrimitives(StringWriter err)
         {
-            PopupPack.NetPack = new()
-            {
-                Channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text)
-            };
+            PopupPack.NetPack.Channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text);
             PopupPack.NetPack.Client = new CongoGrpc.CongoGrpcClient(PopupPack.NetPack.Channel);
 
             return err;
@@ -179,6 +184,7 @@ namespace Congo.GUI
 
             err = err
                 .AndThen(createUsers)
+                .AndThen(createPopupPack)
                 .AndThen(createRpcPrimitives)
                 .AndThen(determineGameId)
                 .AndThen(confirmGameId)
