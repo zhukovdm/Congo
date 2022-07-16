@@ -3,6 +3,7 @@ using Congo.Server;
 using Congo.Utils;
 using Grpc.Core;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Windows.Controls;
 
@@ -74,34 +75,34 @@ namespace Congo.GUI
     internal sealed class AsyncNetMove : AsyncJob
     {
         private volatile bool abandon;
-        private readonly CongoMove move;
         private readonly CongoUser white, black;
+        private readonly ImmutableList<CongoMove> movesOut;
 
         public CongoGame Game { get; private set; }
 
         public NetPack NetPack { get; private set; }
 
-        public ICollection<DbMove> Moves { get; private set; }
+        public ICollection<DbMove> DbMoves { get; private set; }
 
         public NetStatus Status { get; private set; }
 
         public string ErrorMessage { get; private set; }
 
-        public AsyncNetMove(NetPack netPack, CongoMove move, CongoUser white, CongoUser black)
+        public AsyncNetMove(NetPack netPack, ImmutableList<CongoMove> movesOut, CongoUser white, CongoUser black)
         {
             abandon = false;
-            this.move = move;
             NetPack = netPack;
             this.white = white;
             this.black = black;
             Status = NetStatus.Ok;
+            this.movesOut = movesOut;
         }
 
         public override AsyncJob Run()
         {
             try {
-                if (move is not null) {
-                    NetPack.MoveId = GrpcRoutines.PostMove(NetPack.Client, NetPack.GameId, NetPack.MoveId, move);
+                foreach (var move in movesOut) {
+                    NetPack = NetPack.WithMoveId(GrpcRoutines.PostMove(NetPack.Client, NetPack.GameId, NetPack.MoveId, move));
                 }
 
                 CongoUser u;
@@ -113,7 +114,7 @@ namespace Congo.GUI
 
                 } while (!abandon && u is Net && !Game.HasEnded());
 
-                Moves = GrpcRoutines.GetDbMovesAfter(NetPack.Client, NetPack.GameId, NetPack.MoveId);
+                DbMoves = GrpcRoutines.GetDbMovesAfter(NetPack.Client, NetPack.GameId, NetPack.MoveId);
             }
             catch (CongoServerResponseException ex) {
                 Status = NetStatus.ServerRequestError;
