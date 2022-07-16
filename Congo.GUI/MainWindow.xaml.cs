@@ -2,6 +2,7 @@
 using Congo.GUI.Wrappers;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,12 +11,31 @@ namespace Congo.GUI
 {
     internal enum MainState { INIT, FR, TO, AI, NET, END, ERR, EXIT }
 
+    internal static class MainStatePrimitives
+    {
+        public static MainState GameToState(CongoGame game, CongoUser white, CongoUser black, CongoMove move)
+        {
+            MainState state;
+            var user = game.GetActiveUser(white, black);
+
+            if (game.HasEnded()) { state = MainState.END; }
+
+            else if (user is Ai) { state = MainState.AI; }
+
+            else if (user is Hi) { state = (move is MonkeyJump) ? MainState.TO : MainState.FR; }
+
+            else { state = MainState.NET; }
+
+            return state;
+        }
+    }
+
     internal sealed record Step
     {
-        public int MoveFr;
-        public CongoGame Game;
-        public CongoMove Move;
-        public MainState State;
+        public int MoveFr { get; }
+        public CongoGame Game { get; }
+        public CongoMove Move { get; }
+        public MainState State { get; }
 
         public Step(MainState s, CongoGame g, CongoMove m, int f)
         {
@@ -33,7 +53,10 @@ namespace Congo.GUI
         private CongoGame game;
         private MainState state;
         private CongoUser whiteUser, blackUser;
+
+        // network
         private NetPack netPack = null;
+        private ImmutableList<CongoMove> movesOut = new List<CongoMove>().ToImmutableList();
 
         // async
         private Step step = null;
@@ -51,19 +74,6 @@ namespace Congo.GUI
         // specific wrappers
         private readonly HiAdviseWrapper hiAdviseWrapper;
 
-        private MainState gameToState(CongoGame g)
-        {
-            MainState s;
-            var u = g.GetActiveUser(whiteUser, blackUser);
-
-            if (g.HasEnded()) { s = MainState.END; }
-            else if (u is Ai) { s = MainState.AI; }
-            else if (u is Hi) { s = MainState.FR; }
-            else { s = MainState.NET; }
-
-            return s;
-        }
-
         #region async control
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -74,15 +84,15 @@ namespace Congo.GUI
             job = null;
 
             if (step is null) {
-
                 var advise = (AsyncAdvise)e.Result;
-                var g = advise.Game;
-                var m = advise.Move;
+                var g = advise.Game; var m = advise.Move; var fr = -1;
 
                 if (m is null) { m = Algorithm.Random(g); }
                 g = g.Transition(m);
 
-                applyStep(gameToState(g), g, m, -1);
+                var s = MainStatePrimitives.GameToState(g, whiteUser, blackUser, m);
+
+                applyStep(s, g, m, fr);
             }
 
             else {
@@ -107,11 +117,11 @@ namespace Congo.GUI
             job = null;
 
             if (step is null) {
-
                 var advise = (AsyncAdvise)e.Result;
-                var m = advise.Move;
 
+                var m = advise.Move;
                 if (m is null) { m = Algorithm.Random(advise.Game); }
+
                 hiAdviseWrapper.End(m);
             }
 
@@ -138,15 +148,18 @@ namespace Congo.GUI
             job = null;
 
             if (step is null) {
-
                 var netMove = (AsyncNetMove)e.Result;
+
                 switch(netMove.Status) {
 
                     case NetStatus.Ok:
-                        netPack = netMove.NetPack;
-                        netPack.MoveId += netMove.Moves.Count;
-                        statusPanelWrapper.AppendMoves(netMove.Moves);
-                        applyStep(gameToState(netMove.Game), netMove.Game, null, -1);
+                        var g = netMove.Game; CongoMove m = null; var fr = -1;
+                        var s = MainStatePrimitives.GameToState(g, whiteUser, blackUser, m);
+
+                        netPack = netMove.NetPack.WithMoveId(netMove.NetPack.MoveId + netMove.DbMoves.Count); // state update!
+                        statusPanelWrapper.AppendMoves(netMove.DbMoves);
+
+                        applyStep(s, g, m, fr);
                         break;
 
                     default:
@@ -163,11 +176,11 @@ namespace Congo.GUI
             step = null;
         }
 
-        private void netMove_Init(CongoMove move)
+        private void netMove_Init(ImmutableList<CongoMove> moves)
         {
             if (job is null) {
 
-                job = new AsyncNetMove(netPack.Clone(), move, whiteUser, blackUser);
+                job = new AsyncNetMove(netPack.Clone(), moves, whiteUser, blackUser);
                 AsyncPrimitives.GetWorker(worker_DoWork, netMove_Complete)
                                .RunWorkerAsync(argument: job);
             }
@@ -186,10 +199,14 @@ namespace Congo.GUI
 
             else if (job is null) {
 
-                var oldState = state;
+                var oldState = state; var oldGame = game; var oldMoveFr = moveFr;
+
                 state = s; game = g; moveFr = f;
 
-                if (m is not null) { statusPanelWrapper.AppendMove(m); }
+                if (m is not null) {
+                    statusPanelWrapper.AppendMove(m);
+                    movesOut = movesOut.Add(m);
+                }
 
                 switch (s) {
 
@@ -206,8 +223,19 @@ namespace Congo.GUI
                         break;
 
                     case MainState.TO:
+
                         boardWrapper.Draw(g, s, f);
-                        advisePanelWrapper.Activate(oldState, s);
+
+                        // special case 
+                        if (m is MonkeyJump) {
+                            netMove_Init(m);
+                            advisePanelWrapper.Deactivate();
+                        }
+
+                        else {
+                            advisePanelWrapper.Activate(oldState, s);
+                        }
+
                         break;
 
                     case MainState.AI:
@@ -277,40 +305,30 @@ namespace Congo.GUI
 
         private void stepTileFr(int fr)
         {
-            if (game.Board.IsFriendlyPiece(game.ActivePlayer.Color, fr)) {
-                applyStep(MainState.TO, game, null, fr);
+            var s = MainState.TO; var g = game; CongoMove m = null;
+
+            if (g.Board.IsFriendlyPiece(g.ActivePlayer.Color, fr)) {
+                applyStep(s, g, m, fr);
             }
         }
 
         private void stepTileTo(int to)
         {
-            var s = state; var g = game; var f = moveFr;
-            var m = game.ActivePlayer.Accept(new CongoMove(moveFr, to));
+            MainState s; var g = game; var fr = moveFr;
+            var m = g.ActivePlayer.Accept(new CongoMove(fr, to));
 
-            // also covers monkey jump termination, when moveFr == to
+            // also covers monkey jump termination, when fr == to is a move
             if (m is not null) {
-
-                g = game.Transition(m);
-
-                if (g.HasEnded()) { s = MainState.END; }
-
-                else if (m is MonkeyJump) { f = to; }
-
-                else {
-                    var u = g.ActivePlayer.IsWhite() ? whiteUser : blackUser;
-
-                    if (u is Ai) { s = MainState.AI; }
-                    if (u is Hi) { s = MainState.FR; }
-                    if (u is Net) { s = MainState.NET; }
-                }
+                g = g.Transition(m);
+                s = MainStatePrimitives.GameToState(g, whiteUser, blackUser, m);
+                if (m is MonkeyJump) { fr = to; }
             }
 
-            // not a move, but reset
-            else if (moveFr == to) { s = MainState.FR; }
+            else if (fr == to) { s = MainState.FR; } // selection reset
 
             else { /* do nothing */ return; }
 
-            applyStep(s, g, m, f);
+            applyStep(s, g, m, fr);
         }
 
         #endregion
@@ -318,7 +336,7 @@ namespace Congo.GUI
         #region event control
 
         private void spawnNewGameDialog<T>(object sender, EventArgs e)
-            where T : Window, IPlayable, new()
+            where T : Window, IPlayablePopup, new()
         {
             var dialog = new T();
             if (dialog.ShowDialog() == true) {
@@ -329,17 +347,16 @@ namespace Congo.GUI
                 blackUser = dialog.BlackUser;
 
                 if (dialog.PopupPack is not null) {
-                    netPack = dialog.PopupPack.NetPack;
+                    netPack = dialog.PopupPack.NetPack.WithMoveId(dialog.PopupPack.NetPack.MoveId + dialog.PopupPack.DbMoves.Count);
                     statusPanelWrapper.SetId(netPack.GameId);
-                    statusPanelWrapper.AppendMoves(dialog.PopupPack.Moves);
-                    netPack.MoveId += dialog.PopupPack.Moves.Count;
+                    statusPanelWrapper.AppendMoves(dialog.PopupPack.DbMoves);
                 }
 
                 gameMenuWrapper.Disable();
                 menuItemCancel.IsEnabled = true;
                 menuItemPause.IsEnabled = (whiteUser is Ai) && (blackUser is Ai);
 
-                applyStep(gameToState(dialog.Game), dialog.Game, null, -1);
+                applyStep(MainStatePrimitives.GameToState(dialog.Game, whiteUser, blackUser, null), dialog.Game, null, -1);
             }
         }
 
