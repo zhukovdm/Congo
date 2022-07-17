@@ -374,6 +374,9 @@ namespace Congo.GUI
         private void menuItemExit_Click(object sender, RoutedEventArgs e)
             => exitGame();
 
+        private void Window_Closing(object sender, CancelEventArgs e)
+            => exitGame();
+
         private void tile_Click(object sender, RoutedEventArgs e)
         {
             switch (_state) {

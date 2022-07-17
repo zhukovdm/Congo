@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Icon="Resources/icon.png"
     Title="Congo"
-    MinHeight="752" Height="752" MinWidth="900" Width="900">
+    MinHeight="752" Height="752" MinWidth="900" Width="900" Closing="Window_Closing">
     <Grid>
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
