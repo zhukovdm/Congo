@@ -1,99 +1,67 @@
 # User's Manual
 
-The purpose of this document is to describe rules, gameplay and user interface
-of the board game `Congo`.
+The purpose of this document is to describe rules, gameplay and user interface of the platform for playing the board game `Congo`.
+
+**Contents**
+
+- [Definitions](#definitions)
+- [Rules](#rules)
+- [Congo FEN](#congo-fen)
 
 # Definitions
 
 `Congo` is an abstract game (chess variant) popular in the Netherlands.
 
-`Board` is a flat surface with specific pattern of squares, on which pieces
-are placed. Congo board contains $7 \times 7$ squares.
+`Board` is a flat surface with specific pattern of squares, on which pieces are placed. Congo board contains $7 \times 7$ squares.
 
-`Rank` is a horizontal row of squares on the board. `Congo` board has $7$
-ranks, marked from $1$ to $7$.
+`Rank` is a horizontal row of squares on the board. `Congo` board has $7$ ranks, marked from $1$ to $7$.
 
-`File` is a vertical row of squares on the board. `Congo` board has $7$
-files, marked from $A$ to $G$.
+`File` is a vertical column of squares on the board. `Congo` board has $7$ files, marked from $A$ to $G$.
 
 `Piece` is any figure on the board used by the players to play the game.
 
-`Capture` is an action when active player's move removes its opponent's piece
-from the board.
+`Capture` is an action when active player's move removes its opponent's piece from the board.
 
-`River` is the middle $4$<sup>th</sup> row of the board. Such squares have
-special behavior towards animal pieces, which is described in the next chapter.
+`River` is the middle $4$<sup>th</sup> rank of the board. Such squares have special behavior towards animal pieces, which is described in the next chapter.
 
-`Castle` is a $3 \times 3$ square at each side of the board, namely cartesian
-product $\lbrace C, D, E \rbrace \times \lbrace 1, 2, 3 \rbrace$ for black
-lion and $\lbrace C, D, E \rbrace \times \lbrace 5, 6, 7 \rbrace$ for white.
+`Castle` is a $3 \times 3$ square at each side of the board, namely squares $\lbrace C, D, E \rbrace \times \lbrace 1, 2, 3 \rbrace$ for black lion and $\lbrace C, D, E \rbrace \times \lbrace 5, 6, 7 \rbrace$ for white.
 
-`User name` is any non-empty sequence of **alphanumeric** chars.
-
-`Congo FEN` is a description of the immediate state of the `Congo` game in
-textual form. `FEN` abbreviation is borrowed from the well-known
-`Forsyth-Edwards Notation` for describing board position in chess. More on
-the subjects at [Congo FEN](#congo-fen).
+`Congo FEN` is a description of the immediate state of the `Congo` game in textual form. `FEN` abbreviation is borrowed from the well-known `Forsyth-Edwards Notation` for describing board position in chess. More on the subjects at [Congo FEN](#congo-fen).
 
 # Rules
 
-There are two competing players in the game,
-<span style="background-color: #000000; color: white">&nbsp;black&nbsp;</span> and
-<span style="background-color: #914800; color: white">&nbsp;white&nbsp;</span>.
-Players alternate turns, passing is not possible. Further, we describe the behavior
-of each piece and the aim of a game.
+Read [this article](https://en.wikipedia.org/wiki/Congo_(chess_variant)) to understand details about `Congo` rules and game flow. For more information regarding rules and other game implementations, please refer to the [References](#references). We further describe things relevant for the platform.
 
-| Picture | Symbol | Description |
-| :---: | :---: | :--- |
-| ![lion.png](./Pics/lion.png) | `L,l` | `Lion` is the King of the Jungle. It may not leave $3 \times 3$ castle around it. Inside castle, it moves and captures as the King in Chess. If there is a vertical or diagonal line with no pieces between the two lions, the lion may jump to the other lion and capture it. |
-| ![zebra.png](./Pics/zebra.png) | `Z,z` | `Zebra` moves as the Knight in classic chess. |
-| ![elephant.png](./Pics/elephant.png) | `E,e` | `Elephant` moves one or two squares in the horizontal or vertical direction. It may jump over the nearest square (also river) and capture the piece on the next square. |
-| ![giraffe.png](./Pics/giraffe.png) | `G,g` | `Giraffe` perform non-capturing moves in any direction (as the chess King). It can move or capture two steps away in any straight direction. |
-| ![crocodile.png](./Pics/crocodile.png) | `C,c` | `Crocodile` moves as the King in Chess when on land. Outside the river it can move straight towards the river (including the river square) as a rook. Inside the river it move to another river square as a rook. A crocodile **cannot** drown. |
-| ![pawn.png](./Pics/pawn.png) | `P,p` | `Pawn` moves and captures both straight and diagonally forward. Being on the other side of the river, a pawn may also move one or two squares straight back, without the right to capture or jump. If a pawn moves to the last row, it is promoted to a superpawn. |
-| ![super-pawn.png](./Pics/super-pawn.png) | `S,s` | `Superpawn` has the additional powers of moving and capturing one square straight sideways and going one or two square straight backwards or diagonally backward. When going backwards, it may neither capture nor jump. A superpawns right to go backwards does not depend on its position: they may go backwards at both sides and on the river. |
-| ![monkey.png](./Pics/monkey.png) | `M,m` | `Monkey` moves as the King in Chess while not capturing. It captures a piece by jumping over it in any direction to the square immediately beyond, which must be vacant. A monkey may capture multiple pieces in the same turn, but is not obliged to do so. Monkey jump can be interrupted at any time. Once a monkey jumps over a piece, the piece immediately disappears. If a monkey starts multiple capture being at a river square and ends at any river square, it immediately drowns. If a monkey starts its jump on the ground and ends in the river or opposite, it is not drown. Captures before drowning are legal. The monkey captured opponent's Lion terminates the move and the game. |
+There are two competing players in the game, black denoted by ![black.png](./Pics/black.png) and white denoted by ![white.png](./Pics/white.png). Players alternate turns, passing is not possible. Further, we describe the behavior of each piece and the aim of the game.
 
-The aim of the game is to win by capturing opponent's `Lion` as there is only
-one King of the Jungle. The game immediately ends once any lion is captured.
-There is no chess-like check in `Congo`, so a lion may move to an already attacked
-square. Consequently, `Congo` has no draw by a stalemate.
+| Picture                                   | Symbol  | Description |
+| :---------------------------------------: | :-----: | :---------- |
+| ![crocodile.png](./Pics/crocodile.png)    |  `C,c`  | `Crocodile` moves as the King in Chess standing on the ground. Outside the river it can slide straight towards the river (including the river square) as a rook if no pieces are standing on the path. Inside the river it can slide to another river square as a rook. |
+| ![elephant.png](./Pics/elephant.png)      |  `E,e`  | `Elephant` jumps one or two squares in the horizontal or vertical direction. It may jump over the nearest square (also river) and capture the piece on the next square. |
+| ![giraffe.png](./Pics/giraffe.png)        |  `G,g`  | `Giraffe` perform non-capturing moves in any direction (as the chess King). It can move or capture two steps away in horizontal, vertical or diagonal direction. |
+| ![lion.png](./Pics/lion.png)              |  `L,l`  | `Lion` is the King of the Jungle. It cannot leave $3 \times 3$ castle. Inside the castle, it moves and captures as the King in Chess. If there is a vertical or diagonal line with no pieces between the two lions, the lion may jump to the other lion and capture it. |
+| ![monkey.png](./Pics/monkey.png)          |  `M,m`  | `Monkey` moves as the King in Chess while not capturing. It captures a piece by jumping over it in any direction to the square immediately beyond, which **must** be vacant. A monkey may capture multiple pieces during the same turn, but is not obliged to do so. Monkey jump can be interrupted at any time. Once a monkey jumps over a piece, the piece immediately disappears. If a monkey starts multiple capture being at a river square and ends at any river square, it immediately drowns. If a monkey starts its jump on the ground and ends in the river or opposite, it is not drown. Captures before drowning are legal. The monkey captured opponent's Lion terminates the move and the game. |
+| ![pawn.png](./Pics/pawn.png)              |  `P,p`  | `Pawn` moves and captures both straight and diagonally forward. Being on the other side of the river, a pawn may also slide one or two squares straight back, without the right to capture or jump over pieces. If a pawn reaches the last opposite row, it is promoted to a superpawn. |
+| ![super-pawn.png](./Pics/super-pawn.png)  |  `S,s`  | `Superpawn` has the additional powers of moving and capturing one square straight sideways and going one or two square straight backwards or diagonally backward. When going backwards, it may neither capture nor jump. A superpawn can slide backwards standing at any square. |
+| ![zebra.png](./Pics/zebra.png)            |  `Z,z`  | `Zebra` moves as the Knight in classic chess. |
 
-A non-crocodile piece that ends its move standing on the river square must reach
-a ground square in the next turn, otherwise the piece disappears as being drown.
-Crocodiles cannot drown.
+The aim of the game is to win by capturing opponent's `Lion` as there could be only one King of the Jungle. The game immediately ends once a lion, either black or white, is captured. There is no chess-like check in `Congo`, a lion might move to an attacked square. Consequently, `Congo` has no draw by a stalemate.
+
+A non-crocodile piece that ends its move standing on the river square must reach a ground square in the next turn, otherwise the piece disappears as being drown. Crocodiles **cannot** drown.
 
 # Congo FEN
 
-Any board can be encoded into a string with $9$ sections `rank/rank/rank/rank/rank/rank/rank/color/jump`.
+Any `Congo` game can be encoded into a string with $9$ sections divided by a `/`, e.g. `rank/rank/rank/rank/rank/rank/rank/color/jump`.
 
-- $7$ ranks. Squares are described from left to right. Numbers indicate empty
-  squares, letters indicate pieces.
-- $1$ active player color. White player is denoted by `w` and black  `white` and `b` stands for `black`.
-- $1$ active monkey jump started at a position. If monkey jump doesn't happen, 
-  then the last field is $-1$. Otherwise, there should be a square, from which
-  monkey has started its jump.
+First $7$ sections encode ranks. Squares are described from left to right. Digits indicate consequent empty squares, letters indicate pieces (see symbols in the table above).
 
-`Congo FEN` examples follow.
+$8$<sup>th</sup> section denote a color of the active player. White and black players are denoted by `w` and `b` respectively.
 
-Empty board.
-```txt
-7/7/7/7/7/7/7/w/-1
-```
+$9$<sup>th</sup> item describes a position, where monkey jump has started. The last field is set to $-1$ if monkey jump has not been started. Otherwise, there is a square number, from which monkey has started its jump. Squares are counted from left to right starting at the upper left corner towards the bottom, e.g. `a7` has index $0$.
 
-Standard board.
+Standard board with white player's turn.
 ```txt
 gmelecz/ppppppp/7/7/7/PPPPPPP/GMELECZ/w/-1
-```
-
-$3$-long white monkey jump, white wins.
-```txt
-7/4l2/7/4c2/7/2p4/1M1L3/w/-1
-```
-
-Board without pawns.
-```txt
-gmelecz/2ppp2/7/7/7/2PPP2/GMELECZ/w/-1
 ```
 
 Board with plenty of moves.
@@ -101,7 +69,12 @@ Board with plenty of moves.
 1melec1/ppppp1p/2g2zp/5C1/2G2ZP/PPPPP1P/1MELE2/b/-1
 ```
 
-# Commond-line interface
+$3$-long white monkey jump, white wins.
+```txt
+7/4l2/7/4c2/7/2p4/1M1L3/w/-1
+```
+
+# Terminal-based user interface
 
 ## Setting up
 
@@ -256,21 +229,15 @@ The game is exited upon entering `exit` command.
 The program is terminated...
 ```
 
-# Play with GUI
+# Graphical user interface
+
+TBA
 
 ## Setting up
 
 TBA
 
 ## Gameplay
-
-TBA
-
-# Play via network
-
-TBA
-
-## Start server instance
 
 TBA
 
