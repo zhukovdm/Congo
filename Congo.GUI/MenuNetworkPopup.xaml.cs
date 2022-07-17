@@ -15,11 +15,14 @@ namespace Congo.GUI
 {
     public partial class MenuNetworkPopup : MenuBasePopup
     {
-        private GrpcChannel channel;
-        private CongoClient client;
-        private long gameId;
-        private long moveId;
-        private ICollection<DbMove> dbMoves;
+        private long _gameId;
+        private long _moveId;
+        private CongoGame _game;
+        private CongoUser _whiteUser;
+        private CongoUser _blackUser;
+        private GrpcChannel _channel;
+        private CongoClient _client;
+        private ICollection<DbMove> _dbMoves;
 
         #region acceptors
 
@@ -54,11 +57,11 @@ namespace Congo.GUI
                     ? Algorithm.Random
                     : (AlgorithmDelegate)Algorithm.Negamax;
 
-            WhiteUser = radioButtonWhite.IsChecked == true
+            _whiteUser = radioButtonWhite.IsChecked == true
                 ? (radioButtonHi.IsChecked == true ? new Hi(algo) : new Ai(algo))
                 : new Net(Algorithm.Random);
 
-            BlackUser = radioButtonWhite.IsChecked != true
+            _blackUser = radioButtonWhite.IsChecked != true
                 ? (radioButtonHi.IsChecked == true ? new Hi(algo) : new Ai(algo))
                 : new Net(Algorithm.Random);
 
@@ -67,8 +70,8 @@ namespace Congo.GUI
 
         private StringWriter createRpcPrimitives(StringWriter err)
         {
-            channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text);
-            client = new(channel);
+            _channel = GrpcPrimitives.CreateGrpcChannel(textBoxHost.Text, textBoxPort.Text);
+            _client = new(_channel);
 
             return err;
         }
@@ -77,11 +80,11 @@ namespace Congo.GUI
         {
             try {
                 if (radioButtonStandard.IsChecked == true) {
-                    gameId = GrpcRoutines.PostFen(client, CongoFen.ToFen(CongoGame.Standard()));
+                    _gameId = GrpcRoutines.PostFen(_client, CongoFen.ToFen(CongoGame.Standard()));
                 }
 
                 if (radioButtonFen.IsChecked == true) {
-                    gameId = GrpcRoutines.PostFen(client, textBoxFen.Text);
+                    _gameId = GrpcRoutines.PostFen(_client, textBoxFen.Text);
                 }
             }
             catch (CongoServerResponseException ex) {
@@ -92,7 +95,7 @@ namespace Congo.GUI
             }
 
             if (radioButtonId.IsChecked == true) {
-                gameId = long.Parse(textBoxId.Text);
+                _gameId = long.Parse(textBoxId.Text);
             }
 
             return err;
@@ -101,7 +104,7 @@ namespace Congo.GUI
         private StringWriter confirmGameId(StringWriter err)
         {
             try {
-                GrpcRoutines.ConfirmGameId(client, gameId);
+                GrpcRoutines.ConfirmGameId(_client, _gameId);
             }
             catch (CongoServerResponseException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.ServerResponseErrorPrefix}{ex.Message}");
@@ -115,14 +118,14 @@ namespace Congo.GUI
 
         private StringWriter initMoveId(StringWriter err)
         {
-            moveId = -1;
+            _moveId = -1;
             return err;
         }
 
         private StringWriter getKnownMoves(StringWriter err)
         {
             try {
-                dbMoves = GrpcRoutines.GetDbMovesAfter(client, gameId, -1);
+                _dbMoves = GrpcRoutines.GetDbMovesAfter(_client, _gameId, -1);
             }
             catch (RpcException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
@@ -134,7 +137,7 @@ namespace Congo.GUI
         private StringWriter getLatestGame(StringWriter err)
         {
             try {
-                Game = GrpcRoutines.GetLatestGame(client, gameId);
+                _game = GrpcRoutines.GetLatestGame(_client, _gameId);
             }
             catch (RpcException ex) {
                 (err ??= new()).WriteLine($"{GrpcRoutinesGui.GrpcErrorPrefix}{ex.StatusCode}");
@@ -197,7 +200,8 @@ namespace Congo.GUI
                 return;
             }
 
-            PopupPack = new(new(gameId, moveId, channel, client), dbMoves);
+            Game = _game; WhiteUser = _whiteUser; BlackUser = _blackUser;
+            PopupPack = new(new(_gameId, _moveId + _dbMoves.Count, _channel, _client), _dbMoves);
 
             DialogResult = true;
             Close();

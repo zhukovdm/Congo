@@ -22,8 +22,6 @@ namespace Congo.GUI
             Client = client;
         }
 
-        public NetPack Clone() => new(GameId, MoveId, Channel, Client);
-
         public NetPack WithMoveId(long moveId) => new(GameId, moveId, Channel, Client);
     }
 
