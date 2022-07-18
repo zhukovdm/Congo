@@ -98,6 +98,8 @@ info: Microsoft.Hosting.Lifetime[0]
       Application started. Press Ctrl+C to shut down.
 ```
 
+Note that the user cannot interact with the server instance, but could shut it down by pressing `Ctrl+C`.
+
 # Compile and run in the terminal
 
 Each project can be built, run and tested directly from the terminal. [dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet) should be available on the target system.
