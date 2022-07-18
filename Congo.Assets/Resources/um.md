@@ -296,7 +296,7 @@ The `Congo.GUI` application starts as a window with empty board.
 
 New game can be initialized using `Local` or `Network` popup. Both could be found in the `Game` menu.
 
-![gui-game-menu.png](./Pics/gui-game-menu.png)
+![gui-menu-game.png](./Pics/gui-menu-game.png)
 
 For local game, the user decides a configuration and players.
 
@@ -349,9 +349,9 @@ Buttons in the `Control` menu have rather special meaning.
 
 ![gui-menu-control.png](./Pics/gui-menu-control.png)
 
-`Pause` is enabled whenever the game is local and both players are `Ai`. The user could interrupt game flow and analyze position or copy current game state via `Save` button.
+`Pause` is enabled whenever the game is local and both players are `Ai`. The user could interrupt game flow and analyze position or copy current game state via `Save` button. The game flow is resumed by a repeated clicking.
 
-`Negamax` is a recursive algorithm and could be time and resource heavy. To avoid waiting a result for too long time, advise calculation could be cancelled via `Cancel` button. The program will select best already known algorithm or pick at random.
+`Negamax` is a recursive algorithm and could be time and resource heavy. To avoid waiting a result for too long, advising calculation could be cancelled via `Cancel` button. The program will select best already known algorithm or pick at random.
 
 # References
 
