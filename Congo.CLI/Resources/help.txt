@@ -1,6 +1,0 @@
- NAME
-    help
- DESCRIPTION
-    Shows help manual for a chosen command.
- USAGE
-    help advise | exit | help | move | show

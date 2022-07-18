@@ -7,50 +7,38 @@ namespace Congo.CLI
 {
     public sealed class TextReporter
     {
-        private const string greetFile = "greet";
         private const string whiteView = "white";
         private const string blackView = "black";
-        private const string textFileExt = ".txt";
-        private static readonly string resourcesFolder = "Resources" + Path.DirectorySeparatorChar;
 
-        private static string readTextFile(string filename)
-        {
-            try {
-                return File.ReadAllText(resourcesFolder + filename + textFileExt);
-            }
-            catch (Exception) { return null; }
-        }
-
-        private readonly TextWriter writer;
+        private readonly TextWriter _writer;
 
         public TextReporter(TextWriter writer)
         {
-            this.writer = writer;
+            _writer = writer;
         }
 
         public void Greet()
         {
-            writer.WriteLine();
-            writer.Write(readTextFile(greetFile));
+            _writer.WriteLine();
+            _writer.Write(GreetView.GetInstance());
         }
 
-        public void ReportHelpFile(string helpFile)
-            => writer.Write(readTextFile(helpFile));
+        public void ReportHelpView(HelpView view) => _writer.Write(view);
 
         public void ReportEmptyCommand()
-            => writer.WriteLine(" Input command is an empty string. Try again.");
+            => _writer.WriteLine(" Input command is an empty string. Try again.");
 
         public void ReportNotSupportedCommand(string command)
-            => writer.WriteLine($" Command {command} is not supported. Consult \"help help\".");
+            => _writer.WriteLine($" Command {command} is not supported. Consult \"help help\".");
 
         public void ReportWrongCommandFormat(string command)
-            => writer.WriteLine($" Wrong command format. Consult \"help {command}\".");
+            => _writer.WriteLine($" Wrong command format. Consult \"help {command}\".");
 
         public void ReportAdvisedMove(CongoMove move)
-            => writer.WriteLine($" Advised move is {MovePresenter.GetMoveView(move)}.");
+            => _writer.WriteLine($" Advised move is {MovePresenter.GetMoveView(move)}.");
 
         public void ReportWrongMove()
-            => writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
+            => _writer.WriteLine(" Entered move is wrong. Consult \"show moves\".");
 
         public void ReportResult(CongoGame game)
         {
@@ -58,9 +46,9 @@ namespace Congo.CLI
                 ? whiteView
                 : blackView;
 
-            writer.WriteLine();
-            writer.WriteLine($" {winner} wins.");
-            writer.WriteLine();
+            _writer.WriteLine();
+            _writer.WriteLine($" {winner} wins.");
+            _writer.WriteLine();
         }
     }
 }

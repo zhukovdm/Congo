@@ -1,6 +1,0 @@
- NAME
-    exit
- DESCRIPTION
-    Exits the game.
- USAGE
-    exit

@@ -115,12 +115,22 @@ namespace Congo.CLI
         private CongoMove getHiValidMove()
         {
             CongoMove move = null;
+
             var showDelegates = new Dictionary<string, Action<CongoGame>>()
             {
                 { TextPresenter.GameLiteral, presenter.ShowGame },
                 { TextPresenter.BoardLiteral, presenter.ShowBoard },
                 { TextPresenter.MovesLiteral, presenter.ShowMoves },
                 { TextPresenter.PlayersLiteral, presenter.ShowPlayers },
+            };
+
+            var views = new Dictionary<string, HelpView>()
+            {
+                { Verifier.AdviseLiteral, AdviseHelpView.GetInstance() },
+                { Verifier.ExitLiteral, ExitHelpView.GetInstance() },
+                { Verifier.HelpLiteral, HelpHelpView.GetInstance() },
+                { Verifier.MoveLiteral, MoveHelpView.GetInstance() },
+                { Verifier.ShowLiteral, ShowHelpView.GetInstance() },
             };
 
             do {
@@ -138,8 +148,7 @@ namespace Congo.CLI
                         throw new ExitException();
 
                     case Verifier.HelpLiteral:
-                        if (command.Length == 1) { command = new string[] { Verifier.HelpLiteral, Verifier.HelpLiteral, }; }
-                        reporter.ReportHelpFile(command[1]);
+                        reporter.ReportHelpView(views[command[1]]);
                         break;
 
                     case Verifier.MoveLiteral:

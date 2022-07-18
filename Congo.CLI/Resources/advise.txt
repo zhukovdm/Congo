@@ -1,6 +1,0 @@
- NAME
-    advise
- DESCRIPTION
-    Advises next move based on a chosen algorithm.
- USAGE
-    advise

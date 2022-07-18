@@ -25,11 +25,7 @@ namespace Congo.CLI
             }.ToImmutableDictionary();
 
         private static string[] verifyCommand(Func<string[], bool> predicate, string[] input)
-        {
-            return predicate(input)
-                ? null
-                : input;
-        }
+            => predicate(input) ? null : input;
 
         private static string[] verifyAdviseCommand(string[] input)
         {
@@ -45,6 +41,8 @@ namespace Congo.CLI
 
         private static string[] verifyHelpCommand(string[] input)
         {
+            if (input.Length == 1) { input = new[] { HelpLiteral, HelpLiteral }; }
+
             static bool predicate(string[] arr)
                 => arr.Length != 2 || !SupportedCommands.ContainsKey(arr[1]);
             return verifyCommand(predicate, input);
