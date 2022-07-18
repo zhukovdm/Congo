@@ -286,17 +286,72 @@ Note that network game could be interrupted at any time. The same game could be 
 
 # Graphical user interface
 
-The `congo-gui` application starts as a window with empty board, no game has been started yet.
-
-
+`Congo.GUI` is a `WPF`-based graphical client application.
 
 ## Setting up
 
-TBA
+The `Congo.GUI` application starts as a window with empty board.
+
+![gui-base.png](./Pics/gui-base.png)
+
+New game can be initialized using `Local` or `Network` popup. Both could be found in the `Game` menu.
+
+![gui-game-menu.png](./Pics/gui-game-menu.png)
+
+For local game, the user decides a configuration and players.
+
+![gui-popup-local.png](./Pics/gui-popup-local.png)
+
+For network game, the user decides connection parameters and configuration for the local player.
+
+![gui-popup-network.png](./Pics/gui-popup-network.png)
+
+`Save` button serializes current game state (if available) as a `Congo FEN` string and copies it into system buffer. The user could paste it anywhere else by pressing `Ctrl+V`.
+
+`Reset` button finalizes all relations (e.g. open connections) and reset the program into initial state with an empty board.
+
+`Exit` button finalizes all relations and terminates the program.
 
 ## Gameplay
 
-TBA
+Once the game is configured and set, all available pieces show up.
+
+![gui-standard.png](./Pics/gui-standard.png)
+
+Active user (either black or white) is indicated by a red border around the corresponding rectangle.
+
+![gui-panel-user.png](./Pics/gui-panel-user.png)
+
+Advice can be ordered by the user by pressing `Advise` button. The task is calculated within a parallel thread and main window does not hang. The advised move shows up next to the button.
+
+![gui-panel-advise.png](./Pics/gui-panel-advise.png)
+
+Upper grey rectangle of the status panel contain the unique game identifier for the network game. The content of the text block can be copied to the system buffer upon `MouseUp` event on the element. Moves are stored in the list box, moves made by a remote player are synchronized. Winner is reported in the bottom text block of the status panel.
+
+![gui-panel-status.png](./Pics/gui-panel-status.png)
+
+The user could select a tile with a friendly piece. Selected tile is highlighted by the white border, target tiles are highlighted with the red border. Clicking on unrelevant tiles does not have any effect on the game state.
+
+![gui-moves.png](./Pics/gui-moves.png)
+
+The client communicates with the server on demand (new game is created, move is done, etc.) and cannot immediately recognize broken connection. Any problems related to the communication with the server are reported in the bottom text block with prefix `gRPC error: StatusCode=...`. The meaning of each status code is explained [here](https://grpc.github.io/grpc/csharp/api/Grpc.Core.StatusCode.html).
+
+![gui-error-grpc.png](./Pics/gui-error-grpc.png)
+
+The client communicates with the server in an asynchronous manner by passing messages back and forth. There is no session abstraction. Any user can connect and continue playing network game at any time. It could happen, that the
+user makes valid move on unsynchronized game. Such situations are detected and properly reported with `Server response error: ` prefix.
+
+![gui-error-server.png](./Pics/gui-error-server.png)
+
+The game effectively ends upon communication or synchronization error.
+
+Buttons in the `Control` menu have rather special meaning.
+
+![gui-menu-control.png](./Pics/gui-menu-control.png)
+
+`Pause` is enabled whenever the game is local and both players are `Ai`. The user could interrupt game flow and analyze position or copy current game state via `Save` button.
+
+`Negamax` is a recursive algorithm and could be time and resource heavy. To avoid waiting a result for too long time, advise calculation could be cancelled via `Cancel` button. The program will select best already known algorithm or pick at random.
 
 # References
 
