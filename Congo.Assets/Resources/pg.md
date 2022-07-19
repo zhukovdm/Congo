@@ -20,6 +20,10 @@ used throughout the `Congo` project.
   - [Congo.CLI](#congocli)
   - [Congo.GUI](#congogui)
 - [Core algorithms and data structures](#core-algorithms-and-data-structures)
+  - [Alpha-beta negamax](#alpha-beta-negamax)
+  - [Hash table](#hash-table)
+  - [Concurrent evaluation](#concurrent-evaluation)
+  - [Bit scan](#bit-scan)
 - [References](#references)
 
 # Unit tests
@@ -197,112 +201,60 @@ changed from outside.
 
 ## Alpha-beta negamax
 
-Minimax and negamax are recursive algorithms and we further deal with a notion
-of the distance between two nodes in the decision tree. The distance is determined
-by **the number of edges** between nodes.
+To make the game more challenging, we have implemented a standard fail-hard beta cut-off
+[Negamax](https://en.wikipedia.org/wiki/Negamax) algorithm with alpha-beta pruning and several
+performance enhancements. These primitives are used for advising next move to the human player
+and enables smarter decision-making by the artificial player.
 
-### Minimax, introduction
-
-In the original implementation of the [Minimax](https://en.wikipedia.org/wiki/Minimax)
-algorithm, one of the players (white) maximizes, another (black) minimizes the
-value given by the evaluation function. Score is calculated with respect to both
-players. The value could be either `+high`, `0` or `-low`. For white player, the
-higher score is the better. On the contrary, for black the lower score is the
-better. Such implementation is rather verbose, therefore we implement concise
-[Negamax](https://en.wikipedia.org/wiki/Negamax) variant.
-
-### Negamax, leaf node
-
-This paragraph describes how board score is determined and passed within
-decision tree with respect to `Minimax` algorithm. `Negamax` deals with both
-players equally, both maximize. To achieve such behavior we should properly
-adjust score at the leaf node and pass obtained score in a specific way.
-
-Lets proceed with simple example. Suppose evaluation function returns `+1` if
-white player wins, `-1` if black player wins, otherwise `0`. White player makes
-winning move and calls `Negamax` with depth `0`. Black player recognize that
-the game is over and returns `+1`. White player goes through all returned values
-and selects maximum value if it appears.
-
-Consider different situation.The same evaluation function, but black player
-checks winning move and neutral move (neither winning nor loosing) and calls
-
-Negamax. For the
-first move the board is evaluated to `-1`, and for the second to `0`. Maximum of
-two values is `0`, so black would skip the best option if maximizes. We should
-have inverted obtained score at the leaf node before the value is returned.
-Inverted `0` becomes 0, but `-1` becomes `+1`. Smaller values at the leaf nodes
-become larger values when returned.
-
-Therefore, black active player (or white opponent) at a terminal node returns
-`+score`, white active player (or black opponent) at a terminal node returns
-`-score`.
-
-### Negamax, internal node
-
-Suppose, there is a white player from the previous paragraph. It found winning
-move at the leaf node. Let black player be above white player within the
-decision tree. If white player returns +1 (maximum possible value) and black
-maximizes, then black would choose worst possible value and eventually move.
-The best values returned from nodes below should be represented as the worst
-values for the opponent. Therefore, before value is returned, it should be
-inverted (* --1), so that the player above could maximize.
-
-### Negamax, monkey jumps
-
-Another complication is that monkey jump does change recursion depth, but
-does not change the color of the player. Therefore, we should consider
-returning +/-- score based on the color of active player in the predecessor
-game.
-
-### Alpha-beta pruning
-
-This is a standard fail-hard beta cut-off implementation of the algorithm.
-$\alpha$ is the best possible solution found so far, $\beta$ is the best
-possible solution the opponent could ensure.
+Some of the moves don't change the color of the active player (e.g. monkey jumps). Our implementation
+treat such situations well.
 
 ## Hash table
 
-`Hash table` is used for identifying transposed boards. Such board could appear
-in case the board returns to the original state after a cycle of moves. Hash
-table enables an algorithm traversing game tree to recognize such boards and
-use already precalculated best score and move. The hashed cell is recognized
-as hash hit in case current board has equal or smaller sub-tree in terms of
-recursion depth than the board found in the hash. Otherwise, the current board
-traverses all valid moves leading to the recursion call. Internally, the hash
-table has $2^{18}$ possible cells. Table could be accessed by several threads
-concurrently, locks are implemented for any `R/W` operations on cells.
+`Hash table` is used for identifying transposed boards in the `Negamax` decision tree. Such boards
+could appear in case the board returns to the original state after a cycle of moves. Hash table
+enables an algorithm traversing game tree to recognize such boards and use already precalculated
+best score and move. The hashed cell is recognized as hash hit in case current board has equal or
+smaller sub-tree in terms of recursion depth than the board found in the hash. Otherwise, the
+current board traverses all valid moves leading to the recursion call.
 
-\vspace{0.5em}
+Internally, the hash table has $2^{18}$ possible cells. Table could be accessed by several threads
+concurrently, locks are implemented for any `R/W` operations on the cells.
 
-Hash eviction policy is implemented based on the board equality. Once the best
-move is found in Negamax, the method \textsf{.SetSolution(...)} is called on
-the table instance. The board, move and score are stored in case boards are
-not equal or better solution is found. Board equality is an efficient
-operation, it compares 2 \textsf{ulong} values and 7 \textsf{uint} values.
+Hash eviction policy is implemented based on the board equality. Once the best move is found in
+`Negamax`, the method `.SetSolution(...)` is called on the table instance. The board, move and score
+are stored in case boards are not equal or better solution is found. Board equality is an efficient
+operation, it compares $2$ `ulong` values and $7$ `uint` values.
 
-The hash code of the cell is determined based on a board hash value. Hash is
-calculated as proposed by [Albert Lindsey Zobrist](https://en.wikipedia.org/wiki/Albert_Lindsey_Zobrist).
-First, pseudo-random values are generated for each `(color, piece, square)` triple.
-Consider moving white pawn from `A1` to `A3`. We remove hash of triple
-(white, pawn, A1) from the current board hash. Then we add no-piece to the
-board hash (?, no-piece, A1). Then we remove no-piece from the board hash (?,
-no-piece, A3). Finally, we add (white, pawn, A3) to the board hash. Initial
-board hash is calculated via calling method \textsf{.InitHash(CongoBoard
-board)} on the table instance. Initial hash will contain only hash addition
-operations. All no-pieces (ground and river) are considered black. For each
-triple (color, piece, square) retrieve random number and let new hash be
-\textsf{hash := XOR(hash, number)}. Removing pieces is done via repeated
-`xor`-application. New board hash is adjusted directly in Negamax
+The hash code of the cell is determined based on a board hash value. Hash is calculated as proposed
+by [Albert Lindsey Zobrist](https://en.wikipedia.org/wiki/Albert_Lindsey_Zobrist). First,
+pseudo-random values are generated for each `(color, piece, square)` triple. Consider moving white
+pawn from `A1` to `A3`. We remove hash of triple `(white, pawn, A1)` from the current board hash.
+Then we add no-piece to the board hash `(?, no-piece, A1)`. Then we remove no-piece from the board
+hash `(?, no-piece, A3)`. Finally, we add `(white, pawn, A3)` to the board hash. Initial board hash
+is calculated via calling  method `.InitHash(CongoBoard board)` on the table instance. Initial hash
+will contain only hash addition operations. All no-pieces (ground and river) are considered black.
+For each triple `(color, piece, square)` retrieve random number and applies `hash := XOR(hash, number)`.
+Removing pieces is done via repeated `xor`-application. New board hash is adjusted directly in `Negamax`
 recursive procedure.
 
 ## Concurrent evaluation
 
+Evaluating board by `Negamax` algorithm could be resource and time-consuming and some kind of
+a parallelization would be helpful.
+
+Note that `static class Algorithm` defines the global `private static CongoHashTable hT` and
+accessing table cells is thread-safe. Furthermore, instances of the game are immutable. We use
+`ThreadPool` and divide possible moves between several tasks evenly.
+
+All this enables speeding up of the board evaluation.
+
 ## Bit scan
 
-The technique employs 
-
-- [BitScan](https://www.chessprogramming.org/BitScan)
+Theory behind the algorithm could be studied at [BitScan](https://www.chessprogramming.org/BitScan).
+The algorithm takes a `64-bit` word with exactly one bit set and returns its index using bitwise
+operations. This technique is used for fast iterating over pieces on the board, see
+`Congo.Core/BitScan.cs`.
 
 # References
 
