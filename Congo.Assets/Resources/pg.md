@@ -36,7 +36,7 @@ solution root folder. Files are dumped into `./Congo.Assets/Resources/Doxygen/`.
 
 The solution is divided into several projects. Functional projects are tested within supporting
 projects with `.MSTest` suffix in the name, such as `Congo.Utils.MSTest`, `Congo.Core.MSTest` and
-`Congo.CLI.MSTest`.
+`Congo.CLI.MSTest`. `Congo.CLI.Installer` and `Congo.GUI.Installer` generate `.msi` files.
 
 ## Project dependencies
 
@@ -159,8 +159,8 @@ if (CongoState.lockDb.TryGetValue(request.GameId, out var l)) {
 
 ## Congo.CLI
 
-`Congo.CLI` project implements simple terminal-based user interface. The game is configured 
-
+`Congo.CLI` project implements simple terminal-based user interface. The game is configured
+in the arguments, malformed arguments are reported.
 
 Commands issued by the user are parsed, validated and executed by the corresponding delegates.
 Lambda functions are heavily used in verification. Each user decision is processed immediately,
@@ -172,10 +172,26 @@ This project is **platform-independent** and could handle local games or games v
 
 The project implements graphical user interface based on `WPF` technology. It provides functionality
 similar to the `Congo.CLI` project. The project is inherently platform-dependent and could handle
-both local and network games. Refer to [Graphical user interface](#graphical-user-interface)
-to learn more about `GUI` architecture and design decisions.
+both local and network games.
 
+$3$ different windows could appear during the game. `MainWindow` contains of the board and control
+panels. `LocalPopup` is used for configuring local games, and `NetworkPopup` for network games.
 
+Some of the user or program actions could last long. To avoid hanging the main window, heavy tasks
+are evaluated separately within `BackgroundWorker`. There are $3$ such situations:
+- `Hi` player requests an algorithmic advice,
+- `Ai` player decides its move,
+- remote `Net` player decides its move.
+
+Evaluation is interrupted upon `Reset`, and `Exit`. Finished worker call `_Complete` function and
+enforce global state updates based on the results. Results of any calculation can be abandoned
+via `step` variable.
+
+`MainWindow` is stateful, this brings additional obstacles. We decided to follow a rule that the
+game state (variables `_moveFr`, `_game`, `_state`, `_whiteUser` and `_blackuser`) could be updated
+only in `applyStep` method. Items relevant for the worker (variables `_netPack`, `movesOut` and
+`_job`) are updated in the `_Init()` or `_Complete()` methods. Other data structures cannot be
+changed from outside.
 
 # Core algorithms and data structures
 
@@ -287,10 +303,6 @@ recursive procedure.
 The technique employs 
 
 - [BitScan](https://www.chessprogramming.org/BitScan)
-
-# Graphical user interface
-
-
 
 # References
 
