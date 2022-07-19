@@ -54,33 +54,87 @@ There are two competing players in the game, black denoted by ![black.png](./Pic
 ![white.png](./Pics/white.png). Players alternate turns, passing is not possible. Further, we describe the behavior of
 each piece and the aim of the game.
 
-| Picture                                   | Symbol  | Description |
-| :---------------------------------------: | :-----: | :---------- |
-| ![crocodile.png](./Pics/crocodile.png)    |  `C,c`  | `Crocodile` moves as the King in Chess standing on the ground. Outside the river it can slide straight towards the river (including the river square) as a rook if no pieces are standing on the path. Inside the river it can slide to another river square as a rook. |
-| ![elephant.png](./Pics/elephant.png)      |  `E,e`  | `Elephant` jumps one or two squares in the horizontal or vertical direction. It may jump over the nearest square (also river) and capture the piece on the next square. |
-| ![giraffe.png](./Pics/giraffe.png)        |  `G,g`  | `Giraffe` perform non-capturing moves in any direction (as the chess King). It can move or capture two steps away in horizontal, vertical or diagonal direction. |
-| ![lion.png](./Pics/lion.png)              |  `L,l`  | `Lion` is the King of the Jungle. It cannot leave $3 \times 3$ castle. Inside the castle, it moves and captures as the King in Chess. If there is a vertical or diagonal line with no pieces between the two lions, the lion may jump to the other lion and capture it. |
-| ![monkey.png](./Pics/monkey.png)          |  `M,m`  | `Monkey` moves as the King in Chess while not capturing. It captures a piece by jumping over it in any direction to the square immediately beyond, which **must** be vacant. A monkey may capture multiple pieces during the same turn, but is not obliged to do so. Monkey jump can be interrupted at any time. Once a monkey jumps over a piece, the piece immediately disappears. If a monkey starts multiple capture being at a river square and ends at any river square, it immediately drowns. If a monkey starts its jump on the ground and ends in the river or opposite, it is not drown. Captures before drowning are legal. The monkey captured opponent's Lion terminates the move and the game. |
-| ![pawn.png](./Pics/pawn.png)              |  `P,p`  | `Pawn` moves and captures both straight and diagonally forward. Being on the other side of the river, a pawn may also slide one or two squares straight back, without the right to capture or jump over pieces. If a pawn reaches the last opposite row, it is promoted to a superpawn. |
-| ![super-pawn.png](./Pics/super-pawn.png)  |  `S,s`  | `Superpawn` has the additional powers of moving and capturing one square straight sideways and going one or two square straight backwards or diagonally backward. When going backwards, it may neither capture nor jump. A superpawn can slide backwards standing at any square. |
-| ![zebra.png](./Pics/zebra.png)            |  `Z,z`  | `Zebra` moves as the Knight in classic chess. |
-
 <table>
   <thead>
     <tr>
-      <th style="text-align:center">Picture</th>
-      <th style="text-align:center">Symbol</th>
-      <th>Description</th>
+      <th align="center">Picture</th>
+      <th align="center">Symbol</th>
+      <th align="left">Description</th>
     </tr>
   </thead>
   <tbody>
-    <td style="text-align:center"><img src="./Pics/crocodile.png" alt="crocodile.png"></td>
-    <td style="text-align:center"><code>C,c</code></td>
-    <td>
-      <code>Crocodile</code> moves as the King in Chess standing on the ground. Outside the river it can slide straight
-      towards the river (including the river square) as a rook if no pieces are standing on the path. Inside the river
-      it can slide to another river square as a rook.
-    </td>
+    <tr>
+      <td align="center"><img src="./Pics/crocodile.png" alt="crocodile.png"></td>
+      <td align="center"><code>C,c</code></td>
+      <td align="left">
+        <code>Crocodile</code> moves as the King in Chess standing on the ground. Outside the river it can slide straight
+        towards the river (including the river square) as a rook if no pieces are standing on the path. Inside the river
+        it can slide to another river square as a rook.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/elephant.png" alt="elephant.png"></td>
+      <td align="center"><code>E,e</code></td>
+      <td align="left">
+        <code>Elephant</code> jumps one or two squares in the horizontal or vertical direction. It may jump over the
+        nearest square (also river) and capture the piece on the next square.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/giraffe.png" alt="giraffe.png"></td>
+      <td align="center"><code>G,g</code></td>
+      <td align="left">
+        <code>Giraffe</code> performs non-capturing moves in any direction (as the chess King). It can move or capture
+        two steps away in horizontal, vertical or diagonal direction.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/lion.png" alt="lion.png"></td>
+      <td align="center"><code>L,l</code></td>
+      <td align="left">
+        <code>Lion</code> is the King of the Jungle. It cannot leave its castle. Inside the castle, it moves and
+        captures as the King in Chess. If there is a vertical or diagonal line with no pieces between the two lions,
+        the lion may jump to the other lion and capture it.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/monkey.png" alt="monkey.png"></td>
+      <td align="center"><code>M,m</code></td>
+      <td align="left">
+        <code>Monkey</code> moves as the King in Chess while not capturing. It captures a piece by jumping over it in
+        any direction to the square immediately beyond, which <b>must</b> be vacant. A monkey may capture multiple pieces
+        during the same turn, but is not obliged to do so. Monkey jump can be interrupted at any time. Once a monkey
+        jumps over a piece, the piece immediately disappears. If a monkey starts multiple capture being at a river square
+        and ends at any river square, it immediately drowns. If a monkey starts its jump on the ground and ends in the
+        river or opposite, it is not drown. Captures before drowning are legal. The monkey captured opponent's Lion
+        terminates the move and the game.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/pawn.png" alt="pawn.png"></td>
+      <td align="center"><code>P,p</code></td>
+      <td align="left">
+        <code>Pawn</code> moves and captures both straight and diagonally forward. Being on the other side of the river,
+        a pawn may also slide one or two squares straight back, without the right to capture or jump over pieces. If a
+        pawn reaches the last opposite row, it is promoted to a superpawn.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/super-pawn.png" alt="super-pawn.png"></td>
+      <td align="center"><code>S,s</code></td>
+      <td align="left">
+        <code>Superpawn</code> has the additional powers of moving and capturing one square straight sideways and going
+        one or two square straight backwards or diagonally backward. When going backwards, it may neither capture nor
+        jump. A superpawn can slide backwards standing at any square.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./Pics/zebra.png" alt="zebra.png"></td>
+      <td align="center"><code>Z,z</code></td>
+      <td align="left">
+        <code>Zebra</code> moves as the Knight in classic chess.
+      </td>
+    </tr>
   </tbody>
 </table>
 
