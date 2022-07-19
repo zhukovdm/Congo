@@ -93,9 +93,11 @@ procedure.
 
 - Download release archive `congo-server-<platform>-<version>-exe.zip`.
 
-- Unpack archive into the folder of choice.
+- Unpack archive into the folder of choice. 
 
-- Navigate to this folder in the terminal and run `Congo.Server`.
+- Navigate to this folder in the terminal and run `Congo.Server`. 
+  Ensure that the current user has rights to create directories and files. Server stores all
+  operational data in the `Data/` folder, such as `main.db` and game-specific databases.
 
 - Wait until server instance reports successful start.
 
