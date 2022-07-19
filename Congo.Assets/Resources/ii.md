@@ -7,10 +7,13 @@ There are two options for client software:
 - [Congo.CLI](#congocli) with terminal-based user interface.
 - [Congo.GUI](#congogui) with graphical user interface.
 
-For server application, please deploy [Congo.Server](#congoserver). Server starts at `http://localhost:5153` and `https://localhost:7153` depending on the protocol. A client should use the same connection identifiers, which are specified during game initialization. The ability of the server to run over the Internet has not been tested
+For server application, please deploy [Congo.Server](#congoserver). Server starts at `http://localhost:5153` and
+`https://localhost:7153` depending on the protocol. A client should use the same connection identifiers, which are
+specified during game initialization. The ability of the server to run over the Internet has not been tested
 due to the hardware limitations.
 
-Note that all executables in the `*-exe.zip` archives are self-contained and neither require installation, nor `root` permissions for running.
+Note that all executables in the `*-exe.zip` archives are self-contained and neither require installation, nor `root`
+permissions for running.
 
 **Contents**
 
@@ -27,7 +30,8 @@ Note that all executables in the `*-exe.zip` archives are self-contained and nei
 
 # Congo.CLI
 
-`Congo.CLI` is currently supported on both `Windows` and `Linux` operating systems. We further describe installation procedures for each platform separately.
+`Congo.CLI` is currently supported on both `Windows` and `Linux` operating systems. We further describe installation
+procedures for each platform separately.
 
 ## Installing Congo.CLI on Windows
 
@@ -55,7 +59,9 @@ To make `Congo.CLI` available in the `$PATH`, proceed as follows.
 
 - Download the latest `congo-cli-linux-x64-<VERSION>-exe.zip` and unpack the archive.
 
-- Copy `Congo.CLI` executable to the `/usr/bin/` folder making it available in the `$PATH`. Note that copying requires `root` permissions, but running the executable does not need escalating privileges. `Congo.CLI` could be placed in any directory available in the `$PATH`.
+- Copy `Congo.CLI` executable to the `/usr/bin/` folder making it available in the `$PATH`. Note that copying requires
+  `root` permissions, but running the executable does not need escalating privileges. `Congo.CLI` could be placed in any
+  directory available in the `$PATH`.
 
 ```console
 sudo cp ./Congo.CLI /usr/bin/
@@ -79,7 +85,10 @@ sudo cp ./Congo.CLI /usr/bin/
 
 # Congo.Server
 
-This project is treated differently than other projects. We avoid installing software, because server executable uses additional configuration files. These files shall be placed in the same folder, from which we start executable. Making `Congo.Server` available in the `$PATH` would not work properly in all scenarios. Both `Windows` and `Linux` versions use similar deployment procedure.
+This project is treated differently than other projects. We avoid installing software, because server executable uses
+additional configuration files. These files shall be placed in the same folder, from which we start executable. Making
+`Congo.Server` available in the `$PATH` would not work properly in all scenarios. Both `Windows` and `Linux` versions
+use similar deployment procedure.
 
 - Download release archive `congo-server-<platform>-<version>-exe.zip`.
 
@@ -102,7 +111,8 @@ Note that the user cannot interact with the server instance, but could shut it d
 
 # Compile and run in the terminal
 
-Each project can be built, run and tested directly from the terminal. [dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet) should be available on the target system.
+Each project can be built, run and tested directly from the terminal.
+[dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet) should be available on the target system.
 
 - Clone the latest working version of the solution or download release files.
 
@@ -112,7 +122,8 @@ Each project can be built, run and tested directly from the terminal. [dotnet](h
 
 # Compile and run in Visual Studio
 
-For developers preferring `Visual Studio`, we further describe a relevant procedure for building and running within this specific `IDE`.
+For developers preferring `Visual Studio`, we further describe a relevant procedure for building and running within
+this specific `IDE`.
 
 - Open `Visual Studio Community 2022`.
 - Left click on `Clone a repository` in the upper right corner.
@@ -132,7 +143,9 @@ For developers preferring `Visual Studio`, we further describe a relevant proced
 
 # Publishing a project
 
-Projects are published as a self-contained binary files. Placeholder `<RID>` can be replaced by any runtime identifier from the [.NET RID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog). Currently, `win-x64` and `linux-x64` platforms are supported.
+Projects are published as a self-contained binary files. Placeholder `<RID>` can be replaced by any runtime identifier
+from the [.NET RID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog). Currently, `win-x64` and
+`linux-x64` platforms are supported.
 
 - Navigate to the root folder of `Congo.CLI`, `Congo.GUI` or `Congo.Server`.
 
@@ -144,11 +157,14 @@ dotnet publish -r <RID> -c Release -o publish --self-contained true -p:PublishSi
 
 - Generated files are dumped into the `./publish/` folder.
 
-`Congo.Server` is compiled into an executable with several additional files (`*.json`, `*.config`, etc.). **All** these files should be included into release archive.
+`Congo.Server` is compiled into an executable with several additional files (`*.json`, `*.config`, etc.). **All** these
+files should be included into release archive.
 
 # Creating .msi file
 
-`.msi` files are used for proper installation, maintenance, and removal of software within `Windows` systems. `Congo.CLI` and `Congo.GUI` are supposed to have installation files, which are built by a special `.Installer` projects. To generate `.msi` file, proceed as follows.
+`.msi` files are used for proper installation, maintenance, and removal of software within `Windows` systems.
+`Congo.CLI` and `Congo.GUI` are supposed to have installation files, which are built by a special `.Installer` projects.
+To generate `.msi` file, proceed as follows.
 
 - Publish a working version of a project, refer to [Publishing a project](#publishing-a-project) for details.
 
@@ -158,4 +174,5 @@ dotnet publish -r <RID> -c Release -o publish --self-contained true -p:PublishSi
 
 # Creating release archives
 
-Projects are released as a separated self-contained `.zip` files with structured names `<project>-<platform>-<version>-<kind>.zip`. An example of archive name is `congo-cli-linux-x64-v1.0.0-exe.zip`.
+Projects are released as a separated self-contained `.zip` files with structured names
+`<project>-<platform>-<version>-<kind>.zip`. An example of archive name is `congo-cli-linux-x64-v1.0.0-exe.zip`.
