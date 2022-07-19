@@ -65,6 +65,25 @@ each piece and the aim of the game.
 | ![super-pawn.png](./Pics/super-pawn.png)  |  `S,s`  | `Superpawn` has the additional powers of moving and capturing one square straight sideways and going one or two square straight backwards or diagonally backward. When going backwards, it may neither capture nor jump. A superpawn can slide backwards standing at any square. |
 | ![zebra.png](./Pics/zebra.png)            |  `Z,z`  | `Zebra` moves as the Knight in classic chess. |
 
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:center">Picture</th>
+      <th style="text-align:center">Symbol</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <td style="text-align:center"><img src="./Pics/crocodile.png" alt="crocodile.png"></td>
+    <td style="text-align:center"><code>C,c</code></td>
+    <td>
+      <code>Crocodile</code> moves as the King in Chess standing on the ground. Outside the river it can slide straight
+      towards the river (including the river square) as a rook if no pieces are standing on the path. Inside the river
+      it can slide to another river square as a rook.
+    </td>
+  </tbody>
+</table>
+
 The aim of the game is to win by capturing opponent's `Lion` as there could be only one King of the Jungle. The game
 immediately ends once a lion, either black or white, is captured. There is no chess-like check in `Congo`, a lion might
 move to an attacked square. Consequently, `Congo` has no draw by a stalemate.
