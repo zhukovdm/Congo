@@ -142,7 +142,7 @@ could be any valid `Congo FEN` string provided by the user on game creation (e.g
 or non-standard. `lastFen` contains the latest known reached game state.
 
 Moves posted by the players are stored in a separated databases named `#.db`, where `#` is a unique
-game identifier. Game-speecific database contains `moves` table with columns `moveId`, `fromSquare`
+game identifier. Game-specific database contains `moves` table with columns `moveId`, `fromSquare`
 and `toSquare`. Moves are ordered, `moveId` is used for game consistency verification. Only valid
 moves change database state/records.
 
